@@ -47,7 +47,8 @@ public/sitemap.xml
 # pnpm-lock.yaml
 
 # Claude Code
-.claude/
+# Claude Code (keep skills and settings in version control)
+.claude/settings.local.json
 
 # Temporary transform/verification scripts, logs, and backups
 /tmpscripts/

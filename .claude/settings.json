@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Read(*)",
+      "WebSearch",
+      "WebFetch(*)",
+      "mcp__playwright__*",
+      "Edit(/.claude/skills/calculator-checklist/**)"
+    ],
+    "additionalDirectories": [
+      "/workspace"
+    ]
+  }
+}
