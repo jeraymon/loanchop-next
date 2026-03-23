@@ -1,0 +1,19 @@
+{
+  "name": "AJ Designer Migration",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "dbaeumer.vscode-eslint",
+        "Google.geminicodeassist",
+        "anthropic.claude-code" 
+      ]
+    }
+  },
+  "remoteUser": "node"
+}

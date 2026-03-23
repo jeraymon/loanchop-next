@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Syncs your entire modern-app code (which now includes the legacy backups)
+      - ..:/workspace:cached
+    
+    command: sleep infinity
+    
+    deploy:
+      resources:
+        limits:
+          memory: 6G

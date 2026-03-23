@@ -1,0 +1,59 @@
+# Node dependencies
+/node_modules
+*.log
+
+# Next.js build output
+/.next
+/out
+/build
+
+# Environment variables (SECURITY)
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel deployment cache
+.vercel
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Auto-generated sitemap (rebuilt on each build)
+public/sitemap.xml
+
+
+# Testing
+/coverage
+
+# IDE
+.vscode/
+.idea/
+
+# package manager lock files (keep only one)
+# Uncomment the ones you DON'T use:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Claude Code
+.claude/
+
+# Temporary transform/verification scripts, logs, and backups
+/tmpscripts/
+
+# Playwright MCP console logs
+/.playwright-mcp/
+
+# Legacy PHP backup (read-only reference, not part of live app)
+legacy-php-backup/

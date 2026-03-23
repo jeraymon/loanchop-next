@@ -1,0 +1,13 @@
+customHeaders:
+  - pattern: "**/*"
+    headers:
+      - key: "X-Frame-Options"
+        value: "SAMEORIGIN"
+      - key: "X-Content-Type-Options"
+        value: "nosniff"
+customRules:
+  # Add 301 redirect rules here for legacy URLs
+  # Example:
+  # - source: /old-path/<*>
+  #   target: /new-path/
+  #   status: "301"
