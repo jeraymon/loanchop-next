@@ -64,7 +64,7 @@ export default function ShareButtons({ title, solution }: ShareButtonsProps) {
       <span className="text-xs text-muted-foreground">Share:</span>
       <button
         onClick={copyLink}
-        className="text-muted-foreground hover:text-cyan-600 transition-colors relative"
+        className="text-muted-foreground hover:text-indigo-600 transition-colors relative"
         aria-label={copied ? "Link copied" : "Copy link to this result"}
         title={copied ? "Copied!" : "Copy link"}
       >
@@ -77,7 +77,7 @@ export default function ShareButtons({ title, solution }: ShareButtonsProps) {
       </button>
       <button
         onClick={shareOnX}
-        className="text-muted-foreground hover:text-cyan-600 transition-colors"
+        className="text-muted-foreground hover:text-indigo-600 transition-colors"
         aria-label="Share on X"
         title="Share on X"
       >
@@ -85,7 +85,7 @@ export default function ShareButtons({ title, solution }: ShareButtonsProps) {
       </button>
       <button
         onClick={shareOnReddit}
-        className="text-muted-foreground hover:text-cyan-600 transition-colors"
+        className="text-muted-foreground hover:text-indigo-600 transition-colors"
         aria-label="Share on Reddit"
         title="Share on Reddit"
       >

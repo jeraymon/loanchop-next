@@ -113,7 +113,7 @@ export default function UnitConverter({ category, title }: UnitConverterProps) {
                 key={row.key}
                 className={
                   row.isFrom
-                    ? "bg-cyan-50 dark:bg-cyan-950 font-semibold"
+                    ? "bg-indigo-50 dark:bg-indigo-950 font-semibold"
                     : ""
                 }
               >

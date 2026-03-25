@@ -16,18 +16,15 @@ export type Category = {
 
 // Helpers
 const live = (name: string, href: string): Calculator => ({ name, href, live: true });
-const soon = (name: string): Calculator => ({ name, href: "#", live: false });
 
 export const categories: Category[] = [
-  // Add your categories here, e.g.:
-  // {
-  //   id: "physics",
-  //   label: "Physics",
-  //   calculators: [
-  //     live("Force Equation Calculator", "/force"),
-  //     soon("Gravity Calculator"),
-  //   ],
-  // },
+  {
+    id: "loan",
+    label: "Loan Calculators",
+    calculators: [
+      live("Loan Prepayment Calculator", "/"),
+    ],
+  },
 ];
 
 /** Total calculator count */

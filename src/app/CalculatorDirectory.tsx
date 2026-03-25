@@ -41,7 +41,7 @@ export function CalculatorDirectory() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search calculators"
-          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-cyan-600"
+          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-600"
         />
       </div>
 
@@ -83,10 +83,10 @@ export function CalculatorDirectory() {
                   <Link
                     key={calc.name}
                     href={calc.href}
-                    className="group flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-cyan-600 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20 transition-colors"
+                    className="group flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-colors"
                   >
-                    <span className="size-2 shrink-0 rounded-full bg-cyan-600" />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-cyan-400">
+                    <span className="size-2 shrink-0 rounded-full bg-indigo-600" />
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-400">
                       {calc.name}
                     </span>
                   </Link>

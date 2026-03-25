@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — AJ Designer",
-  description: "Privacy policy for AJ Designer, including cookie usage and Google AdSense disclosure.",
+  title: "Privacy Policy — LoanChop",
+  description: "Privacy policy for LoanChop, including cookie usage and Google AdSense disclosure.",
 };
 
 export default function PrivacyPage() {
@@ -13,14 +13,14 @@ export default function PrivacyPage() {
 
       <h2>1. Overview</h2>
       <p>
-        AJ Designer (&ldquo;ajdesigner.com,&rdquo; the &ldquo;Site&rdquo;) respects your
+        LoanChop (&ldquo;loanchop.com,&rdquo; the &ldquo;Site&rdquo;) respects your
         privacy. This Privacy Policy describes what information is collected when you visit
         the Site, how it is used, and your choices regarding that information.
       </p>
 
       <h2>2. Information We Collect</h2>
       <p>
-        AJ Designer does not require you to create an account or provide any personal
+        LoanChop does not require you to create an account or provide any personal
         information to use the calculators. We do not collect names, email addresses, or
         other personally identifiable information unless you voluntarily provide it (for
         example, by contacting us).

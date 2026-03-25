@@ -1,107 +1,151 @@
-# AJDesigner Calculator Migration
+# LoanChop — Loan Prepayment Calculator
 
-## Project Overview
-Legacy PHP/Flash calculator site being migrated to Next.js 15+ (App Router, SSG, AWS Amplify).
-See `AGENT.md` for full migration rules, patterns, and lessons learned.
+## Base Patterns (All Sites)
 
-## Key Commands
+### Goals & Approach
+**Project goals (in priority order):**
+1. **User satisfaction** — the calculator must be fast, intuitive, and genuinely useful
+2. **Traffic growth** — rank for calculator queries through SEO best practices
+3. **AdSense revenue** — maximize RPM without compromising goals 1 and 2
+
+**Expert roles:** When working on this project, apply expertise in SEO, UI/UX design, traffic acquisition, and user experience. Use modern best practices for all three goals. Prioritize decisions that serve all three — when they conflict, user satisfaction wins.
+
+### Guardrails (Never Break)
+See `AGENT.md` for the full guardrails list. Summary:
+- **SEO:** Don't change canonical URL or h1 without approval. Warn if page weight exceeds 500 KB gzipped. No interstitials, hidden text, or keyword stuffing.
+- **AdSense:** No ads above the fold. No more than 1 ad unit without approval. No auto-refresh ads.
+- **UX:** No signup gates, paywalls, or unnecessary cookie banners. Results visible without scrolling after Calculate. Warn if LCP exceeds 2.5s.
+- **Content:** All content must be original — never copy from competitors. Synthesize and rewrite research in our own voice.
+
+### Sister Site Network
+All sites share the same publisher, AdSense config, and design system. Use Related Sites sections to cross-link for SEO backlinks and user discovery:
+- **dollarsperhour.com** — Weekly paycheck calculator with overtime (PRODUCTION)
+- **hourlysalaries.com** — Hourly wage to salary converter
+- **ajdesigner.com** — 200+ engineering and science calculators
+- **bogodiscount.com** — BOGO discount calculator
+- **compare2loans.com** — Side-by-side loan comparison
+- **loanchop.com** — Loan prepayment calculator
+- **percentoffcalculator.com** — Percent off / sale price calculator
+- **percenterrorcalculator.com** — Percent error calculator
+- **infantchart.com** — Baby growth percentile charts
+- **optionsmath.com** — Options trading P&L calculators
+- **medicalequations.com** — Medical/nursing calculators
+- **rncalc.com** — RN nursing calculators
+- **temperaturetool.com** — Temperature converter
+- **zscorecalculator.com** — Z-score and probability calculator
+
+### Multi-Calc vs Single-Calc Sites
+- **Multi-calculator sites** (ajdesigner, infantchart, medicalequations, optionsmath, rncalc): Have sidebar navigation, breadcrumbs, calculator catalog, multiple calculator pages. Use "Related Calculators" (internal links) + "Related Sites" (external links).
+- **Single-calculator sites** (all others): No sidebar, no breadcrumbs, empty catalog, calculator at root `/`. Use "Related Sites" (external links only).
+
+### Base Key Commands
 - `npx next dev --port 3000` — Start dev server
 - `npx next build` — Production build (SSG export)
 - `npx serve out -l 3000` — Serve the static SSG build locally (test what Amplify will serve)
-- `npx vitest` — Run tests
-- `npx vitest run` — Run tests once (CI mode)
+- `npx vitest run` — Run tests once
 
-## Migration Status
-- **201 calculators + 21 unit converters live** (222 catalog pages + legal/index), all with educational content and FAQPage JSON-LD
-- **204 test files, 1,427 tests** — all passing
-- **All calculators** have shareable URLs (query params for pre-filled calculations)
-- **All formulas cross-verified** — 1,175 round-trip consistency checks + Wolfram Alpha spot-checks
-- **Production build** clean, no errors
-
-## Project Structure
-- `src/app/[calculator]/` — Each calculator gets a folder with `page.tsx` (server) + `Calculator.tsx` (client)
-- `src/components/` — Shared UI components (CalculatorShell, ChartCalculatorShell, AutoCalculatorShell, AutoChartCalculatorShell, Breadcrumbs, AdSlot, ui/)
-- `src/shared-math/` — `math-config.ts` (BigNumber, PI, TWO_PI), `units.ts` (unit conversion library)
-- `src/app/calculator-catalog.ts` — Central catalog of all calculators
-- `customHttp.yml` — Legacy URL redirects for Amplify (wildcard per legacy directory, e.g., `/phpforce/<*>` → `/force/`)
-- `scripts/generate-sitemap.mjs` — Auto-generates `sitemap.xml` from catalog at prebuild
-- `AGENT.md` — Detailed migration rules, UI patterns, lessons learned, and execution workflow
-- `todo.txt` — Project-wide task tracker
-- `template/` — Reusable starter kit for new calculator sites. `_reference/` has golden examples covering all shell types:
-    - `density/` — **CalculatorShell** (multi-solve, unit conversions)
-    - `force/` — **CalculatorShell** (ShareButtons + shareable URLs reference)
-    - `loan/` — **ChartCalculatorShell** (button-click calculate + amortization charts)
-    - `dog-age/` — **AutoChartCalculatorShell** (auto-calculate + Recharts chart)
-    - `length-converter/` — **AutoCalculatorShell** (auto-calculate, no button, unit converter)
-- `.claude/skills/calculator-checklist/` — Skill to validate calculator implementations
-- `.mcp.json` — MCP server config (Playwright browser automation)
-- `legacy-php-backup/` — READ-ONLY reference for original PHP calculators
-- `_ui_goal/` — Legacy design reference (live calculators are now the primary reference)
-
-## Tech Stack
-- Next.js 15+, React, TypeScript, Tailwind CSS v4 (NOT v3)
-- `bignumber.js` for precision math (NOT mathjs); `PI` and `TWO_PI` constants exported from `math-config.ts` — never redefine locally
-- `react-katex` for formula rendering
-- `zod` + `react-hook-form` for validation
-- Base UI Select (`@base-ui/react`), NOT Radix
+### Base Tech Stack
+- Next.js 15+, React 19, TypeScript, Tailwind CSS v4 (NOT v3)
+- `bignumber.js` for precision math (NOT mathjs)
 - `vitest` for testing
-- `recharts` for interactive charts (lazy-load with `next/dynamic` + `{ ssr: false }`)
 - `@tailwindcss/typography` for legal/prose pages
+- Static export (SSG) hosted on AWS Amplify
 
-## Migration Checklist (per calculator)
-See `AGENT.md` for detailed patterns, code examples, and styling specs.
-- Use existing live calculators (e.g., `src/app/density/`) as the reference template
-- If the legacy PHP calculator has charts/visualizations (ExtJS, Flash, JS), the Next.js version **must** include equivalent interactive charts using `recharts` + `ChartCalculatorShell`
-- Follow the scroll-to-calculate pattern with bordered educational cards and CTA buttons (details in AGENT.md)
-- Every `<SelectValue>` must use a render function for human-readable labels
-- Choose the right shell for each calculator:
-  - `CalculatorShell` — button-click calculate, no charts (most calculators)
-  - `ChartCalculatorShell` — button-click calculate + charts/tables (loan, mortgage-loan, horsepower-elapsed-time, horsepower-trap-speed, tire-size, pay-raise, trailer-towing)
-  - `AutoCalculatorShell` — auto-calculate on input change, no charts (use `useMemo` for results)
-  - `AutoChartCalculatorShell` — auto-calculate on input change + charts/tables (dog-age, cat-age, subwoofer)
-- Pass breadcrumbs via the shell's `breadcrumbs` prop
-- Every calculator MUST have a `calc.ts` with pure math functions — `Calculator.tsx` imports from it, tests import from it (one source of truth). See AGENT.md for details
-- Replace legacy formula images with `react-katex`; recreate simple diagrams in HTML/CSS
-- Update `calculator-catalog.ts` (`soon()` → `live()`), `customHttp.yml`, and index page (sitemap auto-generates from catalog at build time)
-- Write tests in a `.test.ts` file importing from `calc.ts` and run `npx vitest run`
-- Educational content must follow this structure (details in AGENT.md):
-  1. **How It Works** — 2-3 sentences in a bordered card with CTA button
-  2. **Example Problem** — worked example with real numbers
-  3. **FAQ** — 3-5 questions phrased as Google searches, 2-3 sentence answers
-  4. **Related Calculators** — 4-6 links: 2-3 same category, 1-2 cross-category, 1 unit converter (see AGENT.md for linking rules)
-- Add `FAQPage` JSON-LD schema to `page.tsx` alongside `MathSolver` — both as plain `<script>` tags
+### Base Key Rules
+- Plain `<script>` for JSON-LD (NOT `next/script`)
+- `generateMetadata()` function (NOT `export const metadata`) in page.tsx
+- ShareButtons + AdSlot placed **outside** the shell, between calculator card and educational content — `<ShareButtons />` must be a standalone JSX element, NOT passed as a shell prop (`afterSolution`, `table`, etc.)
+- `overflow-x: hidden` on html/body in globals.css, `overflow-hidden` on shell articles
+- Two-column grids: `grid-cols-1 sm:grid-cols-2` (not bare `grid-cols-2`)
+- Recharts lazy-loaded as entire component via `next/dynamic({ ssr: false })`
+- Recharts Tooltip formatter params are NOT type-annotated
+- BigNumber from `bignumber.js` for precision math
+- **Calculator Card Boundary:** The shell card = the calculator. Educational content lives outside the card as page text. Educational sections use light borders (`border border-slate-200`). The Related Sites/Calculators section uses a heavier bordered card (`border-2 shadow-md`). ShareButtons and AdSlot sit between card and educational content. See AGENT.md for details.
+- **Card border:** Shell components use a plain `<div>` with `rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md` — do NOT use the shadcn `Card` component. See AGENT.md for details.
+- **Educational headings:** Use `text-base font-semibold text-slate-600 dark:text-slate-400` — lighter than the calculator title so they don't compete visually.
+- **No prose class in educational sections:** Educational `<section>` elements must NOT use `prose` or `prose-invert` Tailwind Typography classes — these create oversized headings. Use explicit utility classes only.
+- **No self-links:** Related Sites/Calculators sections must NOT link to the current site's own domain.
+- **Result highlight rows:** Secondary highlight rows in tables/cards (e.g., "Total", "Sale Price") use `bg-cyan-50 dark:bg-cyan-950/30` — NOT the site accent color (only the solution box uses site accent).
+- **No chart overflow-hidden:** Chart wrapper divs/sections must NOT have `overflow-hidden` — this clips Recharts tooltips near chart edges.
+- **Main padding:** The `<main>` element in `layout.tsx` uses `px-2 py-3 sm:px-6 sm:py-6 lg:px-12 lg:py-6` — tight on mobile, wide side margins on desktop, moderate vertical padding (not excessive top space).
+- No URL parameters — calculators do not read or write query params. Share buttons share the clean base URL.
+- FAQ questions must match between Calculator.tsx and page.tsx JSON-LD
+- **Single `<h1>` rule:** Only one `<h1>` per page — the shell renders it. No `<h1>` in `layout.tsx`, educational sections, or other components. Single-calculator sites should have no separate header/title bar in `layout.tsx` at all (avoids wasted space and dual-h1 SEO issues).
+- OpenGraph `og:image` must use an **absolute URL** (e.g., `https://www.example.com/images/og-default.jpg`)
+- `alternates.canonical` must be an **absolute URL** (e.g., `https://www.example.com/slug`) — NOT a relative path like `/slug`
+- `layout.tsx` must NOT call `generateMetadata()` — dynamic metadata belongs in `page.tsx` only (static `export const metadata` in `layout.tsx` is fine for site-wide defaults)
 
-## Documentation Rules
-- `CLAUDE.md` is the quick-reference. `AGENT.md` is the single source of truth for detailed patterns, code examples, and styling specs.
-- When adding new rules or patterns, put the detail in `AGENT.md` and reference it from `CLAUDE.md` — never duplicate code examples or implementation details in both files.
+### Documentation Rules
+- `CLAUDE.md` is the quick-reference. `AGENT.md` is the single source of truth for detailed patterns.
+- When adding new rules, put detail in `AGENT.md` and reference from `CLAUDE.md` — never duplicate code examples in both files.
 
-## Troubleshooting
-- **Runtime errors (500, webpack, ENOENT):** Almost always stale `.next` cache. Run `rm -rf .next && npx next dev --port 3000` (the `dev` script already does this). See AGENT.md for details.
-- **Build OOM (killed with no error):** The build uses `NODE_OPTIONS='--max-old-space-size=4096'` (set in `package.json`). See AGENT.md for details.
-- **Recharts Tooltip type errors:** Never type-annotate `formatter` params — use `Number(value)` inside the body. See AGENT.md for details.
-- **JSON-LD not in static HTML:** Do NOT use `next/script` (`<Script>`) for JSON-LD — it injects via JS at runtime, invisible to crawlers in SSG. Use a plain `<script>` tag instead.
+### Troubleshooting
+- **Runtime errors (500, webpack, ENOENT):** Stale `.next` cache. Run `rm -rf .next && npx next dev --port 3000`.
+- **Build OOM:** Uses `NODE_OPTIONS='--max-old-space-size=4096'` in package.json.
+- **Recharts Tooltip type errors:** Never type-annotate `formatter` params — use `Number(value)` inside the body.
+- **JSON-LD not in static HTML:** Use plain `<script>` tag, NOT `next/script`.
+- **Invisible card borders:** The shadcn `Card` component's `ring-1 ring-foreground/10` (~10% opacity) is nearly invisible. Fix: use a plain `<div>` with `border-2` — see AGENT.md.
 
-## Ignore Patterns
+### Ignore Patterns
 - Do NOT read or index `node_modules/`
 
-## Read-Only Directories (read but NEVER modify)
-- `legacy-php-backup/`, `_ui_goal/`
+### NEVER Modify (locked values)
+- **AdSense config** — The library `<script>` is in `layout.tsx` `<head>`, the ad unit `<ins>` is in `AdSlot.tsx`. Ad client/slot IDs (`ca-pub-6158058519275033`, `5439322335`) must NEVER be changed.
 
-## NEVER Modify (locked values)
-- **AdSense config** — `src/components/AdSlot.tsx` ad client/slot IDs (`ca-pub-6158058519275033`, `5439322335`) and `src/app/layout.tsx` AdSense script tag must NEVER be changed. These are the production ad codes.
-
-## Update With Caution (ask user first)
-- `.devcontainer/` — only for adding dependencies (e.g., Playwright)
+### Update With Caution (ask user first)
+- `.devcontainer/` — only for adding dependencies
 - `.gemini/` — Gemini AI config (keep in sync with project patterns)
+---
 
-## Post-Task Documentation Updates
-After completing any task, proactively suggest updates to documentation and config files if something new was learned. Always ask the user before making changes. Files to consider:
-- `CLAUDE.md` / `AGENT.md` — project patterns and rules
-- `.claude/skills/*/SKILL.md` — skill definitions
-- `.gemini/` — Gemini-specific config
-- `template/` — starter kit (keep in sync with latest components/configs)
-- `todo.txt` — project task tracker
-- `.devcontainer/` — container config
-- `.mcp.json` — MCP server config
-- `customHttp.yml` — redirect rules
-- Any new config or doc file that would help future sessions
+## Site-Specific
+
+### Palette
+- **Site accent color:** `indigo-600` (header, buttons, highlights). Dark variant: `indigo-700`.
+- **Solution/highlight bg:** `indigo-50` (light) / `indigo-950/30` (dark)
+- **CTA buttons:** `border-indigo-600 text-indigo-600`
+- **Links:** `text-indigo-600 hover:underline`
+
+### Project Status: Active Improvement
+Migration from legacy PHP to Next.js 15+ is **complete**. The calculator is functional with amortization schedule, balance chart, and prepayment comparison.
+
+See `AGENT.md` for architecture details, coding patterns, and calculator formulas.
+
+### Architecture
+- **Single-page calculator at root `/`** — no sidebar, no internal navigation, no breadcrumbs
+- Calculator files live directly in `src/app/` (calc.ts, Calculator.tsx, page.tsx, BalanceChart.tsx)
+- AdSense library script is in `layout.tsx` `<head>` (plain `<script>` tag, NOT `next/script`). `AdSlot.tsx` contains only the `<ins>` tag and push call.
+- Auto-calculates via `useForm` + `watch()` + `useMemo` — results, chart, and table update instantly on input change (no Calculate button)
+- Chart appears only when extra payment > 0 (comparing normal vs accelerated payoff)
+
+### Project Structure
+- `src/app/calc.ts` — Pure math functions (BigNumber, no React): `calcMonthlyPayment`, `buildAmortization`, `compareWithAndWithoutExtra`
+- `src/app/Calculator.tsx` — Client component (AutoChartCalculatorShell + reactive inputs + educational content)
+- `src/app/page.tsx` — Server component (generateMetadata, JSON-LD scripts)
+- `src/app/BalanceChart.tsx` — Recharts line chart (lazy-loaded via next/dynamic) comparing normal vs accelerated balance
+- `src/app/Calculator.test.ts` — Tests importing from calc.ts
+- `src/app/calculator-catalog.ts` — Single-entry catalog (Loan Prepayment Calculator at `/`)
+- `src/components/` — Shared UI (AutoChartCalculatorShell, AdSlot, ShareButtons, ui/)
+- `src/shared-math/` — math-config.ts (BigNumber), units.ts
+- `customHttp.yml` — Amplify headers/redirects
+- `legacy-php-backup/` — READ-ONLY archive
+- `.claude/skills/calculator-checklist/` — Skill to validate calculator implementation
+
+### Tech Stack (Site-Specific Additions)
+- `zod` + `react-hook-form` with `watch()` + `useMemo` for reactive auto-calculation
+- Base UI Select (`@base-ui/react`), NOT Radix
+- `recharts` for charts (lazy-load with `next/dynamic` + `{ ssr: false }`)
+
+### Calculator Implementation
+- **Shell:** `AutoChartCalculatorShell` with `bg-cyan-600` header, cyan solution box, always-visible results
+- **Form pattern:** `useForm<FormValues>` with `zodResolver`, `mode: "onChange"`, `watch()` to read all values, `useMemo` to auto-derive results from watched values. `schema.safeParse()` validates inside useMemo.
+- **Chart:** `BalanceChart` shows remaining balance over time for normal vs accelerated schedules. Only rendered when extra payment > 0.
+- **Table:** Summary cards (monthly payment, total interest, interest saved, time saved) + full amortization schedule with toggle between yearly and all-months view.
+- **No formula display** — this calculator does not use react-katex (loan math is straightforward).
+
+### Key Rules (Site-Specific)
+- Auto-calculate via `useForm` + `watch()` + `useMemo` — no Calculate button, results update instantly on input change
+- `zod` schema validates inputs; `schema.safeParse()` inside `useMemo` guards against invalid values
+- FAQ questions currently 4 questions
+
+### Read-Only Directories (read but NEVER modify)
+- `legacy-php-backup/`, `_ui_goal/`

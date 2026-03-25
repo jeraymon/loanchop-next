@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Use — AJ Designer",
-  description: "Terms of use, disclaimer, and limitation of liability for AJ Designer calculators.",
+  title: "Terms of Use — LoanChop",
+  description: "Terms of use, disclaimer, and limitation of liability for LoanChop calculators.",
 };
 
 export default function TermsPage() {
@@ -13,7 +13,7 @@ export default function TermsPage() {
 
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing or using AJ Designer (&ldquo;ajdesigner.com,&rdquo; the &ldquo;Site&rdquo;),
+        By accessing or using LoanChop (&ldquo;loanchop.com,&rdquo; the &ldquo;Site&rdquo;),
         you agree to be bound by these Terms of Use. If you do not agree to all of these terms,
         do not use the Site.
       </p>
@@ -33,12 +33,12 @@ export default function TermsPage() {
         The Site and all content, tools, and results are provided <strong>&ldquo;as is&rdquo;
         and &ldquo;as available&rdquo;</strong> without warranty of any kind, whether express,
         implied, statutory, or otherwise. To the fullest extent permitted by applicable law,
-        AJ Designer disclaims all warranties, including but not limited to implied warranties
+        LoanChop disclaims all warranties, including but not limited to implied warranties
         of merchantability, fitness for a particular purpose, accuracy, completeness,
         reliability, and non-infringement.
       </p>
       <p>
-        AJ Designer does not warrant that calculator results will be accurate, error-free,
+        LoanChop does not warrant that calculator results will be accurate, error-free,
         or uninterrupted, or that defects will be corrected. Rounding, floating-point
         representation, unit conversion factors, and formula simplifications may introduce
         discrepancies between results shown on this Site and results obtained by other methods.
@@ -55,7 +55,7 @@ export default function TermsPage() {
 
       <h2>5. Limitation of Liability</h2>
       <p>
-        To the maximum extent permitted by applicable law, in no event shall AJ Designer,
+        To the maximum extent permitted by applicable law, in no event shall LoanChop,
         its owner, contributors, or affiliates be liable for any direct, indirect, incidental,
         special, consequential, or punitive damages — including but not limited to loss of
         profits, data, use, goodwill, or other intangible losses — arising out of or in
@@ -70,13 +70,13 @@ export default function TermsPage() {
       </ul>
       <p>
         This limitation applies regardless of the legal theory (contract, tort, strict
-        liability, or otherwise), even if AJ Designer has been advised of the possibility
+        liability, or otherwise), even if LoanChop has been advised of the possibility
         of such damages.
       </p>
 
       <h2>6. Indemnification</h2>
       <p>
-        You agree to indemnify, defend, and hold harmless AJ Designer and its owner from
+        You agree to indemnify, defend, and hold harmless LoanChop and its owner from
         and against any claims, liabilities, damages, losses, and expenses (including
         reasonable attorneys&rsquo; fees) arising out of or related to your use of the Site,
         your violation of these Terms, or your violation of any rights of a third party.
@@ -85,7 +85,7 @@ export default function TermsPage() {
       <h2>7. Intellectual Property</h2>
       <p>
         All content on this Site — including text, graphics, formulas, code, logos, and
-        design — is the property of AJ Designer or its licensors and is protected by
+        design — is the property of LoanChop or its licensors and is protected by
         applicable intellectual property laws. You may not reproduce, distribute, or create
         derivative works from Site content without prior written permission.
       </p>
@@ -94,13 +94,13 @@ export default function TermsPage() {
       <p>
         This Site uses third-party services, including Google AdSense for advertising. These
         services may collect data as described in our <a href="/privacy">Privacy Policy</a>.
-        AJ Designer is not responsible for the content, practices, or policies of any
+        LoanChop is not responsible for the content, practices, or policies of any
         third-party service.
       </p>
 
       <h2>9. Modifications</h2>
       <p>
-        AJ Designer reserves the right to modify these Terms at any time. Changes are
+        LoanChop reserves the right to modify these Terms at any time. Changes are
         effective upon posting to this page with an updated &ldquo;Last updated&rdquo; date.
         Your continued use of the Site after changes constitutes acceptance of the revised
         Terms.

@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const SITE = "https://www.ajdesigner.com";
+const SITE = "https://www.loanchop.com";
 
 // Parse live calculator hrefs from calculator-catalog.ts
 const catalogSrc = readFileSync(

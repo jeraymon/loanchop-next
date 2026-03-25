@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Accessibility Statement — AJ Designer",
-  description: "AJ Designer's commitment to web accessibility and WCAG 2.1 AA compliance.",
+  title: "Accessibility Statement — LoanChop",
+  description: "LoanChop's commitment to web accessibility and WCAG 2.1 AA compliance.",
 };
 
 export default function AccessibilityPage() {
@@ -13,7 +13,7 @@ export default function AccessibilityPage() {
 
       <h2>Our Commitment</h2>
       <p>
-        AJ Designer is committed to ensuring digital accessibility for people of all
+        LoanChop is committed to ensuring digital accessibility for people of all
         abilities. We strive to continually improve the user experience for everyone and
         apply the relevant accessibility standards to make our calculators and content
         usable by the widest possible audience.
@@ -84,7 +84,7 @@ export default function AccessibilityPage() {
 
       <h2>Feedback</h2>
       <p>
-        We welcome your feedback on the accessibility of AJ Designer. If you encounter
+        We welcome your feedback on the accessibility of LoanChop. If you encounter
         any accessibility barriers or have suggestions for improvement, please contact us
         at <a href="mailto:aj@ajdesigner.com">aj@ajdesigner.com</a>. We take accessibility
         feedback seriously and will make reasonable efforts to address reported issues.
