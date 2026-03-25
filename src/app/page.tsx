@@ -7,14 +7,15 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: { icon: "/favicon.svg", apple: "/apple-icon.png" },
     description:
       "Free loan prepayment calculator. See how extra monthly payments reduce total interest and shorten your mortgage. Interactive amortization schedule and balance chart.",
+    keywords: ["loan prepayment", "extra payment calculator", "mortgage payoff", "loan payoff", "amortization", "interest savings", "early payoff"],
     alternates: {
-      canonical: "https://www.loanchop.com/",
+      canonical: "https://www.loanchop.com",
     },
     openGraph: {
       title: "Loan Prepayment Calculator — LoanChop",
       description:
         "See how extra monthly payments reduce total interest and shorten your mortgage. Free interactive amortization schedule.",
-      url: "https://www.loanchop.com/",
+      url: "https://www.loanchop.com",
       siteName: "LoanChop",
       type: "website",
       images: [
@@ -42,15 +43,16 @@ const mathSolverJsonLd = {
   description:
     "Calculate how extra monthly payments reduce total interest and shorten your loan term. Includes interactive amortization schedule and balance comparison chart.",
   inLanguage: "en",
-  url: "https://www.loanchop.com/",
+  url: "https://www.loanchop.com",
   publisher: {
     "@type": "Organization",
     name: "LoanChop",
     url: "https://www.loanchop.com",
     logo: {
       "@type": "ImageObject",
-      url: "https://www.loanchop.com/images/og-default.jpg",
+      url: "https://www.loanchop.com/images/logo.png",
     },
+    email: "aj@ajdesigner.com",
   },
   potentialAction: {
     "@type": "SolveMathAction",

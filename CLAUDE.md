@@ -55,10 +55,12 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - Plain `<script>` for JSON-LD (NOT `next/script`)
 - `generateMetadata()` function (NOT `export const metadata`) in page.tsx
 - ShareButtons + AdSlot placed **outside** the shell, between calculator card and educational content — `<ShareButtons />` must be a standalone JSX element, NOT passed as a shell prop (`afterSolution`, `table`, etc.)
+- `<AdSlot />` must be wrapped in `<div className="max-w-3xl mx-auto">` to constrain ad width — unwrapped ads stretch full viewport
 - `overflow-x: hidden` on html/body in globals.css, `overflow-hidden` on shell articles
 - Two-column grids: `grid-cols-1 sm:grid-cols-2` (not bare `grid-cols-2`)
 - Recharts lazy-loaded as entire component via `next/dynamic({ ssr: false })`
 - Recharts Tooltip formatter params are NOT type-annotated
+- **LaTeX formulas** must use `String.raw` backtick templates for `latexFormula` props — NOT double-backslash JSX strings (they get double-escaped in SSG and render as raw text)
 - BigNumber from `bignumber.js` for precision math
 - **Calculator Card Boundary:** The shell card = the calculator. Educational content lives outside the card as page text. Educational sections use light borders (`border border-slate-200`). The Related Sites/Calculators section uses a heavier bordered card (`border-2 shadow-md`). ShareButtons and AdSlot sit between card and educational content. See AGENT.md for details.
 - **Card border:** Shell components use a plain `<div>` with `rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md` — do NOT use the shadcn `Card` component. See AGENT.md for details.
@@ -74,6 +76,17 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - OpenGraph `og:image` must use an **absolute URL** (e.g., `https://www.example.com/images/og-default.jpg`)
 - `alternates.canonical` must be an **absolute URL** (e.g., `https://www.example.com/slug`) — NOT a relative path like `/slug`
 - `layout.tsx` must NOT call `generateMetadata()` — dynamic metadata belongs in `page.tsx` only (static `export const metadata` in `layout.tsx` is fine for site-wide defaults)
+- `twitter` card metadata is **required** — every `generateMetadata()` must include `twitter: { card: "summary_large_image", title, description }`
+- OpenGraph images must include `alt` text describing the calculator
+- `keywords` array is **required** — include 6-8 relevant terms in every `generateMetadata()`
+- Canonical URLs use `https://www.` prefix, **no trailing slash** (e.g., `https://www.domain.com/slug` not `https://domain.com/slug/`)
+- OG image (`public/images/og-default.jpg`) must be **site-specific** (branded for this site) — not a generic shared image
+- Favicon: `favicon.svg` in `public/`, `apple-icon.png` (180x180 PNG) in `src/app/` (Next.js file convention). Declare favicon in `layout.tsx` `<head>` via `<link>` tag. Do NOT put `apple-icon.png` in both `src/app/` and `public/` — duplicates cause a 0 B build route
+- `openGraph.url` must match `alternates.canonical` — same absolute URL, same www/trailing-slash convention
+- JSON-LD `publisher` must include `name`, `url`, `logo`, and `email: "aj@ajdesigner.com"` in the Organization object
+- JSON-LD `publisher.logo` must be an absolute URL pointing to `public/images/logo.png` (400x400 square PNG) — standardized filename
+- All URLs in JSON-LD must be **absolute** (not relative paths)
+- Multi-calc home pages (ajdesigner, infantchart, medicalequations, optionsmath, rncalc) must include a standalone Organization schema with `name`, `url`, `logo`, `email`, and `sameAs` (sister site URLs)
 
 ### Documentation Rules
 - `CLAUDE.md` is the quick-reference. `AGENT.md` is the single source of truth for detailed patterns.
@@ -145,7 +158,7 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 ### Key Rules (Site-Specific)
 - Auto-calculate via `useForm` + `watch()` + `useMemo` — no Calculate button, results update instantly on input change
 - `zod` schema validates inputs; `schema.safeParse()` inside `useMemo` guards against invalid values
-- FAQ questions currently 4 questions
+- FAQ questions must match between Calculator.tsx and page.tsx JSON-LD
 
 ### Read-Only Directories (read but NEVER modify)
 - `legacy-php-backup/`, `_ui_goal/`

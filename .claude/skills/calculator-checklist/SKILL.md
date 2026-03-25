@@ -37,7 +37,20 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] MathSolver JSON-LD includes `inLanguage`, `publisher` (with logo), and `potentialAction` fields
 - [ ] `FAQPage` JSON-LD schema present as a second plain `<script>` tag
 - [ ] FAQ questions match between JSON-LD and visible content in Calculator.tsx
+- [ ] MathSolver JSON-LD `publisher` includes `name`, `url`, `logo`, and `email: "aj@ajdesigner.com"`
+- [ ] MathSolver JSON-LD `publisher.logo` is an absolute URL pointing to `public/images/logo.png` (400x400 square PNG)
+- [ ] All URLs in JSON-LD are **absolute** (not relative paths)
+- [ ] For multi-calc home pages only: standalone Organization schema present with `name`, `url`, `logo`, `email: "aj@ajdesigner.com"`, and `sameAs` (sister site URLs)
 - [ ] Metadata includes `openGraph` with `og:image` using an **absolute URL** (e.g., `https://www.example.com/images/og-default.jpg` — not a relative path like `/images/og-default.jpg`)
+- [ ] `openGraph.url` matches `alternates.canonical` (same absolute URL, same www/trailing-slash convention)
+- [ ] OpenGraph image includes `alt` text describing the calculator
+- [ ] Metadata includes `twitter` card: `{ card: "summary_large_image", title, description }`
+- [ ] Metadata includes `keywords` array with 6-8 relevant terms
+- [ ] Canonical URL has **no trailing slash**, uses `https://www.` prefix (e.g., `https://www.domain.com` not `https://domain.com`)
+- [ ] OG image (`public/images/og-default.jpg`) is **site-specific** — not the generic shared image (verify file is unique to this site)
+- [ ] OG image dimensions are 1200x630 and `public/images/logo.png` dimensions are 400x400
+- [ ] Favicon files exist: `public/favicon.svg` (or `.ico`) and `src/app/apple-icon.png` (180x180 PNG) — apple-icon must be in `src/app/` only (Next.js file convention), NOT duplicated in `public/`
+- [ ] Favicon declared in `layout.tsx` `<head>` via `<link>` tags
 - [ ] `layout.tsx` does NOT call `generateMetadata()` — dynamic metadata belongs in `page.tsx` only (static `export const metadata` in `layout.tsx` is acceptable for site-wide defaults like site name and icons)
 
 ### Calculator Card Boundary
@@ -61,12 +74,14 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] Chart component lazy-loaded via `next/dynamic` with `{ ssr: false }`
 - [ ] `ResponsiveContainer` wrapped in a div with explicit height (e.g., `h-[300px]`)
 - [ ] Recharts Tooltip formatter params are NOT type-annotated
+- [ ] LaTeX `latexFormula` props use `String.raw` backtick templates — NOT double-backslash JSX strings (double-backslash gets double-escaped in SSG static HTML)
 - [ ] Chart wrapper/section does NOT have `overflow-hidden` class (clips Recharts tooltips near chart edges)
 
 ### Share & Ads
 - [ ] `ShareButtons` component placed **outside** the shell (not passed as a shell prop)
 - [ ] Share buttons are always visible (pass `solution ?? ""`, not conditional on solution existing)
 - [ ] `AdSlot` placed **outside** the shell (shells have no internal AdSlot)
+- [ ] `<AdSlot />` wrapped in `<div className="max-w-3xl mx-auto">` — unwrapped ads stretch full viewport width
 - [ ] `layout.tsx` has AdSense library `<script>` in `<head>` (plain tag, NOT `next/script`)
 - [ ] `AdSlot` contains only the `<ins>` tag and `useEffect` push call — no `<script>` tag in JSX
 - [ ] AdSlot push call uses `window.adsbygoogle` (WITH `window.` prefix)
@@ -96,7 +111,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### SEO Guardrails
 - [ ] Title tag and `<h1>` are aligned (both contain calculator name)
-- [ ] Canonical URL is set as an **absolute URL** (e.g., `https://www.example.com/slug`) — NOT a relative path like `/slug`; and is unchanged
+- [ ] Canonical URL is an **absolute URL** with `https://www.` prefix — NOT a relative path, NOT bare domain without www
 - [ ] No interstitials, modals, or popups blocking content on load
 - [ ] No hidden text or keyword stuffing techniques
 - [ ] No `noindex` or `nofollow` tags present
@@ -172,7 +187,7 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 - [ ] Amortization table has `overflow-x-auto` wrapper
 
 ### SEO & Metadata (Site-Specific)
-- [ ] FAQ questions match between JSON-LD and visible content (currently 4 questions)
+- [ ] FAQ questions match between JSON-LD and visible content
 - [ ] Canonical URL set to `https://www.loanchop.com/`
 
 ### Calculator Card Boundary (Site-Specific)

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "rm -rf .next && next dev",
     "prebuild": "node scripts/generate-sitemap.mjs",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "build": "NODE_OPTIONS='--max-old-space-size=6144' next build",
     "start": "next start"
   },
   "dependencies": {
