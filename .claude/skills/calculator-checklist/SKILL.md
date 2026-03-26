@@ -64,6 +64,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] **Introductory/explanatory section** (e.g., "How It Works", "What Is X?", "Understanding X") with CTA button
 - [ ] **Example Problem** section with worked example using real numbers
 - [ ] **FAQ** section with 3-5 questions and 2-3 sentence answers
+- [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements. Use plain `<h3>` + `<p>` pairs.
 - [ ] **Related Sites or Related Calculators** section with 4-6 links in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`) — visually distinct from educational sections
 - [ ] CTA button scrolls to `#calculator` (not page top)
 - [ ] Educational headings use lighter styles (`text-base font-semibold text-slate-600 dark:text-slate-400`) — NOT competing with the calculator title

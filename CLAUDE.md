@@ -72,6 +72,7 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - **Main padding:** The `<main>` element in `layout.tsx` uses `px-2 py-3 sm:px-6 sm:py-6 lg:px-12 lg:py-6` — tight on mobile, wide side margins on desktop, moderate vertical padding (not excessive top space).
 - No URL parameters — calculators do not read or write query params. Share buttons share the clean base URL.
 - FAQ questions must match between Calculator.tsx and page.tsx JSON-LD
+- FAQ answers must always be visible — do NOT use `<details>`/`<summary>`. Use plain `<h3>` + `<p>` pairs.
 - **Single `<h1>` rule:** Only one `<h1>` per page — the shell renders it. No `<h1>` in `layout.tsx`, educational sections, or other components. Single-calculator sites should have no separate header/title bar in `layout.tsx` at all (avoids wasted space and dual-h1 SEO issues).
 - OpenGraph `og:image` must use an **absolute URL** (e.g., `https://www.example.com/images/og-default.jpg`)
 - `alternates.canonical` must be an **absolute URL** (e.g., `https://www.example.com/slug`) — NOT a relative path like `/slug`
@@ -159,6 +160,7 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 - Auto-calculate via `useForm` + `watch()` + `useMemo` — no Calculate button, results update instantly on input change
 - `zod` schema validates inputs; `schema.safeParse()` inside `useMemo` guards against invalid values
 - FAQ questions must match between Calculator.tsx and page.tsx JSON-LD
+- FAQ answers must always be visible — do NOT use `<details>`/`<summary>`. Use plain `<h3>` + `<p>` pairs.
 
 ### Read-Only Directories (read but NEVER modify)
 - `legacy-php-backup/`, `_ui_goal/`

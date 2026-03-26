@@ -106,6 +106,7 @@
   - **Outside the card:** Educational content as `<section>` elements. Light borders (`border border-slate-200 dark:border-slate-800`) OK. Heavy borders (`border-2`, `shadow-md`) only for Related Sites/Calculators section.
   - **Card border:** Plain `<div>` with `rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground overflow-hidden`. NOT shadcn Card.
   - **No double rounding:** Header must NOT have `rounded-t-xl` — parent's `overflow-hidden` clips corners.
+  - **FAQ answers always visible:** Do NOT use `<details>`/`<summary>` elements for FAQ. Use plain `<h3>` + `<p>` pairs so answers are immediately readable without tapping.
   - **Main padding:** `px-2 py-3 sm:px-6 sm:py-6 lg:px-12 lg:py-6`
 
 ### Sharing
