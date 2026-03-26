@@ -102,7 +102,7 @@
 - `<AdSlot />` and `<ShareButtons />` are placed **outside** the shell in each `Calculator.tsx`.
 - **Calculator Card Boundary:** The calculator shell (bordered card with shadow) is the visual boundary. Everything inside the card = the calculator. Everything outside = supporting content.
   - **Inside the card:** Shell header, formula display, form inputs, solution box, charts/tables
-  - **Between card and content:** `<ShareButtons />`, `<AdSlot />`
+  - **Between card and content:** `<ShareButtons />` and `<AdSlot />` — both wrapped in `<div className="max-w-3xl mx-auto">` to align with the calculator card
   - **Outside the card:** Educational content as `<section>` elements. Light borders (`border border-slate-200 dark:border-slate-800`) OK. Heavy borders (`border-2`, `shadow-md`) only for Related Sites/Calculators section.
   - **Card border:** Plain `<div>` with `rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground overflow-hidden`. NOT shadcn Card.
   - **No double rounding:** Header must NOT have `rounded-t-xl` — parent's `overflow-hidden` clips corners.

@@ -79,6 +79,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### Share & Ads
 - [ ] `ShareButtons` component placed **outside** the shell (not passed as a shell prop)
+- [ ] `<ShareButtons />` wrapped in `<div className="max-w-3xl mx-auto">` — must align with the calculator card
 - [ ] Share buttons are always visible (pass `solution ?? ""`, not conditional on solution existing)
 - [ ] `AdSlot` placed **outside** the shell (shells have no internal AdSlot)
 - [ ] `<AdSlot />` wrapped in `<div className="max-w-3xl mx-auto">` — unwrapped ads stretch full viewport width

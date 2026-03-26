@@ -289,7 +289,9 @@ export default function Calculator() {
         </div>
       </AutoChartCalculatorShell>
 
-      <ShareButtons title="Loan Prepayment Calculator" solution={solution ?? ""} />
+      <div className="max-w-3xl mx-auto">
+        <ShareButtons title="Loan Prepayment Calculator" solution={solution ?? ""} />
+      </div>
       <AdSlot />
 
       {/* Educational content */}

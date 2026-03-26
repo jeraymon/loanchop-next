@@ -54,7 +54,7 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 ### Base Key Rules
 - Plain `<script>` for JSON-LD (NOT `next/script`)
 - `generateMetadata()` function (NOT `export const metadata`) in page.tsx
-- ShareButtons + AdSlot placed **outside** the shell, between calculator card and educational content — `<ShareButtons />` must be a standalone JSX element, NOT passed as a shell prop (`afterSolution`, `table`, etc.)
+- ShareButtons + AdSlot placed **outside** the shell, between calculator card and educational content — both wrapped in `<div className="max-w-3xl mx-auto">` to align with the card. `<ShareButtons />` must be a standalone JSX element, NOT passed as a shell prop (`afterSolution`, `table`, etc.)
 - `<AdSlot />` must be wrapped in `<div className="max-w-3xl mx-auto">` to constrain ad width — unwrapped ads stretch full viewport
 - `overflow-x: hidden` on html/body in globals.css, `overflow-hidden` on shell articles
 - Two-column grids: `grid-cols-1 sm:grid-cols-2` (not bare `grid-cols-2`)
