@@ -58,3 +58,4 @@ public/sitemap.xml
 
 # Legacy PHP backup (read-only reference, not part of live app)
 legacy-php-backup/
+/.playwright-screenshots/
