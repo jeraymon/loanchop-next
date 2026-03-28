@@ -260,10 +260,6 @@ export default function Calculator() {
               {/* Summary cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 text-center">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Monthly Payment</p>
-                  <p className="text-2xl font-bold text-foreground">{fmtCurrency(result.monthlyPayment)}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Interest</p>
                   <p className="text-2xl font-bold text-foreground">{fmtCurrency(result.normalTotalInterest)}</p>
                 </div>
