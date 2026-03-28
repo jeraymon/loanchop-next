@@ -43,7 +43,7 @@ export default function AutoChartCalculatorShell({
             <div className="space-y-4">{children}</div>
             <section id="solution" aria-label="Result" className="mt-2">
               <div className="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl text-center border border-indigo-200 dark:border-indigo-900" aria-live="polite">
-                <h2 className="text-sm font-bold text-muted-foreground uppercase mb-2">Solution</h2>
+                <h2 className="text-sm font-bold text-muted-foreground uppercase mb-2">Monthly Payment</h2>
                 <output className="text-3xl font-black text-accent-foreground">{solution ?? "—"}</output>
               </div>
             </section>
