@@ -222,5 +222,5 @@ export const SidebarTrigger = React.forwardRef<
 SidebarTrigger.displayName = "SidebarTrigger";
 
 export const SidebarInset = ({ children }: { children: React.ReactNode }) => {
-  return <div className="flex flex-col">{children}</div>;
+  return <div className="flex flex-col min-w-0">{children}</div>;
 };
