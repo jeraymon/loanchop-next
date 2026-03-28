@@ -11,7 +11,16 @@ export interface AmortizationRow {
   principal: number;
   extraPrincipal: number;
   remainingBalance: number;
+  cumulativePayment: number;
   cumulativeInterest: number;
+  cumulativePrincipal: number;
+}
+
+/** Per-month extra payment override entered by the user in the table. */
+export interface ExtraPaymentEntry {
+  month: number;
+  recurring: number;
+  single: number;
 }
 
 export interface ComparisonResult {
@@ -59,13 +68,51 @@ export function calcMonthlyPayment(
 }
 
 /**
- * Build month-by-month amortization schedule with optional extra payments.
+ * Resolve the effective recurring extra for each month.
+ * A recurring entry at month M sets the recurring amount for M and all
+ * subsequent months (until a later recurring entry overrides it).
+ */
+function resolveRecurring(
+  entries: ExtraPaymentEntry[],
+  totalMonths: number,
+): { recurring: number; single: number }[] {
+  // Build sparse maps
+  const recurringByMonth = new Map<number, number>();
+  const singleByMonth = new Map<number, number>();
+  for (const e of entries) {
+    if (e.recurring > 0) recurringByMonth.set(e.month, e.recurring);
+    if (e.single > 0) singleByMonth.set(e.month, e.single);
+  }
+
+  const result: { recurring: number; single: number }[] = [];
+  let currentRecurring = 0;
+
+  for (let m = 1; m <= totalMonths; m++) {
+    if (recurringByMonth.has(m)) {
+      currentRecurring = recurringByMonth.get(m)!;
+    }
+    result.push({
+      recurring: currentRecurring,
+      single: singleByMonth.get(m) ?? 0,
+    });
+  }
+  return result;
+}
+
+/**
+ * Build month-by-month amortization schedule.
+ *
+ * Supports three modes:
+ * 1. No extras (default) — standard amortization
+ * 2. Flat extra — same extra every month (legacy API, `extraMonthlyPayment`)
+ * 3. Per-row extras — array of `ExtraPaymentEntry` with recurring + single
  */
 export function buildAmortization(
   principal: number,
   annualRate: number,
   years: number,
   extraMonthlyPayment: number = 0,
+  extraEntries?: ExtraPaymentEntry[],
 ): AmortizationRow[] {
   const monthlyPayment = calcMonthlyPayment(principal, annualRate, years);
   const annualPct = new BigNumber(annualRate);
@@ -74,38 +121,54 @@ export function buildAmortization(
     ? new BigNumber(0)
     : annualPct.div(100).div(12);
 
-  let balance = new BigNumber(principal);
-  let cumulativeInterest = new BigNumber(0);
-  const extra = new BigNumber(extraMonthlyPayment);
   const totalMonths = years * 12;
+
+  // Resolve per-month extras
+  const perMonth =
+    extraEntries && extraEntries.length > 0
+      ? resolveRecurring(extraEntries, totalMonths)
+      : null;
+
+  let balance = new BigNumber(principal);
+  let cumulativePayment = new BigNumber(0);
+  let cumulativeInterest = new BigNumber(0);
+  let cumulativePrincipal = new BigNumber(0);
   const schedule: AmortizationRow[] = [];
 
   for (let month = 1; month <= totalMonths; month++) {
     if (balance.lte(0)) break;
+
+    // Determine extra for this month
+    let extraThisMonth: BigNumber;
+    if (perMonth) {
+      const pm = perMonth[month - 1];
+      extraThisMonth = new BigNumber(pm.recurring).plus(pm.single);
+    } else {
+      extraThisMonth = new BigNumber(extraMonthlyPayment);
+    }
 
     const interestPortion = balance.times(monthlyRate).dp(2, BigNumber.ROUND_HALF_UP);
     let principalPortion = new BigNumber(monthlyPayment).minus(interestPortion);
     let actualExtra = new BigNumber(0);
 
     // Determine max principal that can be applied this month
-    const maxPrincipalWithExtra = principalPortion.plus(extra);
+    const maxPrincipalWithExtra = principalPortion.plus(extraThisMonth);
 
-    // Final payment: if balance fits within this month's principal + extra, or it's the last scheduled month
+    // Final payment: if balance fits within this month's principal + extra
     if (balance.lte(maxPrincipalWithExtra) || month === totalMonths) {
-      // Pay off the remaining balance exactly
       principalPortion = balance;
       actualExtra = new BigNumber(0);
       balance = new BigNumber(0);
     } else {
-      // Normal month — apply extra
-      actualExtra = BigNumber.min(extra, balance.minus(principalPortion));
+      actualExtra = BigNumber.min(extraThisMonth, balance.minus(principalPortion));
       if (actualExtra.lt(0)) actualExtra = new BigNumber(0);
       balance = balance.minus(principalPortion).minus(actualExtra);
     }
 
-    cumulativeInterest = cumulativeInterest.plus(interestPortion);
-
     const actualPayment = interestPortion.plus(principalPortion).plus(actualExtra);
+    cumulativePayment = cumulativePayment.plus(actualPayment);
+    cumulativeInterest = cumulativeInterest.plus(interestPortion);
+    cumulativePrincipal = cumulativePrincipal.plus(principalPortion).plus(actualExtra);
 
     schedule.push({
       month,
@@ -114,7 +177,9 @@ export function buildAmortization(
       principal: principalPortion.dp(2, BigNumber.ROUND_HALF_UP).toNumber(),
       extraPrincipal: actualExtra.dp(2, BigNumber.ROUND_HALF_UP).toNumber(),
       remainingBalance: balance.dp(2, BigNumber.ROUND_HALF_UP).toNumber(),
+      cumulativePayment: cumulativePayment.dp(2, BigNumber.ROUND_HALF_UP).toNumber(),
       cumulativeInterest: cumulativeInterest.dp(2, BigNumber.ROUND_HALF_UP).toNumber(),
+      cumulativePrincipal: cumulativePrincipal.dp(2, BigNumber.ROUND_HALF_UP).toNumber(),
     });
 
     if (balance.lte(0)) break;
@@ -125,16 +190,21 @@ export function buildAmortization(
 
 /**
  * Compare schedules with and without extra payments.
+ * Accepts either a flat extra amount or per-row entries.
  */
 export function compareWithAndWithoutExtra(
   principal: number,
   annualRate: number,
   years: number,
   extraPayment: number,
+  extraEntries?: ExtraPaymentEntry[],
 ): ComparisonResult {
   const monthlyPayment = calcMonthlyPayment(principal, annualRate, years);
   const normalSchedule = buildAmortization(principal, annualRate, years, 0);
-  const acceleratedSchedule = buildAmortization(principal, annualRate, years, extraPayment);
+  const acceleratedSchedule =
+    extraEntries && extraEntries.length > 0
+      ? buildAmortization(principal, annualRate, years, 0, extraEntries)
+      : buildAmortization(principal, annualRate, years, extraPayment);
 
   const normalTotalInterest = normalSchedule.length > 0
     ? normalSchedule[normalSchedule.length - 1].cumulativeInterest

@@ -10,7 +10,12 @@ import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { compareWithAndWithoutExtra, type ComparisonResult } from "./calc";
+import {
+  compareWithAndWithoutExtra,
+  type AmortizationRow,
+  type ComparisonResult,
+  type ExtraPaymentEntry,
+} from "./calc";
 
 const BalanceChart = dynamic(() => import("./BalanceChart"), { ssr: false });
 
@@ -68,6 +73,14 @@ function payoffDate(months: number): string {
   return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function monthToDate(monthNum: number): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() + monthNum, 1);
+  return `${d.getFullYear()}-${MONTH_ABBR[d.getMonth()]}`;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -90,17 +103,42 @@ export default function Calculator() {
 
   const values = watch();
 
+  // Per-row extra payment entries (editable in the amortization table)
+  const [extraEntries, setExtraEntries] = useState<ExtraPaymentEntry[]>([]);
+
+  // Editing state for a single row
+  const [editingMonth, setEditingMonth] = useState<number | null>(null);
+  const [editRecurring, setEditRecurring] = useState("0");
+  const [editSingle, setEditSingle] = useState("0");
+
+  // Determine if per-row entries are active
+  const hasPerRowEntries = extraEntries.length > 0;
+
   // Auto-calculate with useMemo
   const result: ComparisonResult | null = useMemo(() => {
     const parsed = schema.safeParse(values);
     if (!parsed.success) return null;
     const { principal, annualRate, years, extraPayment } = parsed.data;
     if (principal <= 0 || years <= 0) return null;
-    return compareWithAndWithoutExtra(principal, annualRate, years, extraPayment);
-  }, [values]);
+    return compareWithAndWithoutExtra(
+      principal,
+      annualRate,
+      years,
+      extraPayment,
+      hasPerRowEntries ? extraEntries : undefined,
+    );
+  }, [values, extraEntries, hasPerRowEntries]);
 
   const solution = result ? `${fmtCurrency(result.monthlyPayment)}/mo` : null;
-  const hasExtra = result && values.extraPayment > 0;
+  const hasExtra =
+    result &&
+    (values.extraPayment > 0 || hasPerRowEntries) &&
+    result.acceleratedSchedule.length < result.normalSchedule.length;
+  // Also show savings cards if interest was actually saved (even if same # months)
+  const showSavings =
+    result &&
+    (values.extraPayment > 0 || hasPerRowEntries) &&
+    result.interestSaved > 0;
 
   const jumpToCalculator = useCallback(() => {
     document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
@@ -108,12 +146,86 @@ export default function Calculator() {
 
   // Amortization table (scrollable, shows every 12th month by default)
   const [showAllRows, setShowAllRows] = useState(false);
+
+  // Build normal schedule lookup by month for side-by-side display
+  const normalByMonth = useMemo(() => {
+    if (!result) return new Map<number, AmortizationRow>();
+    const map = new Map<number, AmortizationRow>();
+    for (const row of result.normalSchedule) map.set(row.month, row);
+    return map;
+  }, [result]);
+
   const displaySchedule = useMemo(() => {
     if (!result) return [];
-    const sched = hasExtra ? result.acceleratedSchedule : result.normalSchedule;
+    // Always show accelerated schedule (equals normal when no extras)
+    const sched = result.acceleratedSchedule;
     if (showAllRows) return sched;
     return sched.filter((r) => r.month % 12 === 0 || r.month === 1 || r.month === sched.length);
-  }, [result, hasExtra, showAllRows]);
+  }, [result, showAllRows]);
+
+  // Build a lookup of extra entries by month for display
+  const extraByMonth = useMemo(() => {
+    const map = new Map<number, { recurring: number; single: number }>();
+    // Resolve effective recurring for display
+    let currentRecurring = 0;
+    const totalMonths = result ? result.normalSchedule.length : 0;
+    const recurringMap = new Map<number, number>();
+    const singleMap = new Map<number, number>();
+    for (const e of extraEntries) {
+      if (e.recurring > 0) recurringMap.set(e.month, e.recurring);
+      if (e.single > 0) singleMap.set(e.month, e.single);
+    }
+    for (let m = 1; m <= totalMonths; m++) {
+      if (recurringMap.has(m)) currentRecurring = recurringMap.get(m)!;
+      const s = singleMap.get(m) ?? 0;
+      if (currentRecurring > 0 || s > 0) {
+        map.set(m, { recurring: currentRecurring, single: s });
+      }
+    }
+    return map;
+  }, [extraEntries, result]);
+
+  // Start editing a row
+  const startEdit = useCallback(
+    (month: number) => {
+      const existing = extraByMonth.get(month);
+      // Find the raw recurring entry for this specific month (not inherited)
+      const rawEntry = extraEntries.find((e) => e.month === month);
+      setEditRecurring(rawEntry?.recurring?.toString() ?? existing?.recurring?.toString() ?? "0");
+      setEditSingle(existing?.single?.toString() ?? "0");
+      setEditingMonth(month);
+    },
+    [extraByMonth, extraEntries],
+  );
+
+  // Save the edited row
+  const saveEdit = useCallback(() => {
+    if (editingMonth === null) return;
+    const recurring = Math.max(0, parseFloat(editRecurring) || 0);
+    const single = Math.max(0, parseFloat(editSingle) || 0);
+
+    setExtraEntries((prev) => {
+      // Remove existing entry for this month
+      const next = prev.filter((e) => e.month !== editingMonth);
+      // Add new entry if non-zero
+      if (recurring > 0 || single > 0) {
+        next.push({ month: editingMonth, recurring, single });
+        next.sort((a, b) => a.month - b.month);
+      }
+      return next;
+    });
+    setEditingMonth(null);
+  }, [editingMonth, editRecurring, editSingle]);
+
+  const cancelEdit = useCallback(() => {
+    setEditingMonth(null);
+  }, []);
+
+  // Clear all per-row entries
+  const clearAllEntries = useCallback(() => {
+    setExtraEntries([]);
+    setEditingMonth(null);
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -126,7 +238,7 @@ export default function Calculator() {
         title="Loan Prepayment Calculator"
         solution={solution}
         chart={
-          result && hasExtra ? (
+          result ? (
             <BalanceChart
               normalSchedule={result.normalSchedule}
               acceleratedSchedule={result.acceleratedSchedule}
@@ -146,7 +258,7 @@ export default function Calculator() {
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Interest</p>
                   <p className="text-2xl font-bold text-foreground">{fmtCurrency(result.normalTotalInterest)}</p>
                 </div>
-                {hasExtra && (
+                {showSavings && (
                   <>
                     <div className="rounded-lg border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/30 p-4 text-center">
                       <p className="text-xs text-cyan-600 uppercase tracking-wide font-semibold">Interest Saved</p>
@@ -166,7 +278,7 @@ export default function Calculator() {
                     </div>
                   </>
                 )}
-                {!hasExtra && (
+                {!showSavings && (
                   <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 text-center">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide">Payoff Date</p>
                     <p className="text-2xl font-bold text-foreground">{payoffDate(result.normalSchedule.length)}</p>
@@ -176,49 +288,200 @@ export default function Calculator() {
 
               {/* Amortization table */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                    Amortization Schedule
+                    Amortization Schedule — Click a Row to Add Extra Payments
                   </h3>
-                  <button
-                    type="button"
-                    onClick={() => setShowAllRows(!showAllRows)}
-                    className="text-xs text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-400 font-medium"
-                  >
-                    {showAllRows ? "Show Yearly" : "Show All Months"}
-                  </button>
+                  <div className="flex gap-3">
+                    {hasPerRowEntries && (
+                      <button
+                        type="button"
+                        onClick={clearAllEntries}
+                        className="text-xs text-red-500 hover:text-red-600 font-medium"
+                      >
+                        Clear Extras
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowAllRows(!showAllRows)}
+                      className="text-xs text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-400 font-medium"
+                    >
+                      {showAllRows ? "Show Yearly" : "Show All Months"}
+                    </button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-xs whitespace-nowrap">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase text-muted-foreground">
-                        <th className="px-3 py-2">Month</th>
-                        <th className="px-3 py-2 text-right">Payment</th>
-                        <th className="px-3 py-2 text-right">Interest</th>
-                        <th className="px-3 py-2 text-right">Principal</th>
-                        {hasExtra && <th className="px-3 py-2 text-right">Extra</th>}
-                        <th className="px-3 py-2 text-right">Balance</th>
+                      {/* Row 1: Top-level group headers */}
+                      <tr className="text-xs font-bold text-foreground">
+                        <th rowSpan={3} className="bg-slate-200 dark:bg-slate-700 px-2 py-1 text-left border-r border-slate-300 dark:border-slate-600">#</th>
+                        <th rowSpan={3} className="bg-slate-200 dark:bg-slate-700 px-2 py-1 text-left border-r border-slate-300 dark:border-slate-600">Date</th>
+                        <th colSpan={9} className="bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 px-2 py-1.5 text-center border-r border-slate-300 dark:border-slate-600">Loan With Extra Payment</th>
+                        <th colSpan={7} className="bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2 py-1.5 text-center">Normal Payment (No Extra)</th>
+                      </tr>
+                      {/* Row 2: Sub-group headers */}
+                      <tr className="text-xs text-muted-foreground">
+                        <th colSpan={3} className="bg-indigo-50/80 dark:bg-indigo-950/20 px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700">Monthly</th>
+                        <th colSpan={2} className="bg-indigo-50/80 dark:bg-indigo-950/20 px-2 py-1 text-center text-red-600 dark:text-red-400 font-bold normal-case border-r border-slate-200 dark:border-slate-700">Extra Payment (Enter Below)</th>
+                        <th rowSpan={2} className="bg-indigo-50/80 dark:bg-indigo-950/20 px-2 py-1 text-right border-r border-slate-200 dark:border-slate-700">Loan<br/>Balance</th>
+                        <th colSpan={3} className="bg-indigo-50/80 dark:bg-indigo-950/20 px-2 py-1 text-center border-r border-slate-300 dark:border-slate-600">Total</th>
+                        <th colSpan={3} className="bg-amber-50/60 dark:bg-amber-950/15 px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700">Monthly</th>
+                        <th rowSpan={2} className="bg-amber-50/60 dark:bg-amber-950/15 px-2 py-1 text-right border-r border-slate-200 dark:border-slate-700">Loan<br/>Balance</th>
+                        <th colSpan={3} className="bg-amber-50/60 dark:bg-amber-950/15 px-2 py-1 text-center">Total</th>
+                      </tr>
+                      {/* Row 3: Column headers */}
+                      <tr className="text-[10px] uppercase text-muted-foreground">
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right">Payment</th>
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right">Interest</th>
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right border-r border-slate-200 dark:border-slate-700">Principal</th>
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right text-red-600 dark:text-red-400 font-bold">Repeating</th>
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right text-red-600 dark:text-red-400 font-bold border-r border-slate-200 dark:border-slate-700">Single</th>
+                        {/* Loan Balance rowSpan from row 2 */}
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right">Payment</th>
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right">Interest</th>
+                        <th className="bg-indigo-50/50 dark:bg-indigo-950/10 px-2 py-1 text-right border-r border-slate-300 dark:border-slate-600">Principal</th>
+                        <th className="bg-amber-50/30 dark:bg-amber-950/10 px-2 py-1 text-right">Payment</th>
+                        <th className="bg-amber-50/30 dark:bg-amber-950/10 px-2 py-1 text-right">Interest</th>
+                        <th className="bg-amber-50/30 dark:bg-amber-950/10 px-2 py-1 text-right border-r border-slate-200 dark:border-slate-700">Principal</th>
+                        {/* Normal Balance rowSpan from row 2 */}
+                        <th className="bg-amber-50/30 dark:bg-amber-950/10 px-2 py-1 text-right">Payment</th>
+                        <th className="bg-amber-50/30 dark:bg-amber-950/10 px-2 py-1 text-right">Interest</th>
+                        <th className="bg-amber-50/30 dark:bg-amber-950/10 px-2 py-1 text-right">Principal</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {displaySchedule.map((row) => (
-                        <tr
-                          key={row.month}
-                          className="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50"
-                        >
-                          <td className="px-3 py-1.5 tabular-nums">{row.month}</td>
-                          <td className="px-3 py-1.5 text-right tabular-nums">{fmtCurrency(row.payment)}</td>
-                          <td className="px-3 py-1.5 text-right tabular-nums">{fmtCurrency(row.interest)}</td>
-                          <td className="px-3 py-1.5 text-right tabular-nums">{fmtCurrency(row.principal)}</td>
-                          {hasExtra && (
-                            <td className="px-3 py-1.5 text-right tabular-nums text-indigo-600">{fmtCurrency(row.extraPrincipal)}</td>
-                          )}
-                          <td className="px-3 py-1.5 text-right tabular-nums font-medium">{fmtCurrency(row.remainingBalance)}</td>
-                        </tr>
-                      ))}
+                      {displaySchedule.map((row) => {
+                        const isEditing = editingMonth === row.month;
+                        const extras = extraByMonth.get(row.month);
+                        const hasRowExtra = extras && (extras.recurring > 0 || extras.single > 0);
+                        const normal = normalByMonth.get(row.month);
+
+                        const c = "px-2 py-1 text-right tabular-nums";
+                        const br = `${c} border-r border-slate-200 dark:border-slate-700`;
+                        const brH = `${c} border-r border-slate-300 dark:border-slate-600`;
+                        // Extra-payment side tint
+                        const eC = `${c} bg-indigo-50/20 dark:bg-indigo-950/5`;
+                        const eBr = `${eC} border-r border-slate-200 dark:border-slate-700`;
+                        const eBrH = `${eC} border-r border-slate-300 dark:border-slate-600`;
+                        // Normal side tint
+                        const nC = `${c} bg-amber-50/20 dark:bg-amber-950/5`;
+                        const nBr = `${nC} border-r border-slate-200 dark:border-slate-700`;
+
+                        if (isEditing) {
+                          return (
+                            <tr
+                              key={row.month}
+                              className="border-t border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20"
+                            >
+                              <td className="px-2 py-1 tabular-nums font-medium">{row.month}</td>
+                              <td className="px-2 py-1 text-left tabular-nums text-xs">{monthToDate(row.month)}</td>
+                              <td className={eC}>{fmtCurrency(row.payment)}</td>
+                              <td className={eC}>{fmtCurrency(row.interest)}</td>
+                              <td className={eBr}>{fmtCurrency(row.principal)}</td>
+                              <td className="px-1 py-1 bg-indigo-50/20 dark:bg-indigo-950/5">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="50"
+                                  value={editRecurring}
+                                  onChange={(e) => setEditRecurring(e.target.value)}
+                                  className="w-20 text-right text-sm border border-indigo-300 dark:border-indigo-700 rounded px-1.5 py-0.5 bg-white dark:bg-slate-900"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveEdit();
+                                    if (e.key === "Escape") cancelEdit();
+                                  }}
+                                />
+                              </td>
+                              <td className="px-1 py-1 bg-indigo-50/20 dark:bg-indigo-950/5 border-r border-slate-200 dark:border-slate-700">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="100"
+                                  value={editSingle}
+                                  onChange={(e) => setEditSingle(e.target.value)}
+                                  className="w-20 text-right text-sm border border-indigo-300 dark:border-indigo-700 rounded px-1.5 py-0.5 bg-white dark:bg-slate-900"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveEdit();
+                                    if (e.key === "Escape") cancelEdit();
+                                  }}
+                                />
+                              </td>
+                              <td colSpan={11} className="px-2 py-1 text-right">
+                                <div className="flex justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={saveEdit}
+                                    className="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded px-2 py-0.5"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={cancelEdit}
+                                    className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded px-2 py-0.5"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return (
+                          <tr
+                            key={row.month}
+                            onClick={() => startEdit(row.month)}
+                            className={`border-t border-slate-100 dark:border-slate-800 cursor-pointer transition-colors ${
+                              hasRowExtra
+                                ? "bg-indigo-50/40 dark:bg-indigo-950/10 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
+                                : "hover:bg-slate-50/50 dark:hover:bg-slate-900/50"
+                            }`}
+                          >
+                            <td className="px-2 py-1 tabular-nums">{row.month}</td>
+                            <td className="px-2 py-1 text-left tabular-nums text-xs">{monthToDate(row.month)}</td>
+                            {/* Extra payment side (indigo tint) */}
+                            <td className={eC}>{fmtCurrency(row.payment)}</td>
+                            <td className={eC}>{fmtCurrency(row.interest)}</td>
+                            <td className={eBr}>{fmtCurrency(row.principal)}</td>
+                            <td className={`${eC} text-indigo-600`}>
+                              {extras?.recurring ? fmtCurrency(extras.recurring) : "0.00"}
+                            </td>
+                            <td className={`${eC} text-indigo-600 border-r border-slate-200 dark:border-slate-700`}>
+                              {extras?.single ? fmtCurrency(extras.single) : "0.00"}
+                            </td>
+                            <td className={`${eC} font-medium border-r border-slate-200 dark:border-slate-700`}>{fmtCurrency(row.remainingBalance)}</td>
+                            <td className={eC}>{fmtCurrency(row.cumulativePayment)}</td>
+                            <td className={eC}>{fmtCurrency(row.cumulativeInterest)}</td>
+                            <td className={eBrH}>{fmtCurrency(row.cumulativePrincipal)}</td>
+                            {/* Normal side (amber tint) */}
+                            {normal ? (
+                              <>
+                                <td className={nC}>{fmtCurrency(normal.payment)}</td>
+                                <td className={nC}>{fmtCurrency(normal.interest)}</td>
+                                <td className={nBr}>{fmtCurrency(normal.principal)}</td>
+                                <td className={`${nC} font-medium border-r border-slate-200 dark:border-slate-700`}>{fmtCurrency(normal.remainingBalance)}</td>
+                                <td className={nC}>{fmtCurrency(normal.cumulativePayment)}</td>
+                                <td className={nC}>{fmtCurrency(normal.cumulativeInterest)}</td>
+                                <td className={nC}>{fmtCurrency(normal.cumulativePrincipal)}</td>
+                              </>
+                            ) : (
+                              <td colSpan={7} className="px-2 py-1 text-center text-xs text-muted-foreground bg-amber-50/20 dark:bg-amber-950/5">
+                                Paid off
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  <strong>Repeating</strong> payments apply from that month onward. <strong>Single</strong> payments apply to that month only. Click any row to edit.
+                </p>
               </div>
             </div>
           ) : undefined
@@ -281,7 +544,11 @@ export default function Calculator() {
               placeholder="0"
               {...register("extraPayment")}
               aria-invalid={!!errors.extraPayment}
+              disabled={hasPerRowEntries}
             />
+            {hasPerRowEntries && (
+              <p className="text-xs text-muted-foreground">Disabled — using per-row entries below</p>
+            )}
             {errors.extraPayment && (
               <p className="text-xs text-destructive">{errors.extraPayment.message}</p>
             )}
@@ -292,7 +559,9 @@ export default function Calculator() {
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solution={solution ?? ""} />
       </div>
-      <AdSlot />
+      <div className="max-w-3xl mx-auto">
+        <AdSlot />
+      </div>
 
       {/* Educational content */}
       <section className="max-w-3xl mx-auto space-y-6">
@@ -309,6 +578,13 @@ export default function Calculator() {
             dollars in future interest charges. Even modest additional payments of $50 to
             $200 per month can shave years off a 30-year mortgage and save tens of thousands
             in interest.
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            This calculator supports two types of extra payments. <strong>Repeating</strong> payments
+            apply to every month from the selected row onward — perfect for a permanent budget
+            increase. <strong>Single</strong> payments apply to one specific month only — ideal
+            for modeling a bonus, tax refund, or inheritance. Click any row in the amortization
+            table to enter extra payment amounts.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Most lenders allow prepayment without penalties, though it is worth confirming

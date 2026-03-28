@@ -172,7 +172,7 @@ This site does not use URL parameters. Share buttons share the clean base URL. N
 ## Site-Specific
 
 ### SECTION 1: DESIGN SYSTEM & UI
-- **Palette:** `cyan-600` (Shell header / accents), `cyan-50` (Solution box / highlight cards), `zinc-50` (Backgrounds), `slate-700` (Secondary text).
+- **Palette:** `indigo-600` (Shell header / accents), `indigo-50` (Solution box / highlight cards), `zinc-50` (Backgrounds), `slate-700` (Secondary text).
 - **Shell:** Uses `AutoChartCalculatorShell` — no Calculate button, results derive from `useForm` + `watch()` + `useMemo` and update instantly on every input change. Solution always visible (shows "—" when inputs are invalid).
 - **Aesthetic:** "Engineering Laboratory" - high contrast, clean, no gradients.
 - **Navigation:** Single-calculator site — no sidebar, no internal navigation. Footer has legal page links only.

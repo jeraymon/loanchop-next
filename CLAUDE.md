@@ -150,7 +150,7 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 - `recharts` for charts (lazy-load with `next/dynamic` + `{ ssr: false }`)
 
 ### Calculator Implementation
-- **Shell:** `AutoChartCalculatorShell` with `bg-cyan-600` header, cyan solution box, always-visible results
+- **Shell:** `AutoChartCalculatorShell` with `bg-indigo-600` header, indigo solution box, always-visible results
 - **Form pattern:** `useForm<FormValues>` with `zodResolver`, `mode: "onChange"`, `watch()` to read all values, `useMemo` to auto-derive results from watched values. `schema.safeParse()` validates inside useMemo.
 - **Chart:** `BalanceChart` shows remaining balance over time for normal vs accelerated schedules. Only rendered when extra payment > 0.
 - **Table:** Summary cards (monthly payment, total interest, interest saved, time saved) + full amortization schedule with toggle between yearly and all-months view.
