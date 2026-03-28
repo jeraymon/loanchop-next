@@ -140,6 +140,7 @@ export default function BalanceChart({
               tick={{ fontSize: 12 }}
             />
             <YAxis
+              type="number"
               tickFormatter={fmt}
               tick={{ fontSize: 12 }}
               width={60}

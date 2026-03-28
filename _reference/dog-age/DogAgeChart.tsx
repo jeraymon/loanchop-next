@@ -34,11 +34,13 @@ export default function DogAgeChart({
         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
         <XAxis
           dataKey="calendarAge"
+          type="number"
           ticks={[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]}
           label={{ value: "Calendar Years", position: "insideBottom", offset: -10, fontSize: 12 }}
           tick={{ fontSize: 11 }}
         />
         <YAxis
+          type="number"
           label={{ value: "Human Years", angle: -90, position: "insideLeft", offset: -5, fontSize: 12 }}
           tick={{ fontSize: 11 }}
         />

@@ -60,10 +60,12 @@ export default function LoanCharts({
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis
                 dataKey="month"
+                type="number"
                 label={{ value: "Month", position: "insideBottom", offset: -10, fontSize: 12 }}
                 tick={{ fontSize: 11 }}
               />
               <YAxis
+                type="number"
                 tickFormatter={currencyFormatter}
                 tick={{ fontSize: 11 }}
                 label={{ value: "Amount ($)", angle: -90, position: "insideLeft", offset: -5, fontSize: 12 }}
@@ -99,10 +101,12 @@ export default function LoanCharts({
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
               <XAxis
                 dataKey="month"
+                type="number"
                 label={{ value: "Month", position: "insideBottom", offset: -10, fontSize: 12 }}
                 tick={{ fontSize: 11 }}
               />
               <YAxis
+                type="number"
                 tickFormatter={currencyFormatter}
                 tick={{ fontSize: 11 }}
                 label={{ value: "Balance ($)", angle: -90, position: "insideLeft", offset: -5, fontSize: 12 }}
