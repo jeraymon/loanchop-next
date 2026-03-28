@@ -151,7 +151,7 @@ export default function BalanceChart({
             />
             <Legend verticalAlign="top" />
             <Line
-              type="monotone"
+              type="linear"
               dataKey="normal"
               name="Normal"
               stroke="#94a3b8"
@@ -160,7 +160,7 @@ export default function BalanceChart({
               connectNulls
             />
             <Line
-              type="monotone"
+              type="linear"
               dataKey="extra"
               name="Extra"
               stroke="#0891b2"

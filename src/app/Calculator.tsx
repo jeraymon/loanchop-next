@@ -155,13 +155,22 @@ export default function Calculator() {
     return map;
   }, [result]);
 
-  const displaySchedule = useMemo(() => {
+  // Build full display schedule: accelerated rows + remaining normal-only rows
+  // so the normal side always completes to the end of the loan term.
+  const fullSchedule = useMemo(() => {
     if (!result) return [];
-    // Always show accelerated schedule (equals normal when no extras)
-    const sched = result.acceleratedSchedule;
-    if (showAllRows) return sched;
-    return sched.filter((r) => r.month % 12 === 0 || r.month === 1 || r.month === sched.length);
-  }, [result, showAllRows]);
+    const acc = result.acceleratedSchedule;
+    const norm = result.normalSchedule;
+    if (acc.length >= norm.length) return acc;
+    // After accelerated ends, append normal rows (extra side will show "Paid off")
+    return [...acc, ...norm.slice(acc.length)];
+  }, [result]);
+
+  const displaySchedule = useMemo(() => {
+    if (!fullSchedule.length) return [];
+    if (showAllRows) return fullSchedule;
+    return fullSchedule.filter((r) => r.month % 12 === 0 || r.month === 1 || r.month === fullSchedule.length);
+  }, [fullSchedule, showAllRows]);
 
   // Build a lookup of extra entries by month for display
   const extraByMonth = useMemo(() => {
@@ -353,10 +362,14 @@ export default function Calculator() {
                     </thead>
                     <tbody>
                       {displaySchedule.map((row) => {
-                        const isEditing = editingMonth === row.month;
+                        const accLen = result!.acceleratedSchedule.length;
+                        const isExtraPaidOff = row.month > accLen;
+                        const isEditing = !isExtraPaidOff && editingMonth === row.month;
                         const extras = extraByMonth.get(row.month);
                         const hasRowExtra = extras && (extras.recurring > 0 || extras.single > 0);
                         const normal = normalByMonth.get(row.month);
+                        // For rows beyond accelerated, get the last accelerated row for "Paid off" display
+                        const lastAccRow = result!.acceleratedSchedule[accLen - 1];
 
                         const c = "px-2 py-1 text-right tabular-nums";
                         const br = `${c} border-r border-slate-200 dark:border-slate-700`;
@@ -434,29 +447,39 @@ export default function Calculator() {
                         return (
                           <tr
                             key={row.month}
-                            onClick={() => startEdit(row.month)}
-                            className={`border-t border-slate-100 dark:border-slate-800 cursor-pointer transition-colors ${
-                              hasRowExtra
-                                ? "bg-indigo-50/40 dark:bg-indigo-950/10 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
-                                : "hover:bg-slate-50/50 dark:hover:bg-slate-900/50"
+                            onClick={isExtraPaidOff ? undefined : () => startEdit(row.month)}
+                            className={`border-t border-slate-100 dark:border-slate-800 transition-colors ${
+                              isExtraPaidOff
+                                ? ""
+                                : hasRowExtra
+                                  ? "cursor-pointer bg-indigo-50/40 dark:bg-indigo-950/10 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
+                                  : "cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-900/50"
                             }`}
                           >
                             <td className="px-2 py-1 tabular-nums">{row.month}</td>
                             <td className="px-2 py-1 text-left tabular-nums text-xs">{monthToDate(row.month)}</td>
                             {/* Extra payment side (indigo tint) */}
-                            <td className={eC}>{fmtCurrency(row.payment)}</td>
-                            <td className={eC}>{fmtCurrency(row.interest)}</td>
-                            <td className={eBr}>{fmtCurrency(row.principal)}</td>
-                            <td className={`${eC} text-indigo-600`}>
-                              {extras?.recurring ? fmtCurrency(extras.recurring) : "0.00"}
-                            </td>
-                            <td className={`${eC} text-indigo-600 border-r border-slate-200 dark:border-slate-700`}>
-                              {extras?.single ? fmtCurrency(extras.single) : "0.00"}
-                            </td>
-                            <td className={`${eC} font-medium border-r border-slate-200 dark:border-slate-700`}>{fmtCurrency(row.remainingBalance)}</td>
-                            <td className={eC}>{fmtCurrency(row.cumulativePayment)}</td>
-                            <td className={eC}>{fmtCurrency(row.cumulativeInterest)}</td>
-                            <td className={eBrH}>{fmtCurrency(row.cumulativePrincipal)}</td>
+                            {isExtraPaidOff ? (
+                              <td colSpan={9} className="px-2 py-1 text-center text-xs text-muted-foreground bg-indigo-50/10 dark:bg-indigo-950/5 border-r border-slate-300 dark:border-slate-600">
+                                Paid off — bal $0.00 | total {fmtCurrency(lastAccRow.cumulativePayment)} paid, {fmtCurrency(lastAccRow.cumulativeInterest)} interest
+                              </td>
+                            ) : (
+                              <>
+                                <td className={eC}>{fmtCurrency(row.payment)}</td>
+                                <td className={eC}>{fmtCurrency(row.interest)}</td>
+                                <td className={eBr}>{fmtCurrency(row.principal)}</td>
+                                <td className={`${eC} text-indigo-600`}>
+                                  {extras?.recurring ? fmtCurrency(extras.recurring) : "0.00"}
+                                </td>
+                                <td className={`${eC} text-indigo-600 border-r border-slate-200 dark:border-slate-700`}>
+                                  {extras?.single ? fmtCurrency(extras.single) : "0.00"}
+                                </td>
+                                <td className={`${eC} font-medium border-r border-slate-200 dark:border-slate-700`}>{fmtCurrency(row.remainingBalance)}</td>
+                                <td className={eC}>{fmtCurrency(row.cumulativePayment)}</td>
+                                <td className={eC}>{fmtCurrency(row.cumulativeInterest)}</td>
+                                <td className={eBrH}>{fmtCurrency(row.cumulativePrincipal)}</td>
+                              </>
+                            )}
                             {/* Normal side (amber tint) */}
                             {normal ? (
                               <>
