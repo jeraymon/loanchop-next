@@ -148,18 +148,26 @@ export function buildAmortization(
     }
 
     const interestPortion = balance.times(monthlyRate).dp(2, BigNumber.ROUND_HALF_UP);
-    let principalPortion = new BigNumber(monthlyPayment).minus(interestPortion);
+    const regularPrincipal = new BigNumber(monthlyPayment).minus(interestPortion);
+    let principalPortion: BigNumber;
     let actualExtra = new BigNumber(0);
 
-    // Determine max principal that can be applied this month
-    const maxPrincipalWithExtra = principalPortion.plus(extraThisMonth);
+    // Amount needed to pay off the loan this month
+    const payoffNeeded = balance;
 
-    // Final payment: if balance fits within this month's principal + extra
-    if (balance.lte(maxPrincipalWithExtra) || month === totalMonths) {
-      principalPortion = balance;
+    if (payoffNeeded.lte(regularPrincipal) || month === totalMonths) {
+      // Regular principal alone covers payoff (or it's the last month)
+      principalPortion = payoffNeeded;
       actualExtra = new BigNumber(0);
       balance = new BigNumber(0);
+    } else if (payoffNeeded.lte(regularPrincipal.plus(extraThisMonth))) {
+      // Regular principal + partial extra covers payoff
+      principalPortion = regularPrincipal;
+      actualExtra = payoffNeeded.minus(regularPrincipal);
+      balance = new BigNumber(0);
     } else {
+      // Normal month — full extra applied
+      principalPortion = regularPrincipal;
       actualExtra = BigNumber.min(extraThisMonth, balance.minus(principalPortion));
       if (actualExtra.lt(0)) actualExtra = new BigNumber(0);
       balance = balance.minus(principalPortion).minus(actualExtra);
