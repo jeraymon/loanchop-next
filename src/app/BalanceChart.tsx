@@ -134,6 +134,8 @@ export default function BalanceChart({
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis
               dataKey="month"
+              type="number"
+              domain={["dataMin", "dataMax"]}
               label={{ value: "Months", position: "insideBottom", offset: -2 }}
               tick={{ fontSize: 12 }}
             />
