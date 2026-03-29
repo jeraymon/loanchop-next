@@ -129,7 +129,7 @@ export default function Calculator() {
     );
   }, [values, extraEntries, hasPerRowEntries]);
 
-  const solution = result ? `${fmtCurrency(result.monthlyPayment)}/mo` : null;
+  const solution = result ? `Monthly Payment = ${fmtCurrency(result.monthlyPayment)}` : null;
   const hasExtra =
     result &&
     (values.extraPayment > 0 || hasPerRowEntries) &&

@@ -130,6 +130,8 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### User Experience
 - [ ] Calculator inputs respond instantly (no hydration delay)
+- [ ] Calculator inputs pre-filled with sensible defaults and solution visible on page load (not empty/blank state)
+- [ ] Solution string includes variable name, value, and unit (e.g., "Force (F) = 14.715 N") — not just a bare number
 - [ ] Results visible without scrolling after Calculate/input change
 - [ ] No signup gates, email capture, or paywalls
 - [ ] No unnecessary cookie consent banners
