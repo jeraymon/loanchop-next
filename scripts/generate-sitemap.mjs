@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const SITE = "https://www.loanchop.com";
+const lastmod = new Date().toISOString().split("T")[0];
 
 // Parse live calculator hrefs from calculator-catalog.ts
 const catalogSrc = readFileSync(
@@ -31,11 +32,11 @@ const staticPages = [
 const entries = [
   ...staticPages.map(
     (p) =>
-      `  <url>\n    <loc>${SITE}${p.path}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
+      `  <url>\n    <loc>${SITE}${p.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
   ),
   ...liveHrefs.map(
     (href) =>
-      `  <url>\n    <loc>${SITE}${href}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+      `  <url>\n    <loc>${SITE}${href}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
   ),
 ];
 
