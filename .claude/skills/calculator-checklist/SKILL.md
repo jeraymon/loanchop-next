@@ -40,7 +40,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] MathSolver JSON-LD `publisher` includes `name`, `url`, `logo`, and `email: "aj@ajdesigner.com"`
 - [ ] MathSolver JSON-LD `publisher.logo` is an absolute URL pointing to `public/images/logo.png` (400x400 square PNG)
 - [ ] All URLs in JSON-LD are **absolute** (not relative paths)
-- [ ] For multi-calc home pages only: standalone Organization schema present with `name`, `url`, `logo`, `email: "aj@ajdesigner.com"`, and `sameAs` (sister site URLs)
+- [ ] Home page includes standalone Organization schema with `name`, `url`, `logo`, `email: "aj@ajdesigner.com"`, and `sameAs` (all 14 sister site URLs) — required on ALL sites, not just multi-calc
 - [ ] Metadata includes `openGraph` with `og:image` using an **absolute URL** (e.g., `https://www.example.com/images/og-default.jpg` — not a relative path like `/images/og-default.jpg`)
 - [ ] `openGraph.url` matches `alternates.canonical` (same absolute URL, same www/trailing-slash convention)
 - [ ] OpenGraph image includes `alt` text describing the calculator
@@ -65,10 +65,13 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] **Example Problem** section with worked example using real numbers
 - [ ] **FAQ** section with 3-5 questions and 2-3 sentence answers
 - [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements. Use plain `<h3>` + `<p>` pairs.
-- [ ] **Related Sites or Related Calculators** section with 4-6 links in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`) — visually distinct from educational sections
+- [ ] **Related Calculators** card (Card 1) with 4-5 topical deeplinks (internal or external) in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`)
+- [ ] **Related Sites** card (Card 2) with 6 home page links to sister sites in a **bordered card** (same styling as Card 1)
+- [ ] No domain appears in both Card 1 and Card 2 on the same page (Google only counts the first link per domain)
+- [ ] Card 2 links are rotated by page or category — not identical boilerplate across all pages
 - [ ] CTA button scrolls to `#calculator` (not page top)
 - [ ] Educational headings use lighter styles (`text-base font-semibold text-slate-600 dark:text-slate-400`) — NOT competing with the calculator title
-- [ ] Related Sites/Calculators section does NOT self-link to the current site's own domain (self-links provide no SEO value)
+- [ ] Neither Card 1 nor Card 2 self-links to the current site's own domain (self-links provide no SEO value)
 - [ ] Educational sections do NOT use Tailwind Typography `prose` or `prose-invert` classes — use explicit utility classes (`text-base`, `text-sm text-muted-foreground`, etc.)
 
 ### Charts (if applicable)

@@ -702,6 +702,45 @@ export default function Calculator() {
           </div>
         </div>
 
+        {/* Related Calculators */}
+        <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground p-5 space-y-3">
+          <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
+            Related Calculators
+          </h2>
+          <ul className="space-y-2 text-sm">
+            <li>
+              <a href="https://www.compare2loans.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Loan Comparison Calculator
+              </a>{" "}
+              <span className="text-muted-foreground">— Compare two loans side by side</span>
+            </li>
+            <li>
+              <a href="https://www.ajdesigner.com/loan" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Loan Calculator
+              </a>{" "}
+              <span className="text-muted-foreground">— Calculate monthly payments and total interest</span>
+            </li>
+            <li>
+              <a href="https://www.ajdesigner.com/mortgage-loan" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Mortgage Loan Calculator
+              </a>{" "}
+              <span className="text-muted-foreground">— Estimate mortgage payments and amortization</span>
+            </li>
+            <li>
+              <a href="https://www.ajdesigner.com/mortgage-loan-points" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Mortgage Points Calculator
+              </a>{" "}
+              <span className="text-muted-foreground">— Calculate the value of buying mortgage points</span>
+            </li>
+            <li>
+              <a href="https://www.ajdesigner.com/interest-rate" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Interest Rate Calculator
+              </a>{" "}
+              <span className="text-muted-foreground">— Solve for interest rate from loan terms</span>
+            </li>
+          </ul>
+        </div>
+
         {/* Related Sites */}
         <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground p-5 space-y-3">
           <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
@@ -712,31 +751,37 @@ export default function Calculator() {
               <a href="https://www.dollarsperhour.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Dollars Per Hour
               </a>{" "}
-              <span className="text-muted-foreground">— Hourly wage and salary calculators</span>
+              <span className="text-muted-foreground">— Weekly paycheck calculator with overtime</span>
             </li>
             <li>
-              <a href="https://www.ajdesigner.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                AJ Designer
+              <a href="https://www.percenterrorcalculator.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Percent Error Calculator
               </a>{" "}
-              <span className="text-muted-foreground">— Engineering and science calculators</span>
-            </li>
-            <li>
-              <a href="https://www.percentoffcalculator.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Percent Off Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Discount and percentage calculators</span>
-            </li>
-            <li>
-              <a href="https://www.infantchart.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                InfantChart
-              </a>{" "}
-              <span className="text-muted-foreground">— Baby growth percentile charts</span>
+              <span className="text-muted-foreground">— Measurement accuracy and percent error calculator</span>
             </li>
             <li>
               <a href="https://www.hourlysalaries.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Hourly Salaries
               </a>{" "}
-              <span className="text-muted-foreground">— Salary conversion tools</span>
+              <span className="text-muted-foreground">— Hourly wage to annual salary converter</span>
+            </li>
+            <li>
+              <a href="https://www.optionsmath.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                OptionsMath
+              </a>{" "}
+              <span className="text-muted-foreground">— Options trading profit and loss calculators</span>
+            </li>
+            <li>
+              <a href="https://www.medicalequations.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                Medical Equations
+              </a>{" "}
+              <span className="text-muted-foreground">— Clinical and medical calculators</span>
+            </li>
+            <li>
+              <a href="https://www.cameradof.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                CameraDOF
+              </a>{" "}
+              <span className="text-muted-foreground">— Depth of field calculator for photographers</span>
             </li>
           </ul>
         </div>

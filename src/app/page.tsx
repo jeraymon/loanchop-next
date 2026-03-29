@@ -103,6 +103,34 @@ const faqJsonLd = {
   ],
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "AJ Design Software",
+  url: "https://www.ajdesigner.com",
+  logo: {
+    "@type": "ImageObject",
+    url: "https://www.loanchop.com/images/logo.png",
+  },
+  email: "aj@ajdesigner.com",
+  sameAs: [
+    "https://www.ajdesigner.com",
+    "https://www.cameradof.com",
+    "https://www.dollarsperhour.com",
+    "https://www.hourlysalaries.com",
+    "https://www.bogodiscount.com",
+    "https://www.compare2loans.com",
+    "https://www.percentoffcalculator.com",
+    "https://www.percenterrorcalculator.com",
+    "https://www.infantchart.com",
+    "https://www.medicalequations.com",
+    "https://www.optionsmath.com",
+    "https://www.rncalc.com",
+    "https://www.temperaturetool.com",
+    "https://www.zscorecalculator.com",
+  ],
+};
+
 export default function HomePage() {
   return (
     <>
@@ -113,6 +141,10 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <Calculator />
     </>

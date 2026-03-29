@@ -35,8 +35,9 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - **zscorecalculator.com** — Z-score and probability calculator
 
 ### Multi-Calc vs Single-Calc Sites
-- **Multi-calculator sites** (ajdesigner, infantchart, medicalequations, optionsmath, rncalc): Have sidebar navigation, breadcrumbs, calculator catalog, multiple calculator pages. Use "Related Calculators" (internal links) + "Related Sites" (external links).
-- **Single-calculator sites** (all others): No sidebar, no breadcrumbs, empty catalog, calculator at root `/`. Use "Related Sites" (external links only).
+- **Multi-calculator sites** (ajdesigner, infantchart, medicalequations, optionsmath, rncalc): Have sidebar navigation, breadcrumbs, calculator catalog, multiple calculator pages.
+- **Single-calculator sites** (all others): No sidebar, no breadcrumbs, empty catalog, calculator at root `/`.
+- **All sites** have two cross-link cards on every calculator page: "Related Calculators" (4-5 topical deeplinks, internal or external) + "Related Sites" (6 rotated home page links). No domain overlap between cards. See root CLAUDE.md Cross-Linking Rules.
 
 ### Base Key Commands
 - `npx next dev --port 3000` — Start dev server
@@ -87,7 +88,7 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - JSON-LD `publisher` must include `name`, `url`, `logo`, and `email: "aj@ajdesigner.com"` in the Organization object
 - JSON-LD `publisher.logo` must be an absolute URL pointing to `public/images/logo.png` (400x400 square PNG) — standardized filename
 - All URLs in JSON-LD must be **absolute** (not relative paths)
-- Multi-calc home pages (ajdesigner, infantchart, medicalequations, optionsmath, rncalc) must include a standalone Organization schema with `name`, `url`, `logo`, `email`, and `sameAs` (sister site URLs)
+- **All** home pages must include a standalone Organization schema with `name`, `url`, `logo`, `email`, and `sameAs` (all 14 sister site URLs)
 
 ### Documentation Rules
 - `CLAUDE.md` is the quick-reference. `AGENT.md` is the single source of truth for detailed patterns.
