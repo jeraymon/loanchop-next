@@ -33,6 +33,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### SEO & Metadata
 - [ ] `page.tsx` exports `generateMetadata()` function (NOT `export const metadata`)
+- [ ] Meta description is 150-165 characters (under 140 wastes SERP space, over 170 gets truncated)
 - [ ] `MathSolver` JSON-LD schema present as plain `<script>` tag (NOT `next/script`)
 - [ ] MathSolver JSON-LD includes `inLanguage`, `publisher` (with logo), and `potentialAction` fields
 - [ ] `FAQPage` JSON-LD schema present as a second plain `<script>` tag
