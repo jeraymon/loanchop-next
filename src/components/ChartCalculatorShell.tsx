@@ -10,6 +10,7 @@ export default function ChartCalculatorShell({
   latexFormula,
   srFormulaText,
   solution,
+  isStale,
   chart,
   table,
   breadcrumbs,
@@ -20,6 +21,7 @@ export default function ChartCalculatorShell({
   latexFormula?: string;
   srFormulaText?: string;
   solution: string | null;
+  isStale?: boolean;
   chart?: React.ReactNode;
   table?: React.ReactNode;
   breadcrumbs?: Breadcrumb[];

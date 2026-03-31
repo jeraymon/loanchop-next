@@ -4,12 +4,13 @@ import React, { useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import AutoChartCalculatorShell from "@/components/AutoChartCalculatorShell";
+import { useAutoCalculate } from "@/hooks/useAutoCalculate";
+import ChartCalculatorShell from "@/components/ChartCalculatorShell";
 import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ErrorIcon } from "@/components/ui/ErrorIcon";
 import {
   compareWithAndWithoutExtra,
   type AmortizationRow,
@@ -20,31 +21,30 @@ import {
 const BalanceChart = dynamic(() => import("./BalanceChart"), { ssr: false });
 
 // ---------------------------------------------------------------------------
-// Schema
+// Schema (string-based for useAutoCalculate)
 // ---------------------------------------------------------------------------
 
+const positiveNum = z.string().min(1, "Required").refine(
+  (v) => !isNaN(Number(v)) && Number(v) > 0,
+  "Must be a positive number",
+);
+const nonNegativeNum = z.string().min(1, "Required").refine(
+  (v) => !isNaN(Number(v)) && Number(v) >= 0,
+  "Cannot be negative",
+);
+const positiveInt = z.string().min(1, "Required").refine(
+  (v) => !isNaN(Number(v)) && Number(v) > 0 && Number.isInteger(Number(v)),
+  "Must be a positive whole number",
+);
+
 const schema = z.object({
-  principal: z.coerce
-    .number({ invalid_type_error: "Enter a valid number" })
-    .positive("Must be greater than 0")
-    .max(100_000_000, "Maximum $100,000,000"),
-  annualRate: z.coerce
-    .number({ invalid_type_error: "Enter a valid number" })
-    .min(0, "Cannot be negative")
-    .max(50, "Maximum 50%"),
-  years: z.coerce
-    .number({ invalid_type_error: "Enter a valid number" })
-    .int("Must be a whole number")
-    .positive("Must be at least 1")
-    .max(50, "Maximum 50 years"),
-  extraPayment: z.coerce
-    .number({ invalid_type_error: "Enter a valid number" })
-    .min(0, "Cannot be negative")
-    .max(100_000_000, "Maximum $100,000,000")
-    .default(0),
+  principal: positiveNum,
+  annualRate: nonNegativeNum,
+  years: positiveInt,
+  extraPayment: nonNegativeNum,
 });
 
-type FormValues = z.infer<typeof schema>;
+const schemas = { default: schema } as const;
 
 // ---------------------------------------------------------------------------
 // Formatting helpers
@@ -86,22 +86,23 @@ function monthToDate(monthNum: number): string {
 // ---------------------------------------------------------------------------
 
 export default function Calculator() {
+  const [solution, setSolution] = useState<string | null>(null);
+  const [result, setResult] = useState<ComparisonResult | null>(null);
+
   const {
     register,
-    watch,
+    getValues,
+    setError,
+    clearErrors,
     formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  } = useForm<Record<string, string>>({
     defaultValues: {
-      principal: 200000,
-      annualRate: 6,
-      years: 30,
-      extraPayment: 0,
+      principal: "200000",
+      annualRate: "6",
+      years: "30",
+      extraPayment: "0",
     },
-    mode: "onChange",
   });
-
-  const values = watch();
 
   // Per-row extra payment entries (editable in the amortization table)
   const [extraEntries, setExtraEntries] = useState<ExtraPaymentEntry[]>([]);
@@ -114,35 +115,64 @@ export default function Calculator() {
   // Determine if per-row entries are active
   const hasPerRowEntries = extraEntries.length > 0;
 
-  // Auto-calculate with useMemo
-  const result: ComparisonResult | null = useMemo(() => {
-    const parsed = schema.safeParse(values);
-    if (!parsed.success) return null;
-    const { principal, annualRate, years, extraPayment } = parsed.data;
-    if (principal <= 0 || years <= 0) return null;
-    return compareWithAndWithoutExtra(
+  const compute = useCallback((data: Record<string, string>) => {
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      setSolution(null);
+      setResult(null);
+      return;
+    }
+    const principal = Number(data.principal);
+    const annualRate = Number(data.annualRate);
+    const years = Number(data.years);
+    const extraPayment = Number(data.extraPayment);
+    if (principal <= 0 || years <= 0) {
+      setSolution(null);
+      setResult(null);
+      return;
+    }
+    const r = compareWithAndWithoutExtra(
       principal,
       annualRate,
       years,
       extraPayment,
       hasPerRowEntries ? extraEntries : undefined,
     );
-  }, [values, extraEntries, hasPerRowEntries]);
+    setResult(r);
+    setSolution(`Monthly Payment = ${fmtCurrency(r.monthlyPayment)}`);
+  }, [hasPerRowEntries, extraEntries]);
 
-  const solution = result ? `Monthly Payment = ${fmtCurrency(result.monthlyPayment)}` : null;
+  const { isStale, reg, handleBlurOrEnter, computeImmediate } = useAutoCalculate({
+    schemas,
+    solveFor: "default",
+    getValues,
+    register,
+    setError,
+    clearErrors,
+    errors,
+    compute,
+  });
+
+  // Re-compute when extraEntries change
+  const handleExtraEntriesChange = useCallback((newEntries: ExtraPaymentEntry[]) => {
+    setExtraEntries(newEntries);
+    // We need to recompute after state updates, so we use a timeout
+    setTimeout(() => {
+      computeImmediate(getValues(), "default");
+    }, 0);
+  }, [computeImmediate, getValues]);
+
+  const values = getValues();
   const hasExtra =
     result &&
-    (values.extraPayment > 0 || hasPerRowEntries) &&
+    (Number(values.extraPayment) > 0 || hasPerRowEntries) &&
     result.acceleratedSchedule.length < result.normalSchedule.length;
   // Also show savings cards if interest was actually saved (even if same # months)
   const showSavings =
     result &&
-    (values.extraPayment > 0 || hasPerRowEntries) &&
+    (Number(values.extraPayment) > 0 || hasPerRowEntries) &&
     result.interestSaved > 0;
 
-  const jumpToCalculator = useCallback(() => {
-    document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
-  }, []);
 
   // Amortization table (scrollable, shows every 12th month by default)
   const [showAllRows, setShowAllRows] = useState(false);
@@ -213,18 +243,14 @@ export default function Calculator() {
     const recurring = Math.max(0, parseFloat(editRecurring) || 0);
     const single = Math.max(0, parseFloat(editSingle) || 0);
 
-    setExtraEntries((prev) => {
-      // Remove existing entry for this month
-      const next = prev.filter((e) => e.month !== editingMonth);
-      // Add new entry if non-zero
-      if (recurring > 0 || single > 0) {
-        next.push({ month: editingMonth, recurring, single });
-        next.sort((a, b) => a.month - b.month);
-      }
-      return next;
-    });
+    const next = extraEntries.filter((e) => e.month !== editingMonth);
+    if (recurring > 0 || single > 0) {
+      next.push({ month: editingMonth, recurring, single });
+      next.sort((a, b) => a.month - b.month);
+    }
     setEditingMonth(null);
-  }, [editingMonth, editRecurring, editSingle]);
+    handleExtraEntriesChange(next);
+  }, [editingMonth, editRecurring, editSingle, extraEntries, handleExtraEntriesChange]);
 
   const cancelEdit = useCallback(() => {
     setEditingMonth(null);
@@ -232,9 +258,9 @@ export default function Calculator() {
 
   // Clear all per-row entries
   const clearAllEntries = useCallback(() => {
-    setExtraEntries([]);
     setEditingMonth(null);
-  }, []);
+    handleExtraEntriesChange([]);
+  }, [handleExtraEntriesChange]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -242,10 +268,11 @@ export default function Calculator() {
 
   return (
     <div className="space-y-8">
-      <AutoChartCalculatorShell
+      <ChartCalculatorShell
         id="calculator"
         title="Loan Prepayment Calculator"
         solution={solution}
+        isStale={isStale}
         chart={
           result ? (
             <BalanceChart
@@ -509,71 +536,63 @@ export default function Calculator() {
         {/* Form inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="principal">Loan Amount ($)</Label>
+            <Label htmlFor="principal" className="inline-flex items-center gap-1.5">Loan Amount ($)<ErrorIcon show={!!errors.principal} /></Label>
             <Input
               id="principal"
               type="number"
               step="1000"
               min="0"
               placeholder="200000"
-              {...register("principal")}
-              aria-invalid={!!errors.principal}
+              {...reg("principal")}
+              onBlur={handleBlurOrEnter}
+              onKeyDown={(e) => e.key === "Enter" && handleBlurOrEnter()}
             />
-            {errors.principal && (
-              <p className="text-xs text-destructive">{errors.principal.message}</p>
-            )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="annualRate">Annual Interest Rate (%)</Label>
+            <Label htmlFor="annualRate" className="inline-flex items-center gap-1.5">Annual Interest Rate (%)<ErrorIcon show={!!errors.annualRate} /></Label>
             <Input
               id="annualRate"
               type="number"
               step="0.125"
               min="0"
               placeholder="6"
-              {...register("annualRate")}
-              aria-invalid={!!errors.annualRate}
+              {...reg("annualRate")}
+              onBlur={handleBlurOrEnter}
+              onKeyDown={(e) => e.key === "Enter" && handleBlurOrEnter()}
             />
-            {errors.annualRate && (
-              <p className="text-xs text-destructive">{errors.annualRate.message}</p>
-            )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="years">Loan Term (years)</Label>
+            <Label htmlFor="years" className="inline-flex items-center gap-1.5">Loan Term (years)<ErrorIcon show={!!errors.years} /></Label>
             <Input
               id="years"
               type="number"
               step="1"
               min="1"
               placeholder="30"
-              {...register("years")}
-              aria-invalid={!!errors.years}
+              {...reg("years")}
+              onBlur={handleBlurOrEnter}
+              onKeyDown={(e) => e.key === "Enter" && handleBlurOrEnter()}
             />
-            {errors.years && (
-              <p className="text-xs text-destructive">{errors.years.message}</p>
-            )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="extraPayment">Extra Monthly Payment ($)</Label>
+            <Label htmlFor="extraPayment" className="inline-flex items-center gap-1.5">Extra Monthly Payment ($)<ErrorIcon show={!!errors.extraPayment} /></Label>
             <Input
               id="extraPayment"
               type="number"
               step="50"
               min="0"
               placeholder="0"
-              {...register("extraPayment")}
-              aria-invalid={!!errors.extraPayment}
+              {...reg("extraPayment")}
+              onBlur={handleBlurOrEnter}
+              onKeyDown={(e) => e.key === "Enter" && handleBlurOrEnter()}
               disabled={hasPerRowEntries}
             />
             {hasPerRowEntries && (
               <p className="text-xs text-muted-foreground">Disabled — using per-row entries below</p>
             )}
-            {errors.extraPayment && (
-              <p className="text-xs text-destructive">{errors.extraPayment.message}</p>
-            )}
           </div>
         </div>
-      </AutoChartCalculatorShell>
+      </ChartCalculatorShell>
 
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solution={solution ?? ""} />
@@ -611,13 +630,6 @@ export default function Calculator() {
             during the first few years. Federal law prohibits prepayment penalties on many
             types of mortgages originated after January 2014.
           </p>
-          <button
-            type="button"
-            onClick={jumpToCalculator}
-            className="inline-flex items-center rounded-md border border-indigo-600 text-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors"
-          >
-            Try the Calculator
-          </button>
         </div>
 
         {/* Example */}
@@ -636,13 +648,6 @@ export default function Calculator() {
             That $300 monthly investment effectively earns a guaranteed return equivalent to
             your mortgage rate, which is difficult to match with other low-risk investments.
           </p>
-          <button
-            type="button"
-            onClick={jumpToCalculator}
-            className="inline-flex items-center rounded-md border border-indigo-600 text-indigo-600 px-4 py-2 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors"
-          >
-            Calculate Your Savings
-          </button>
         </div>
 
         {/* FAQ */}

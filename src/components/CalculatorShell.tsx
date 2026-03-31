@@ -11,6 +11,7 @@ export default function CalculatorShell({
   latexFormula,
   srFormulaText,
   solution,
+  isStale,
   afterSolution,
   breadcrumbs,
   children,
@@ -20,6 +21,7 @@ export default function CalculatorShell({
   latexFormula: string;
   srFormulaText: string;
   solution: string | null;
+  isStale?: boolean;
   afterSolution?: React.ReactNode;
   breadcrumbs?: Breadcrumb[];
   children: React.ReactNode;
