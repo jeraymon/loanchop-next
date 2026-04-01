@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Inter, Geist } from "next/font/google";
+import Link from "next/link";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <footer className="border-t p-6 text-center text-sm text-muted-foreground space-y-2">
             <nav aria-label="Footer" className="flex justify-center gap-4">
-              <a href="/" className="hover:text-foreground transition-colors">Calculator</a>
-              <a href="/terms" className="hover:text-foreground transition-colors">Terms of Use</a>
-              <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
-              <a href="/accessibility" className="hover:text-foreground transition-colors">Accessibility</a>
+              <Link href="/" className="hover:text-foreground transition-colors">Calculator</Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link href="/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
           </footer>

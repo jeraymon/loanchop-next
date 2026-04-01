@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Calculator, FlaskConical, Wrench, Sigma, DollarSign, Droplets, Hash, Heart, Mountain, Thermometer, Search } from "lucide-react";
 import { categories } from "@/app/calculator-catalog";
 import {
@@ -45,9 +46,9 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="h-16 flex items-center px-6 border-b">
-        <a href="/" className="font-black tracking-tighter text-xl text-primary">
+        <Link href="/" className="font-black tracking-tighter text-xl text-primary">
           AJ
-        </a>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="pb-0">
@@ -75,9 +76,9 @@ export function AppSidebar() {
                   results.map((c) => (
                     <SidebarMenuItem key={c.href}>
                       <SidebarMenuButton asChild tooltip={c.category} isActive={pathname === c.href + "/"}>
-                        <a href={c.href}>
+                        <Link href={c.href}>
                           <span className="text-sm">{c.name.replace(" Calculator", "")}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))
@@ -88,10 +89,10 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem key={cat.id}>
                       <SidebarMenuButton asChild tooltip={cat.label}>
-                        <a href={`/#${cat.id}`} className="flex items-center gap-3">
+                        <Link href={`/#${cat.id}`} className="flex items-center gap-3">
                           <Icon className="size-4" />
                           <span>{cat.label}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Use — LoanChop",
@@ -93,7 +94,7 @@ export default function TermsPage() {
       <h2>8. Third-Party Services and Advertising</h2>
       <p>
         This Site uses third-party services, including Google AdSense for advertising. These
-        services may collect data as described in our <a href="/privacy">Privacy Policy</a>.
+        services may collect data as described in our <Link href="/privacy">Privacy Policy</Link>.
         LoanChop is not responsible for the content, practices, or policies of any
         third-party service.
       </p>
