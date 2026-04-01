@@ -279,7 +279,7 @@ export default function Calculator() {
         solutionValue={solutionValue}
         isStale={isStale}
         chart={
-          result ? (
+          result && (Number(values.extraPayment) > 0 || hasPerRowEntries) ? (
             <BalanceChart
               normalSchedule={result.normalSchedule}
               acceleratedSchedule={result.acceleratedSchedule}

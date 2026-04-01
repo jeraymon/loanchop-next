@@ -47,14 +47,14 @@ export default function CalculatorShell({
           )}
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>{children}</form>
           <section aria-label="Result" className="mt-2">
-            <div className="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl text-center border border-indigo-200 dark:border-indigo-900" aria-live="polite">
+            <div className={`bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl text-center border border-indigo-200 dark:border-indigo-900 ${isStale ? "opacity-50" : "opacity-100"} transition-opacity duration-200`} aria-live="polite">
               <h2 className="text-sm font-bold text-muted-foreground mb-2">{solutionLabel ?? "Solution"}</h2>
               <output className="text-3xl font-black text-accent-foreground">{solutionValue ?? "—"}</output>
             </div>
             {afterSolution}
           </section>
           {chart && (
-            <section aria-label="Chart" className="overflow-hidden">
+            <section aria-label="Chart">
               {chart}
             </section>
           )}
