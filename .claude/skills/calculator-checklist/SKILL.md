@@ -33,7 +33,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### SEO & Metadata
 - [ ] `page.tsx` exports `generateMetadata()` function (NOT `export const metadata`)
-- [ ] Meta description is 150-165 characters (under 140 wastes SERP space, over 170 gets truncated)
+- [ ] Meta description is 150-165 characters (under 140 wastes SERP space, over 170 gets truncated). Note: descriptions may span multiple lines in the source — read the full string before counting characters.
 - [ ] `MathSolver` JSON-LD schema present as plain `<script>` tag (NOT `next/script`)
 - [ ] MathSolver JSON-LD includes `inLanguage`, `publisher` (with logo), and `potentialAction` fields
 - [ ] `FAQPage` JSON-LD schema present as a second plain `<script>` tag
@@ -66,7 +66,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] **Example Problem** section with worked example using real numbers
 - [ ] **FAQ** section with 3-5 questions and 2-3 sentence answers
 - [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements. Use plain `<h3>` + `<p>` pairs.
-- [ ] **Related Calculators** card (Card 1) with 4-5 topical deeplinks (internal or external) in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`)
+- [ ] **Related Calculators** card (Card 1) with 4-6 topical deeplinks (internal or external) in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`)
 - [ ] **Related Sites** card (Card 2) with 6 home page links to sister sites in a **bordered card** (same styling as Card 1)
 - [ ] No domain appears in both Card 1 and Card 2 on the same page (Google only counts the first link per domain)
 - [ ] Card 2 links are rotated by page or category — not identical boilerplate across all pages
