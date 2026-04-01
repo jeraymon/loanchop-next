@@ -134,12 +134,12 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 
 ### Project Structure
 - `src/app/calc.ts` — Pure math functions (BigNumber, no React): `calcMonthlyPayment`, `buildAmortization`, `compareWithAndWithoutExtra`
-- `src/app/Calculator.tsx` — Client component (AutoChartCalculatorShell + reactive inputs + educational content)
+- `src/app/Calculator.tsx` — Client component (CalculatorShell + reactive inputs + educational content)
 - `src/app/page.tsx` — Server component (generateMetadata, JSON-LD scripts)
 - `src/app/BalanceChart.tsx` — Recharts line chart (lazy-loaded via next/dynamic) comparing normal vs accelerated balance
 - `src/app/Calculator.test.ts` — Tests importing from calc.ts
 - `src/app/calculator-catalog.ts` — Single-entry catalog (Loan Prepayment Calculator at `/`)
-- `src/components/` — Shared UI (AutoChartCalculatorShell, AdSlot, ShareButtons, ui/)
+- `src/components/` — Shared UI (CalculatorShell, AdSlot, ShareButtons, ui/)
 - `src/shared-math/` — math-config.ts (BigNumber), units.ts
 - `customHttp.yml` — Amplify headers/redirects
 - `legacy-php-backup/` — READ-ONLY archive
@@ -151,8 +151,8 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 - `recharts` for charts (lazy-load with `next/dynamic` + `{ ssr: false }`)
 
 ### Calculator Implementation
-- **Shell:** `AutoChartCalculatorShell` with `bg-indigo-600` header, indigo solution box, always-visible results
-- **Form pattern:** `useForm<FormValues>` with `zodResolver`, `mode: "onChange"`, `watch()` to read all values, `useMemo` to auto-derive results from watched values. `schema.safeParse()` validates inside useMemo.
+- **Shell:** `CalculatorShell` with `bg-indigo-600` header, indigo solution box, always-visible results
+- **Form pattern:** `useAutoCalculate` hook with `react-hook-form` for auto-calculate. No Calculate button, no `zodResolver`. Validation is manual via `setError`/`clearErrors`.
 - **Chart:** `BalanceChart` shows remaining balance over time for normal vs accelerated schedules. Only rendered when extra payment > 0.
 - **Table:** Summary cards (monthly payment, total interest, interest saved, time saved) + full amortization schedule with toggle between yearly and all-months view.
 - **No formula display** — this calculator does not use react-katex (loan math is straightforward).

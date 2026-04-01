@@ -19,8 +19,8 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] If calculator has charts: separate chart component file exists
 
 ### Shell & Design
-- [ ] Uses the correct shell (`CalculatorShell`, `ChartCalculatorShell`, `AutoCalculatorShell`, or `AutoChartCalculatorShell`)
-- [ ] Auto-calculating calculators use `Auto*Shell` (not a dead Calculate button on a non-auto shell)
+- [ ] Uses `CalculatorShell` (the unified shell for all calculators)
+- [ ] All calculators use `CalculatorShell` with auto-calculate (no Calculate button)
 - [ ] Shell has `id="calculator"` prop
 - [ ] Formula display uses `react-katex` (`BlockMath`) — if the calculator displays a formula. Not all calculators need one (e.g., BOGO, paycheck, loan comparison).
 - [ ] Shell header uses the site accent color (see CLAUDE.md Site-Specific palette) background with white bold text
@@ -131,7 +131,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 ### User Experience
 - [ ] Calculator inputs respond instantly (no hydration delay)
 - [ ] Calculator inputs pre-filled with sensible defaults and solution visible on page load (not empty/blank state)
-- [ ] Solution string includes variable name, value, and unit (e.g., "Force (F) = 14.715 N") — not just a bare number
+- [ ] Solution uses `solutionLabel` + `solutionValue` props (e.g., label "Force (F) =" + value "14.715 N") — not a single combined string
 - [ ] Results visible without scrolling after Calculate/input change
 - [ ] No signup gates, email capture, or paywalls
 - [ ] No unnecessary cookie consent banners
@@ -170,11 +170,11 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 - [ ] `layout.tsx` has NO sidebar imports or wrappers
 
 ### Shell & Design (Site-Specific)
-- [ ] Uses `AutoChartCalculatorShell` (auto-calculate + chart + table, NO Calculate button)
+- [ ] Uses `CalculatorShell` (auto-calculate + chart + table, NO Calculate button)
 - [ ] No `breadcrumbs` prop on the shell
 
 ### Form & Auto-Calculate
-- [ ] Uses `useForm<FormValues>` with `zodResolver(schema)` and `mode: "onChange"`
+- [ ] Uses `useAutoCalculate` hook with `useForm` (no `zodResolver`, manual validation via `setError`/`clearErrors`)
 - [ ] Uses `watch()` to read all form values reactively
 - [ ] Results derive from `useMemo` that calls `schema.safeParse(values)` — recalculate instantly on any input change
 - [ ] No Calculate button — auto-calculate pattern

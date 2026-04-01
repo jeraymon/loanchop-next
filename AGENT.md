@@ -13,15 +13,9 @@
 
 ## BASE SECTION 2: ARCHITECTURAL STANDARDS (All Sites)
 - **Framework:** Next.js 15+ App Router.
-- **Shell:** Every page must export a default function wrapped in one of four shells:
-  - `CalculatorShell` — button-click calculate, no charts (most calculators)
-  - `ChartCalculatorShell` — button-click calculate + charts/tables
-  - `AutoCalculatorShell` — auto-calculate on input change, no charts. Results derive from `useMemo`, no Calculate button. Solution always visible (shows "—" when empty).
-  - `AutoChartCalculatorShell` — auto-calculate on input change + charts/tables. Same reactive pattern with chart/table props.
-  Chart shells accept `chart` and `table` props (`ReactNode`) rendered below the solution inside the same card. For multiple charts or tables, wrap them in a fragment: `chart={<><Chart1 /><Chart2 /></>}`. Formula display is optional in chart shells. Auto shells use a `<div>` instead of `<form>` and include an `id="solution"` anchor for CTA scroll targeting.
-  **`afterSolution` prop:** Available on `CalculatorShell` and `AutoCalculatorShell` only (NOT on chart shells). Use for conversion tables or supplementary result data.
+- **Shell:** Every page must export a default function wrapped in `CalculatorShell` — unified shell for all calculators. Accepts optional `chart`, `table`, `afterSolution`, `isStale`, `solutionLabel`, `solutionValue`, `solutionDetail`, `breadcrumbs` props. Formula display is optional. Charts/tables render below the solution inside the same card. For multiple charts or tables, wrap them in a fragment: `chart={<><Chart1 /><Chart2 /></>}`.
   **Ads and Share buttons:** All shells have NO internal `<AdSlot />` or `<ShareButtons />`. These are placed outside the shell in each `Calculator.tsx`.
-  **`ShareButtons` interface:** `title: string` (calculator name), `solution: string` (pass `solution ?? ""` so buttons are always visible).
+  **`ShareButtons` interface:** `title: string` (calculator name), `solutionLabel?: string`, `solutionValue?: string`.
 - **Math Engine:** Strictly use `@/shared-math/math-config` (`bignumber.js` with 64-digit decimal precision).
 - **Testing:** Use `vitest`. Every calculator must have a `Calculator.test.ts` file that imports from `calc.ts` and tests its formulas with known inputs/outputs using approximate equality (`toBeCloseTo`). Run `npx vitest run` to verify before considering the work complete.
 - **Formula Verification:** Every calc.ts function must pass round-trip consistency tests — if `solveX(a, b) = c`, then `solveA(c, b)` must return `a`. Test with at least 2 input sets per function. For new calculators, verify at least one result against an external reference (Wolfram Alpha, textbook, NIST).
@@ -114,9 +108,7 @@ This site does not use URL parameters. Share buttons share the clean base URL. N
 
 ### Scroll-to-Calculate Pattern
 1. **`id="calculator"`** on the shell for scroll targeting.
-2. **`jumpToCalculator` callback** that smooth-scrolls to `#calculator`.
-3. **Button wiring**: Calculate button calls the compute function. `jumpToCalculator` is exclusively for educational CTA buttons.
-4. **Educational CTA buttons**: `variant="outline"` with `border-cyan-600 text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950`, text: "Calculate [Variable] ↑"
+2. No CTA buttons in educational sections.
 
 ### Case-Insensitive Filesystem (Docker on Mac)
 - Docker on macOS uses a case-insensitive filesystem. `calculator.test.ts` and `Calculator.test.ts` are the same file.
@@ -132,7 +124,7 @@ This site does not use URL parameters. Share buttons share the clean base URL. N
 
 ### Mobile Layout / Overflow Prevention
 - `globals.css` sets `overflow-x: hidden` on both `html` and `body`.
-- All four shell components have `overflow-hidden` on their `<article>` wrapper.
+- The `CalculatorShell` component has `overflow-hidden` on its `<article>` wrapper.
 - Two-column grids must use `grid-cols-1 sm:grid-cols-2` (not bare `grid-cols-2`).
 - Wide data tables must be wrapped in `<div className="overflow-x-auto">`.
 - Test at 375px viewport width.
@@ -173,7 +165,7 @@ This site does not use URL parameters. Share buttons share the clean base URL. N
 
 ### SECTION 1: DESIGN SYSTEM & UI
 - **Palette:** `indigo-600` (Shell header / accents), `indigo-50` (Solution box / highlight cards), `zinc-50` (Backgrounds), `slate-700` (Secondary text).
-- **Shell:** Uses `AutoChartCalculatorShell` — no Calculate button, results derive from `useForm` + `watch()` + `useMemo` and update instantly on every input change. Solution always visible (shows "—" when inputs are invalid).
+- **Shell:** Uses `CalculatorShell` — no Calculate button, results derive from `useForm` + `watch()` + `useMemo` and update instantly on every input change. Solution always visible (shows "—" when inputs are invalid).
 - **Aesthetic:** "Engineering Laboratory" - high contrast, clean, no gradients.
 - **Navigation:** Single-calculator site — no sidebar, no internal navigation. Footer has legal page links only.
 - **Summary cards:** Interest Saved and Time Saved highlighted with cyan tinting (`border-cyan-200 bg-cyan-50`). Other summary cards use standard slate borders.
