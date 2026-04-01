@@ -38,9 +38,10 @@ export const SidebarProvider = ({
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close mobile sidebar on route change (client-side navigation keeps state)
+  // Close mobile sidebar and scroll to top on route change
   React.useEffect(() => {
     setMobileOpen(false);
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   // Reset sidebar to expanded when viewport crosses back above md (768px)
