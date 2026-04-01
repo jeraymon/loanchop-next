@@ -9,7 +9,8 @@ export default function CalculatorShell({
   title,
   latexFormula,
   srFormulaText,
-  solution,
+  solutionLabel,
+  solutionValue,
   isStale,
   afterSolution,
   chart,
@@ -21,7 +22,8 @@ export default function CalculatorShell({
   title: string;
   latexFormula?: string;
   srFormulaText?: string;
-  solution: string | null;
+  solutionLabel?: string | null;
+  solutionValue?: string | null;
   isStale?: boolean;
   afterSolution?: React.ReactNode;
   chart?: React.ReactNode;
@@ -46,8 +48,8 @@ export default function CalculatorShell({
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>{children}</form>
           <section aria-label="Result" className="mt-2">
             <div className="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl text-center border border-indigo-200 dark:border-indigo-900" aria-live="polite">
-              <h2 className="text-sm font-bold text-muted-foreground uppercase mb-2">Solution</h2>
-              <output className="text-3xl font-black text-accent-foreground">{solution ?? "—"}</output>
+              <h2 className="text-sm font-bold text-muted-foreground mb-2">{solutionLabel ?? "Solution"}</h2>
+              <output className="text-3xl font-black text-accent-foreground">{solutionValue ?? "—"}</output>
             </div>
             {afterSolution}
           </section>

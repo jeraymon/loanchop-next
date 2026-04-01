@@ -86,7 +86,8 @@ function monthToDate(monthNum: number): string {
 // ---------------------------------------------------------------------------
 
 export default function Calculator() {
-  const [solution, setSolution] = useState<string | null>(null);
+  const [solutionLabel, setSolutionLabel] = useState<string | null>(null);
+  const [solutionValue, setSolutionValue] = useState<string | null>(null);
   const [result, setResult] = useState<ComparisonResult | null>(null);
 
   const {
@@ -118,7 +119,8 @@ export default function Calculator() {
   const compute = useCallback((data: Record<string, string>) => {
     const parsed = schema.safeParse(data);
     if (!parsed.success) {
-      setSolution(null);
+      setSolutionLabel(null);
+      setSolutionValue(null);
       setResult(null);
       return;
     }
@@ -127,7 +129,8 @@ export default function Calculator() {
     const years = Number(data.years);
     const extraPayment = Number(data.extraPayment);
     if (principal <= 0 || years <= 0) {
-      setSolution(null);
+      setSolutionLabel(null);
+      setSolutionValue(null);
       setResult(null);
       return;
     }
@@ -139,7 +142,8 @@ export default function Calculator() {
       hasPerRowEntries ? extraEntries : undefined,
     );
     setResult(r);
-    setSolution(`Monthly Payment = ${fmtCurrency(r.monthlyPayment)}`);
+    setSolutionLabel("Monthly Payment =");
+    setSolutionValue(fmtCurrency(r.monthlyPayment));
   }, [hasPerRowEntries, extraEntries]);
 
   const { isStale, reg, handleBlurOrEnter, computeImmediate } = useAutoCalculate({
@@ -271,7 +275,8 @@ export default function Calculator() {
       <CalculatorShell
         id="calculator"
         title="Loan Prepayment Calculator"
-        solution={solution}
+        solutionLabel={solutionLabel}
+        solutionValue={solutionValue}
         isStale={isStale}
         chart={
           result ? (
@@ -595,7 +600,7 @@ export default function Calculator() {
       </CalculatorShell>
 
       <div className="max-w-3xl mx-auto">
-        <ShareButtons title="Loan Prepayment Calculator" solution={solution ?? ""} />
+        <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} />
       </div>
       <div className="max-w-3xl mx-auto">
         <AdSlot />

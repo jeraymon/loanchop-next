@@ -22,13 +22,15 @@ function RedditIcon({ className }: { className?: string }) {
 
 interface ShareButtonsProps {
   title: string;
-  solution: string;
+  solutionLabel?: string;
+  solutionValue?: string;
 }
 
-export default function ShareButtons({ title, solution }: ShareButtonsProps) {
+export default function ShareButtons({ title, solutionLabel, solutionValue }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
   const url = typeof window !== "undefined" ? window.location.href : "";
+  const solution = [solutionLabel, solutionValue].filter(Boolean).join(" ");
   const shareText = `${title}: ${solution}`;
 
   const copyLink = useCallback(async () => {
