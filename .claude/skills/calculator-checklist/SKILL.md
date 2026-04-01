@@ -62,7 +62,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] Educational content sections use light borders (`border border-slate-200 dark:border-slate-800`) — NOT heavy bordered cards (`border-2` or `shadow-md`) that compete with the calculator card
 
 ### Educational Content
-- [ ] **Introductory/explanatory section** (e.g., "How It Works", "What Is X?", "Understanding X") with CTA button
+- [ ] **Introductory/explanatory section** (e.g., "How It Works", "What Is X?", "Understanding X")
 - [ ] **Example Problem** section with worked example using real numbers
 - [ ] **FAQ** section with 3-5 questions and 2-3 sentence answers
 - [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements. Use plain `<h3>` + `<p>` pairs.
@@ -70,7 +70,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] **Related Sites** card (Card 2) with 6 home page links to sister sites in a **bordered card** (same styling as Card 1)
 - [ ] No domain appears in both Card 1 and Card 2 on the same page (Google only counts the first link per domain)
 - [ ] Card 2 links are rotated by page or category — not identical boilerplate across all pages
-- [ ] CTA button scrolls to `#calculator` (not page top)
+- [ ] No CTA "Calculate ↑" buttons in educational sections (calculators auto-compute)
 - [ ] Educational headings use lighter styles (`text-base font-semibold text-slate-600 dark:text-slate-400`) — NOT competing with the calculator title
 - [ ] Neither Card 1 nor Card 2 self-links to the current site's own domain (self-links provide no SEO value)
 - [ ] Educational sections do NOT use Tailwind Typography `prose` or `prose-invert` classes — use explicit utility classes (`text-base`, `text-sm text-muted-foreground`, etc.)
@@ -85,7 +85,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 ### Share & Ads
 - [ ] `ShareButtons` component placed **outside** the shell (not passed as a shell prop)
 - [ ] `<ShareButtons />` wrapped in `<div className="max-w-3xl mx-auto">` — must align with the calculator card
-- [ ] Share buttons are always visible (pass `solution ?? ""`, not conditional on solution existing)
+- [ ] Share buttons are always visible (pass `solutionLabel ?? ""` and `solutionValue ?? ""`, not conditional on solution existing)
 - [ ] `AdSlot` placed **outside** the shell (shells have no internal AdSlot)
 - [ ] `<AdSlot />` wrapped in `<div className="max-w-3xl mx-auto">` — unwrapped ads stretch full viewport width
 - [ ] `layout.tsx` has AdSense library `<script>` in `<head>` (plain tag, NOT `next/script`)
@@ -202,13 +202,13 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 - [ ] All calculator content (header, inputs, summary cards, amortization table, balance chart) is inside the shell card
 
 ### Educational Content (Site-Specific)
-- [ ] **How Extra Payments Work** section — plain text or light bordered card with CTA button ("Try the Calculator")
+- [ ] **How Extra Payments Work** section — plain text or light bordered card
 - [ ] **Worked Example** section — worked example with real numbers ($250,000 at 6.5%, $300/mo extra)
 - [ ] **FAQ** section — 4 questions with detailed answers (plain text or light bordered div)
 - [ ] **Related Sites** section — 5 links to external sister sites in a bordered card
   - Should include: dollarsperhour.com, ajdesigner.com, percentoffcalculator.com, infantchart.com, hourlysalaries.com
   - Format: `[SiteName.com](url) — one-sentence description`
-- [ ] CTA buttons scroll to `#calculator` (not page top)
+- [ ] No CTA "Calculate ↑" buttons in educational sections (calculators auto-compute)
 
 ### Charts (Site-Specific)
 - [ ] Chart shows **Remaining Balance vs Month** comparing normal and accelerated schedules
