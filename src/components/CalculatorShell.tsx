@@ -2,7 +2,6 @@
 import React from "react";
 import { BlockMath } from "react-katex";
 import { Breadcrumbs, type Breadcrumb } from "./Breadcrumbs";
-
 import "katex/dist/katex.min.css";
 
 export default function CalculatorShell({
@@ -13,16 +12,20 @@ export default function CalculatorShell({
   solution,
   isStale,
   afterSolution,
+  chart,
+  table,
   breadcrumbs,
   children,
 }: {
   id?: string;
   title: string;
-  latexFormula: string;
-  srFormulaText: string;
+  latexFormula?: string;
+  srFormulaText?: string;
   solution: string | null;
   isStale?: boolean;
   afterSolution?: React.ReactNode;
+  chart?: React.ReactNode;
+  table?: React.ReactNode;
   breadcrumbs?: Breadcrumb[];
   children: React.ReactNode;
 }) {
@@ -34,10 +37,12 @@ export default function CalculatorShell({
           <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
         </div>
         <div className="px-4 sm:px-6 py-6 space-y-6">
-          <section aria-label="Formula" className="bg-slate-50 dark:bg-slate-900 px-6 py-3 rounded-lg border text-center">
-            <div aria-hidden="true"><BlockMath math={latexFormula} /></div>
-            <span className="sr-only">{srFormulaText}</span>
-          </section>
+          {latexFormula && (
+            <section aria-label="Formula" className="bg-slate-50 dark:bg-slate-900 px-6 py-3 rounded-lg border text-center overflow-x-auto">
+              <div aria-hidden="true"><BlockMath math={latexFormula} /></div>
+              {srFormulaText && <span className="sr-only">{srFormulaText}</span>}
+            </section>
+          )}
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>{children}</form>
           <section aria-label="Result" className="mt-2">
             <div className="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl text-center border border-indigo-200 dark:border-indigo-900" aria-live="polite">
@@ -46,6 +51,16 @@ export default function CalculatorShell({
             </div>
             {afterSolution}
           </section>
+          {chart && (
+            <section aria-label="Chart" className="overflow-hidden">
+              {chart}
+            </section>
+          )}
+          {table && (
+            <section aria-label="Data Table">
+              {table}
+            </section>
+          )}
         </div>
       </div>
     </article>

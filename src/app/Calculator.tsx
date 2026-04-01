@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useAutoCalculate } from "@/hooks/useAutoCalculate";
-import ChartCalculatorShell from "@/components/ChartCalculatorShell";
+import CalculatorShell from "@/components/CalculatorShell";
 import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
 import { Input } from "@/components/ui/input";
@@ -268,7 +268,7 @@ export default function Calculator() {
 
   return (
     <div className="space-y-8">
-      <ChartCalculatorShell
+      <CalculatorShell
         id="calculator"
         title="Loan Prepayment Calculator"
         solution={solution}
@@ -592,7 +592,7 @@ export default function Calculator() {
             )}
           </div>
         </div>
-      </ChartCalculatorShell>
+      </CalculatorShell>
 
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solution={solution ?? ""} />
