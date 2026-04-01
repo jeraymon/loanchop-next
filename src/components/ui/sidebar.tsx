@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { createContext, useContext, useState } from "react";
 
@@ -35,6 +36,12 @@ export const SidebarProvider = ({
 }) => {
   const [isExpanded, setExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Close mobile sidebar on route change (client-side navigation keeps state)
+  React.useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   // Reset sidebar to expanded when viewport crosses back above md (768px)
   React.useEffect(() => {
