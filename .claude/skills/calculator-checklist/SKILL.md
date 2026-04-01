@@ -68,6 +68,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements. Use plain `<h3>` + `<p>` pairs.
 - [ ] **Related Calculators** card (Card 1) with 4-6 topical deeplinks (internal or external) in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`)
 - [ ] **Related Sites** card (Card 2) with 6 home page links to sister sites in a **bordered card** (same styling as Card 1)
+  - Note: cameradof.com IS a recognized sister site (cameradof-next exists in the workspace).
 - [ ] No domain appears in both Card 1 and Card 2 on the same page (Google only counts the first link per domain)
 - [ ] Card 2 links are rotated by page or category — not identical boilerplate across all pages
 - [ ] No CTA "Calculate ↑" buttons in educational sections (calculators auto-compute)
