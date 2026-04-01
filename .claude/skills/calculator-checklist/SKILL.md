@@ -177,7 +177,7 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 ### Form & Auto-Calculate
 - [ ] Uses `useAutoCalculate` hook with `useForm` (no `zodResolver`, manual validation via `setError`/`clearErrors`)
 - [ ] Uses `watch()` to read all form values reactively
-- [ ] Results derive from `useMemo` that calls `schema.safeParse(values)` — recalculate instantly on any input change
+- [ ] Results derive from either `useMemo` with `schema.safeParse(values)` (simple calculators) or `useAutoCalculate` hook with a `compute` callback (form-based calculators) — recalculate instantly on any input change
 - [ ] No Calculate button — auto-calculate pattern
 - [ ] Uses `BigNumber` from `bignumber.js` for math (not native JS floats)
 - [ ] Form inputs use `register()` from react-hook-form
@@ -197,7 +197,7 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 
 ### SEO & Metadata (Site-Specific)
 - [ ] FAQ questions match between JSON-LD and visible content
-- [ ] Canonical URL set to `https://www.loanchop.com/`
+- [ ] Canonical URL set to `https://www.loanchop.com`
 
 ### Calculator Card Boundary (Site-Specific)
 - [ ] All calculator content (header, inputs, summary cards, amortization table, balance chart) is inside the shell card
