@@ -47,7 +47,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] OpenGraph image includes `alt` text describing the calculator
 - [ ] Metadata includes `twitter` card: `{ card: "summary_large_image", title, description }`
 - [ ] Metadata includes `keywords` array with 6-8 relevant terms
-- [ ] Canonical URL has **no trailing slash**, uses `https://www.` prefix (e.g., `https://www.domain.com` not `https://domain.com`)
+- [ ] Canonical URL uses `https://www.` prefix with **trailing slash on subpages** (e.g., `https://www.domain.com/slug/`), no trailing slash on homepage
 - [ ] OG image (`public/images/og-default.jpg`) is **site-specific** — not the generic shared image (verify file is unique to this site)
 - [ ] OG image dimensions are 1200x630 and `public/images/logo.png` dimensions are 400x400
 - [ ] Favicon files exist: `public/favicon.svg` (or `.ico`) and `src/app/apple-icon.png` (180x180 PNG) — apple-icon must be in `src/app/` only (Next.js file convention), NOT duplicated in `public/`

@@ -81,7 +81,7 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - `twitter` card metadata is **required** — every `generateMetadata()` must include `twitter: { card: "summary_large_image", title, description }`
 - OpenGraph images must include `alt` text describing the calculator
 - `keywords` array is **required** — include 6-8 relevant terms in every `generateMetadata()`
-- Canonical URLs use `https://www.` prefix, **no trailing slash** (e.g., `https://www.domain.com/slug` not `https://domain.com/slug/`)
+- Canonical URLs use `https://www.` prefix, **trailing slash on subpages** (e.g., `https://www.domain.com/slug/`), no trailing slash on homepage (e.g., `https://www.domain.com`)
 - OG image (`public/images/og-default.jpg`) must be **site-specific** (branded for this site) — not a generic shared image
 - Favicon: `favicon.svg` in `public/`, `apple-icon.png` (180x180 PNG) in `src/app/` (Next.js file convention). Declare favicon in `layout.tsx` `<head>` via `<link>` tag. Do NOT put `apple-icon.png` in both `src/app/` and `public/` — duplicates cause a 0 B build route
 - `openGraph.url` must match `alternates.canonical` — same absolute URL, same www/trailing-slash convention
