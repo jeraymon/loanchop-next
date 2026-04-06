@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Calculator from "./Calculator";
+import { educationalContent } from "./educationalContent";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -33,70 +34,17 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const mathSolverJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "MathSolver",
-  name: "Loan Prepayment Calculator",
-  description: "Calculate how extra monthly payments reduce total interest and shorten your loan term. Includes interactive amortization schedule and balance comparison chart.",
-  inLanguage: "en",
-  url: "https://www.loanchop.com",
-  publisher: {
-    "@type": "Organization",
-    name: "LoanChop",
-    url: "https://www.loanchop.com",
-    logo: {
-      "@type": "ImageObject",
-      url: "https://www.loanchop.com/images/logo.png",
-    },
-    email: "aj@ajdesigner.com",
-  },
-  potentialAction: {
-    "@type": "SolveMathAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: "https://www.loanchop.com/?principal={principal}&rate={rate}&years={years}&extra={extra}",
-      "query-input": "required name=principal name=rate name=years name=extra",
-    },
-  },
-};
-
 const faqJsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Should I make extra payments or invest the money instead?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Paying down your mortgage offers a guaranteed, risk-free return equal to your interest rate. If your mortgage rate is 6% or higher, extra payments are often a strong choice. If your rate is below 4%, you might earn more by investing in diversified index funds over the long term, though that carries market risk. Consider your risk tolerance, tax situation, and whether you have an adequate emergency fund before deciding.",
-      },
+  mainEntity: educationalContent.faq.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
     },
-    {
-      "@type": "Question",
-      name: "Is it better to pay extra monthly or make a lump sum payment?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Both approaches reduce your principal and save interest. A lump sum applied early in the loan has the largest impact because it reduces the balance when interest charges are highest. Monthly extra payments provide a disciplined, consistent approach that is easier to budget for. Mathematically, the earlier you apply the money, the more you save.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Do extra payments reduce my monthly payment amount?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "No. Extra payments reduce your remaining balance and shorten the loan term, but your required monthly payment stays the same. The benefit is that you pay off the loan sooner and pay significantly less total interest. If you need a lower monthly payment, you would need to refinance your loan.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How do I tell my lender to apply extra payments to principal?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Most lenders apply extra payments to principal automatically, but it is wise to confirm. When making your payment, look for an 'additional principal' field on your statement or online portal. You can also include a note with your payment specifying that the extra amount should be applied to principal, not held for future payments.",
-      },
-    },
-  ],
+  })),
 };
 
 const organizationJsonLd = {
@@ -127,13 +75,56 @@ const organizationJsonLd = {
   ],
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "LoanChop",
+      item: "https://www.loanchop.com",
+    },
+  ],
+};
+
+const howToJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "How to Calculate Loan Prepayment Savings",
+  description: "Use the LoanChop calculator to see how extra monthly payments reduce total interest and shorten your mortgage term.",
+  step: [
+    {
+      "@type": "HowToStep",
+      name: "Enter your loan amount",
+      text: "Type your total loan principal (e.g., $200,000) into the Loan Amount field.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Enter your interest rate",
+      text: "Type your annual interest rate (e.g., 6%) into the Annual Interest Rate field.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Enter your loan term",
+      text: "Type the loan duration in years (e.g., 30) into the Loan Term field.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Enter your extra monthly payment",
+      text: "Type the additional amount you plan to pay each month (e.g., $200) into the Extra Monthly Payment field.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Review your results",
+      text: "The calculator instantly shows your monthly payment, interest saved, time saved, and a side-by-side amortization schedule comparing normal vs. accelerated payoff.",
+    },
+  ],
+};
+
 export default function HomePage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(mathSolverJsonLd) }}
-      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
@@ -141,6 +132,14 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
       />
       <Calculator />
     </>

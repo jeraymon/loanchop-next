@@ -6,11 +6,13 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useAutoCalculate } from "@/hooks/useAutoCalculate";
 import CalculatorShell from "@/components/CalculatorShell";
+import EducationalSection from "@/components/EducationalSection";
 import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorIcon } from "@/components/ui/ErrorIcon";
+import { educationalContent } from "./educationalContent";
 import {
   compareWithAndWithoutExtra,
   type AmortizationRow,
@@ -606,113 +608,15 @@ export default function Calculator() {
         <AdSlot />
       </div>
 
-      {/* Educational content */}
+      <EducationalSection
+        content={educationalContent}
+        onJumpToCalculator={() => {
+          document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
+
+      {/* Related Calculators */}
       <section className="max-w-3xl mx-auto space-y-6">
-        {/* How Extra Payments Work */}
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-5 space-y-3">
-          <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
-            How Extra Payments Work
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            When you make extra payments on your loan, the additional amount goes directly
-            toward reducing your principal balance. Since interest is calculated on the
-            remaining balance each month, a lower balance means less interest accrues. This
-            creates a compounding effect: each extra dollar paid today saves you multiple
-            dollars in future interest charges. Even modest additional payments of $50 to
-            $200 per month can shave years off a 30-year mortgage and save tens of thousands
-            in interest.
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            This calculator supports two types of extra payments. <strong>Repeating</strong> payments
-            apply to every month from the selected row onward — perfect for a permanent budget
-            increase. <strong>Single</strong> payments apply to one specific month only — ideal
-            for modeling a bonus, tax refund, or inheritance. Click any row in the amortization
-            table to enter extra payment amounts.
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Most lenders allow prepayment without penalties, though it is worth confirming
-            with your loan servicer. Some loans have prepayment penalty clauses, particularly
-            during the first few years. Federal law prohibits prepayment penalties on many
-            types of mortgages originated after January 2014.
-          </p>
-        </div>
-
-        {/* Example */}
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-5 space-y-3">
-          <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
-            Worked Example
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Consider a $250,000 mortgage at 6.5% for 30 years. The standard monthly payment
-            is $1,580.17. Over the full term, you would pay $318,861 in interest alone,
-            nearly 1.3 times the original loan amount.
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            By adding just $300 per month in extra payments, you would pay off the loan in
-            about 21 years instead of 30, saving approximately $120,000 in total interest.
-            That $300 monthly investment effectively earns a guaranteed return equivalent to
-            your mortgage rate, which is difficult to match with other low-risk investments.
-          </p>
-        </div>
-
-        {/* FAQ */}
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-5 space-y-4">
-          <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                Should I make extra payments or invest the money instead?
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Paying down your mortgage offers a guaranteed, risk-free return equal to your
-                interest rate. If your mortgage rate is 6% or higher, extra payments are often
-                a strong choice. If your rate is below 4%, you might earn more by investing in
-                diversified index funds over the long term, though that carries market risk.
-                Consider your risk tolerance, tax situation, and whether you have an adequate
-                emergency fund before deciding.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                Is it better to pay extra monthly or make a lump sum payment?
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Both approaches reduce your principal and save interest. A lump sum applied
-                early in the loan has the largest impact because it reduces the balance when
-                interest charges are highest. Monthly extra payments provide a disciplined,
-                consistent approach that is easier to budget for. Mathematically, the earlier
-                you apply the money, the more you save.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                Do extra payments reduce my monthly payment amount?
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                No. Extra payments reduce your remaining balance and shorten the loan term, but
-                your required monthly payment stays the same. The benefit is that you pay off
-                the loan sooner and pay significantly less total interest. If you need a lower
-                monthly payment, you would need to refinance your loan.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                How do I tell my lender to apply extra payments to principal?
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Most lenders apply extra payments to principal automatically, but it is wise to
-                confirm. When making your payment, look for a &quot;additional principal&quot;
-                field on your statement or online portal. You can also include a note with your
-                payment specifying that the extra amount should be applied to principal, not
-                held for future payments.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Related Calculators */}
         <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground p-5 space-y-3">
           <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
             Related Calculators
