@@ -34,12 +34,11 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 ### SEO & Metadata
 - [ ] `page.tsx` exports `generateMetadata()` function (NOT `export const metadata`)
 - [ ] Meta description is 150-165 characters (under 140 wastes SERP space, over 170 gets truncated). Note: descriptions may span multiple lines in the source — read the full string before counting characters.
-- [ ] `MathSolver` JSON-LD schema present as plain `<script>` tag (NOT `next/script`)
-- [ ] MathSolver JSON-LD includes `inLanguage`, `publisher` (with logo), and `potentialAction` fields
 - [ ] `FAQPage` JSON-LD schema present as a second plain `<script>` tag
+- [ ] `BreadcrumbList` JSON-LD schema present as plain `<script>` tag — Home > Category > Calculator with absolute URLs
+- [ ] `HowTo` JSON-LD schema present as plain `<script>` tag — steps from `educationalContent.exampleProblem`
+- [ ] **No MathSolver schema** — removed (calculators are client-side only, no query-param input)
 - [ ] FAQ questions match between JSON-LD and visible content in Calculator.tsx
-- [ ] MathSolver JSON-LD `publisher` includes `name`, `url`, `logo`, and `email: "aj@ajdesigner.com"`
-- [ ] MathSolver JSON-LD `publisher.logo` is an absolute URL pointing to `public/images/logo.png` (400x400 square PNG)
 - [ ] All URLs in JSON-LD are **absolute** (not relative paths)
 - [ ] Home page includes standalone Organization schema with `name`, `url`, `logo`, `email: "aj@ajdesigner.com"`, and `sameAs` (all 14 sister site URLs) — required on ALL sites, not just multi-calc
 - [ ] Metadata includes `openGraph` with `og:image` using an **absolute URL** (e.g., `https://www.example.com/images/og-default.jpg` — not a relative path like `/images/og-default.jpg`)
@@ -62,19 +61,19 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] Educational content sections use light borders (`border border-slate-200 dark:border-slate-800`) — NOT heavy bordered cards (`border-2` or `shadow-md`) that compete with the calculator card
 
 ### Educational Content
-- [ ] **Introductory/explanatory section** (e.g., "How It Works", "What Is X?", "Understanding X")
-- [ ] **Example Problem** section with worked example using real numbers
-- [ ] **FAQ** section with 3-5 questions and 2-3 sentence answers
-- [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements. Use plain `<h3>` + `<p>` pairs.
-- [ ] **Related Calculators** card (Card 1) with 4-6 topical deeplinks (internal or external) in a **bordered card** (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`)
-- [ ] **Related Sites** card (Card 2) with 6 home page links to sister sites in a **bordered card** (same styling as Card 1)
-  - Note: cameradof.com IS a recognized sister site (cameradof-next exists in the workspace).
-- [ ] No domain appears in both Card 1 and Card 2 on the same page (Google only counts the first link per domain)
-- [ ] Card 2 links are rotated by page or category — not identical boilerplate across all pages
-- [ ] No CTA "Calculate ↑" buttons in educational sections (calculators auto-compute)
-- [ ] Educational headings use lighter styles (`text-base font-semibold text-slate-600 dark:text-slate-400`) — NOT competing with the calculator title
-- [ ] Neither Card 1 nor Card 2 self-links to the current site's own domain (self-links provide no SEO value)
-- [ ] Educational sections do NOT use Tailwind Typography `prose` or `prose-invert` classes — use explicit utility classes (`text-base`, `text-sm text-muted-foreground`, etc.)
+- [ ] `educationalContent.ts` exists with `EducationalContent` typed data (no JSX)
+- [ ] `EducationalSection` component used in Calculator.tsx (replaces inline educational HTML)
+- [ ] Required sections present: `equationCards`, `howItWorks`, `exampleProblem`, `faq`
+- [ ] Enrichment sections present: `keyConcepts`, `applications`, `commonMistakes` (and `whenToUse` for multi-solve)
+- [ ] FAQ single-sourced: `educationalContent.faq` imported by both Calculator.tsx (EducationalSection) and page.tsx (JSON-LD)
+- [ ] FAQ answers are always visible — no `<details>`/`<summary>` elements
+- [ ] **Related Calculators** card (Card 1) with 4-6 topical deeplinks in a bordered card (`rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md`)
+- [ ] **Related Sites** card (Card 2) with 6 home page links to sister sites in a bordered card (same styling)
+- [ ] No domain appears in both Card 1 and Card 2 on the same page
+- [ ] Card 2 links rotated by page/category — not identical boilerplate
+- [ ] Neither Card 1 nor Card 2 self-links to the current site's domain
+- [ ] Educational sections do NOT use `prose`/`prose-invert` classes
+- [ ] Educational headings use `text-base font-semibold text-slate-600 dark:text-slate-400`
 
 ### Charts (if applicable)
 - [ ] Chart component lazy-loaded via `next/dynamic` with `{ ssr: false }`

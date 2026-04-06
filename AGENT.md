@@ -25,9 +25,11 @@
 - **Ad Code (LOCKED — NEVER modify):** The AdSense implementation is split across two files: (1) `layout.tsx` has the library `<script async src="...adsbygoogle.js?client=ca-pub-6158058519275033" crossOrigin="anonymous" />` in the `<head>` — this is a plain `<script>` tag (NOT `next/script`), which renders into static HTML at build time for SSG. (2) `AdSlot.tsx` has the `<ins>` tag with ad attributes and a `useEffect` that calls `(window.adsbygoogle = window.adsbygoogle || []).push({})`. The `<script>` tag must NOT be inside AdSlot JSX (React strips `<script>` tags from JSX). Values: `data-ad-client="ca-pub-6158058519275033"`, `data-ad-slot="5439322335"`, `data-ad-format="rectangle, horizontal"`, `data-full-width-responsive="true"`. Style: `display: block, width: 100%, minWidth: 250px, minHeight: 250px`. No `overflow-hidden` on the `<aside>` container. Do NOT change any of these values.
 - **Ad Protection:** The `<aside>` container must NOT have `overflow-hidden` (AdSense bots reject clipped containers to protect the AdChoices icon). The `<ins>` tag uses explicit dimensions (`width: 100%`, `minWidth: 250px`, `minHeight: 250px`) to prevent collapse when unfilled. Maintain a 50px vertical margin (`my-[50px]`). UI elements MUST NOT overlap this zone. The index page has NO ads.
 - **Redirects:** Add redirect rules to `customHttp.yml` for AWS Amplify (since Next.js `redirects()` is dead code with `output: 'export'`).
-- **Metadata:** Export `generateMetadata()` (NOT `export const metadata`) with unique titles, descriptions, canonical URLs, and OpenGraph tags (including `og:image` pointing to `/images/og-default.jpg` — 1200x630). Inject **two** JSON-LD schemas via plain `<script>` tags with `type="application/ld+json"` and `dangerouslySetInnerHTML`:
-  1. **`MathSolver`** — includes `inLanguage: "en"`, `publisher` (Organization with logo), `potentialAction` (SolveMathAction with EntryPoint and query-input)
-  2. **`FAQPage`** — `mainEntity` array of `Question`/`Answer` pairs matching the FAQ section in Calculator.tsx
+- **Metadata:** Export `generateMetadata()` (NOT `export const metadata`) with unique titles, descriptions, canonical URLs, and OpenGraph tags (including `og:image` pointing to `/images/og-default.jpg` — 1200x630). Inject JSON-LD schemas via plain `<script>` tags with `type="application/ld+json"` and `dangerouslySetInnerHTML`. Up to **four** JSON-LD schemas per page:
+  1. **`FAQPage`** — `mainEntity` array from `educationalContent.faq` (single source of truth)
+  2. **`BreadcrumbList`** — Home > Category > Calculator with absolute URLs
+  3. **`HowTo`** — generated from `educationalContent.exampleProblem.steps`
+  4. **Organization** (homepage only) — with `sameAs` listing all sister site URLs
   Do NOT use `next/script` (`<Script>`) — it injects at runtime via JS, which means the JSON-LD is invisible to crawlers in SSG (`output: 'export'`). Also do NOT use `metadata.other` (renders as `<meta>` instead of `<script>`).
 - **SEO Files:** `public/robots.txt` (allows all crawlers, points to sitemap) and `public/sitemap.xml` (auto-generated). The `prebuild` script (`scripts/generate-sitemap.mjs`) reads `calculator-catalog.ts` and writes `sitemap.xml` automatically — no manual edits needed. It runs before every `npm run build`.
 
@@ -190,6 +192,10 @@ This site does not use URL parameters. Share buttons share the clean base URL. N
 **When updating or fixing live UI components:**
 1. READ the existing calculator code as the reference.
 2. APPLY code fixes to `src/` files while preserving the established patterns.
+
+### Educational Content Pattern
+- Educational content is extracted into `educationalContent.ts` (pure data, no JSX) and rendered by the shared `EducationalSection` component.
+- FAQ is single-sourced from `educationalContent.faq` — imported by both Calculator.tsx (visible) and page.tsx (JSON-LD).
 
 ### Related Sites (Cross-Site Linking)
 Every calculator's educational content ends with a **Related Sites** bordered card containing 4-6 external links to sister sites:
