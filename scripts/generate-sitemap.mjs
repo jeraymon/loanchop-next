@@ -23,9 +23,9 @@ const liveHrefs = liveMatches.map((m) => m[1]);
 // Static pages
 const staticPages = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/terms", changefreq: "yearly", priority: "0.3" },
-  { path: "/privacy", changefreq: "yearly", priority: "0.3" },
-  { path: "/accessibility", changefreq: "yearly", priority: "0.3" },
+  { path: "/terms/", changefreq: "yearly", priority: "0.3" },
+  { path: "/privacy/", changefreq: "yearly", priority: "0.3" },
+  { path: "/accessibility/", changefreq: "yearly", priority: "0.3" },
 ];
 
 // Build URL entries
@@ -36,7 +36,7 @@ const entries = [
   ),
   ...liveHrefs.map(
     (href) =>
-      `  <url>\n    <loc>${SITE}${href}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+      `  <url>\n    <loc>${SITE}${href.endsWith("/") ? href : href + "/"}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
   ),
 ];
 
