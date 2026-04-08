@@ -55,7 +55,7 @@ export default function EducationalSection({
       {/* How It Works */}
       <div
         id="how-it-works"
-        className="rounded-lg border border-slate-200 dark:border-slate-800 p-6 space-y-3"
+        className="space-y-3"
       >
         <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
           How It Works
@@ -66,7 +66,7 @@ export default function EducationalSection({
       {/* Example Problem */}
       <div
         id="example"
-        className="rounded-lg border border-slate-200 dark:border-slate-800 p-6 space-y-3"
+        className="space-y-3"
       >
         <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
           Example Problem
@@ -137,7 +137,7 @@ export default function EducationalSection({
       {/* FAQ */}
       <div
         id="faq"
-        className="rounded-lg border border-slate-200 dark:border-slate-800 p-6 space-y-5"
+        className="space-y-5"
       >
         <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
           Frequently Asked Questions

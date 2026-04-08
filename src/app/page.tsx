@@ -1,35 +1,34 @@
 import type { Metadata } from "next";
 import Calculator from "./Calculator";
 import { educationalContent } from "./educationalContent";
+import { SITE_NAME, SITE_URL, OG_IMAGE } from "./seo-constants";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const pageTitle = "Loan Prepayment Calculator — Extra Payment Savings";
+  const pageDescription =
+    "See how extra monthly payments reduce total interest and shorten your loan term. Compare normal vs. accelerated payoff with an interactive amortization schedule.";
+  const canonicalUrl = SITE_URL;
+
   return {
-    title: "Loan Prepayment Calculator — See How Extra Payments Save You Money | LoanChop",
+    title: pageTitle,
     icons: { icon: "/favicon.svg", apple: "/apple-icon.png" },
-    description: "Free loan prepayment calculator. See how extra monthly payments reduce total interest and shorten your mortgage. Interactive amortization schedule and balance chart.",
+    description: pageDescription,
     keywords: ["loan prepayment", "extra payment calculator", "mortgage payoff", "loan payoff", "amortization", "interest savings", "early payoff"],
     alternates: {
-      canonical: "https://www.loanchop.com",
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: "Loan Prepayment Calculator — LoanChop",
-      description: "See how extra monthly payments reduce total interest and shorten your mortgage. Free interactive amortization schedule.",
-      url: "https://www.loanchop.com",
-      siteName: "LoanChop",
+      title: pageTitle,
+      description: pageDescription,
+      url: canonicalUrl,
+      siteName: SITE_NAME,
       type: "website",
-      images: [
-        {
-          url: "https://www.loanchop.com/images/og-default.jpg",
-          width: 1200,
-          height: 630,
-          alt: "LoanChop Loan Prepayment Calculator",
-        },
-      ],
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Loan Prepayment Calculator — LoanChop",
-      description: "See how extra monthly payments reduce total interest and shorten your mortgage.",
+      title: pageTitle,
+      description: pageDescription,
     },
   };
 }
