@@ -407,25 +407,25 @@ export default function Calculator() {
               <span className="text-muted-foreground">— Compare two loans side by side</span>
             </li>
             <li>
-              <a href="https://www.ajdesigner.com/loan" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.ajdesigner.com/loan/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Loan Calculator
               </a>{" "}
               <span className="text-muted-foreground">— Calculate monthly payments and total interest</span>
             </li>
             <li>
-              <a href="https://www.ajdesigner.com/mortgage-loan" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.ajdesigner.com/mortgage-loan/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Mortgage Loan Calculator
               </a>{" "}
               <span className="text-muted-foreground">— Estimate mortgage payments and amortization</span>
             </li>
             <li>
-              <a href="https://www.ajdesigner.com/mortgage-loan-points" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.ajdesigner.com/mortgage-loan-points/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Mortgage Points Calculator
               </a>{" "}
               <span className="text-muted-foreground">— Calculate the value of buying mortgage points</span>
             </li>
             <li>
-              <a href="https://www.ajdesigner.com/interest-rate" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.ajdesigner.com/interest-rate/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Interest Rate Calculator
               </a>{" "}
               <span className="text-muted-foreground">— Solve for interest rate from loan terms</span>
