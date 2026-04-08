@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { BlockMath } from "react-katex";
-import { Breadcrumbs, type Breadcrumb } from "./Breadcrumbs";
 import "katex/dist/katex.min.css";
 
 export default function CalculatorShell({
@@ -15,7 +14,6 @@ export default function CalculatorShell({
   afterSolution,
   chart,
   table,
-  breadcrumbs,
   children,
 }: {
   id?: string;
@@ -28,14 +26,12 @@ export default function CalculatorShell({
   afterSolution?: React.ReactNode;
   chart?: React.ReactNode;
   table?: React.ReactNode;
-  breadcrumbs?: Breadcrumb[];
   children: React.ReactNode;
 }) {
   return (
     <article id={id} className="max-w-3xl mx-auto space-y-8 overflow-hidden">
       <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground overflow-hidden">
         <div className="bg-indigo-600 dark:bg-indigo-700 text-white space-y-2 px-4 sm:px-6 py-4">
-          {breadcrumbs && <Breadcrumbs breadcrumbs={breadcrumbs} />}
           <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
         </div>
         <div className="px-4 sm:px-6 py-6 space-y-6">
