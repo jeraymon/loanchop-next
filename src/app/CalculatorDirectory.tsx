@@ -1,12 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { categories, totalCalculators, type Category } from "./calculator-catalog";
 
 export function CalculatorDirectory() {
   const [query, setQuery] = useState("");
   const lowerQuery = query.toLowerCase().trim();
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      requestAnimationFrame(() => {
+        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
+  }, []);
 
   const filtered: Category[] = useMemo(() => {
     if (!lowerQuery) return categories;

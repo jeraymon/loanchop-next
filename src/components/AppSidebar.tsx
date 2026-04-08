@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calculator, FlaskConical, Wrench, Sigma, DollarSign, Droplets, Hash, Heart, Mountain, Thermometer, Search } from "lucide-react";
 import { categories } from "@/app/calculator-catalog";
@@ -36,6 +36,7 @@ const allCalculators = categories.flatMap((cat) =>
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [query, setQuery] = React.useState("");
   const results = React.useMemo(() => {
     if (!query.trim()) return [];
@@ -89,7 +90,19 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem key={cat.id}>
                       <SidebarMenuButton asChild tooltip={cat.label}>
-                        <Link href={`/#${cat.id}`} className="flex items-center gap-3">
+                        <Link
+                          href={`/#${cat.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (pathname === "/") {
+                              document.getElementById(cat.id)?.scrollIntoView({ behavior: "smooth" });
+                              window.history.replaceState(null, "", `/#${cat.id}`);
+                            } else {
+                              router.push(`/#${cat.id}`);
+                            }
+                          }}
+                          className="flex items-center gap-3"
+                        >
                           <Icon className="size-4" />
                           <span>{cat.label}</span>
                         </Link>
