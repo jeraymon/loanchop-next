@@ -72,6 +72,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] No domain appears in both Card 1 and Card 2 on the same page
 - [ ] Card 2 links rotated by page/category — not identical boilerplate
 - [ ] Neither Card 1 nor Card 2 self-links to the current site's domain
+- [ ] All cross-site page URLs in Related Calculators/Sites have **trailing slashes** (e.g., `https://www.example.com/slug/` not `/slug`)
 - [ ] Educational sections do NOT use `prose`/`prose-invert` classes
 - [ ] Educational headings use `text-base font-semibold text-slate-600 dark:text-slate-400`
 
@@ -154,6 +155,7 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 - [ ] `customHttp.yml` has redirect rules for all legacy PHP pages (e.g., `/legal.php` → `/terms/`, `/index.php` → `/`)
 - [ ] Verify redirects cover any URLs appearing in Google Search Console or site: search results
 - [ ] All redirect destinations in `customHttp.yml` point to valid, existing routes in the app (not 404 paths)
+- [ ] All `customHttp.yml` redirect targets have **trailing slashes** on subpages (matching `trailingSlash: true`)
 
 ## Site-Specific
 
