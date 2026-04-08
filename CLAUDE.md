@@ -63,7 +63,7 @@ All sites share the same publisher, AdSense config, and design system. Use Relat
 - Recharts Tooltip formatter params are NOT type-annotated
 - **LaTeX formulas** must use `String.raw` backtick templates for `latexFormula` props — NOT double-backslash JSX strings (they get double-escaped in SSG and render as raw text)
 - BigNumber from `bignumber.js` for precision math
-- **Calculator Card Boundary:** The shell card = the calculator. Educational content lives outside the card as page text. Educational sections use light borders (`border border-slate-200`). The Related Sites/Calculators section uses a heavier bordered card (`border-2 shadow-md`). ShareButtons and AdSlot sit between card and educational content. See AGENT.md for details.
+- **Calculator Card Boundary:** The shell card = the calculator. Educational content lives outside the card as page text. Educational sections are plain text (no borders) — only equationCards keep light borders. The Related Sites/Calculators section uses a heavier bordered card (`border-2 shadow-md`). ShareButtons and AdSlot sit between card and educational content. See AGENT.md for details.
 - **Card border:** Shell components use a plain `<div>` with `rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md` — do NOT use the shadcn `Card` component. See AGENT.md for details.
 - **Educational headings:** Use `text-base font-semibold text-slate-600 dark:text-slate-400` — lighter than the calculator title so they don't compete visually.
 - **No prose class in educational sections:** Educational `<section>` elements must NOT use `prose` or `prose-invert` Tailwind Typography classes — these create oversized headings. Use explicit utility classes only.

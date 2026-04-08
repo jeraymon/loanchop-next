@@ -52,13 +52,15 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] Favicon files exist: `public/favicon.svg` (or `.ico`) and `src/app/apple-icon.png` (180x180 PNG) — apple-icon must be in `src/app/` only (Next.js file convention), NOT duplicated in `public/`
 - [ ] Favicon declared in `layout.tsx` `<head>` via `<link>` tags
 - [ ] `layout.tsx` does NOT call `generateMetadata()` — dynamic metadata belongs in `page.tsx` only (static `export const metadata` in `layout.tsx` is acceptable for site-wide defaults like site name and icons)
+- [ ] `seo-constants.ts` exists at `src/app/seo-constants.ts` with `SITE_NAME`, `SITE_URL`, `OG_IMAGE` exports
+- [ ] `page.tsx` imports from `seo-constants.ts` and extracts `pageTitle`, `pageDescription`, `canonicalUrl` as consts — no raw string duplication across metadata/openGraph/twitter
 
 ### Calculator Card Boundary
 - [ ] All calculator content (header, formula, inputs, solution, charts, tables) is inside the shell card
 - [ ] `<ShareButtons />` is placed **outside** the shell card as a standalone JSX element — NOT passed via `afterSolution`, `table`, or any other shell prop
 - [ ] `<AdSlot />` is placed **outside** the shell card (between card and educational content)
 - [ ] Educational content is rendered as a plain `<section>` **outside** the shell — NOT inside the shell component
-- [ ] Educational content sections use light borders (`border border-slate-200 dark:border-slate-800`) — NOT heavy bordered cards (`border-2` or `shadow-md`) that compete with the calculator card
+- [ ] Educational content sections have NO borders (plain text with headings) — only equationCards keep light borders. Related Calculators/Sites cards use heavy borders (`border-2 shadow-md`).
 
 ### Educational Content
 - [ ] `educationalContent.ts` exists with `EducationalContent` typed data (no JSX)
