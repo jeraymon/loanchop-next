@@ -33,7 +33,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### SEO & Metadata
 - [ ] `page.tsx` exports `generateMetadata()` function (NOT `export const metadata`)
-- [ ] Meta description is 150-165 characters (under 140 wastes SERP space, over 170 gets truncated). Note: descriptions may span multiple lines in the source — read the full string before counting characters.
+- [ ] Meta description is 120-155 characters (under 120 wastes mobile SERP space, over 155 gets truncated on desktop). Note: descriptions may span multiple lines in the source — read the full string before counting characters.
 - [ ] `FAQPage` JSON-LD schema present as a second plain `<script>` tag
 - [ ] `BreadcrumbList` JSON-LD schema present as plain `<script>` tag — Home > Category > Calculator with absolute URLs
 - [ ] `HowTo` JSON-LD schema present as plain `<script>` tag — steps from `educationalContent.exampleProblem`
@@ -72,7 +72,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] No domain appears in both Card 1 and Card 2 on the same page
 - [ ] Card 2 links rotated by page/category — not identical boilerplate
 - [ ] Neither Card 1 nor Card 2 self-links to the current site's domain
-- [ ] All cross-site page URLs in Related Calculators/Sites have **trailing slashes** (e.g., `https://www.example.com/slug/` not `/slug`)
+- [ ] All cross-site **subpage** URLs in Related Calculators/Sites have **trailing slashes** (e.g., `https://www.example.com/slug/` not `/slug`). Home page URLs (`https://www.domain.com`) do NOT get a trailing slash.
 - [ ] Educational sections do NOT use `prose`/`prose-invert` classes
 - [ ] Educational headings use `text-base font-semibold text-slate-600 dark:text-slate-400`
 
