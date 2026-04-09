@@ -29,23 +29,23 @@ export default function CalculatorShell({
   children: React.ReactNode;
 }) {
   return (
-    <article id={id} className="max-w-3xl mx-auto space-y-8 overflow-hidden">
+    <article id={id} className="max-w-3xl mx-auto space-y-4 sm:space-y-6 overflow-hidden">
       <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground overflow-hidden">
-        <div className="bg-indigo-600 dark:bg-indigo-700 text-white space-y-2 px-4 sm:px-6 py-4">
+        <div className="bg-indigo-600 dark:bg-indigo-700 text-white space-y-2 px-4 sm:px-6 py-2 sm:py-3">
           <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
         </div>
-        <div className="px-4 sm:px-6 py-6 space-y-6">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
           {latexFormula && (
-            <section aria-label="Formula" className="bg-slate-50 dark:bg-slate-900 px-6 py-3 rounded-lg border text-center overflow-x-auto">
+            <section aria-label="Formula" className="bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 py-1 sm:py-2 rounded-lg border text-center overflow-x-auto">
               <div aria-hidden="true"><BlockMath math={latexFormula} /></div>
               {srFormulaText && <span className="sr-only">{srFormulaText}</span>}
             </section>
           )}
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>{children}</form>
+          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>{children}</form>
           <section aria-label="Result" className="mt-2">
-            <div className={`bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl text-center border border-indigo-200 dark:border-indigo-900 ${isStale ? "opacity-50" : "opacity-100"} transition-opacity duration-200`} aria-live="polite">
-              <h2 className="text-sm font-bold text-muted-foreground mb-2">{solutionLabel ?? "Solution"}</h2>
-              <output className="text-3xl font-black text-accent-foreground">{solutionValue ?? "—"}</output>
+            <div className={`bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded-xl text-center border border-indigo-200 dark:border-indigo-900 ${isStale ? "opacity-50" : "opacity-100"} transition-opacity duration-200`} aria-live="polite">
+              <h2 className="text-sm font-bold text-muted-foreground mb-1">{solutionLabel ?? "Solution"}</h2>
+              <output className="text-2xl sm:text-3xl font-black text-accent-foreground">{solutionValue ?? "—"}</output>
             </div>
             {afterSolution}
           </section>
