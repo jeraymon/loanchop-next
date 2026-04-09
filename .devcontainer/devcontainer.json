@@ -1,5 +1,5 @@
 {
-  "name": "AJ Designer Migration",
+  "name": "LoanChop",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
@@ -11,9 +11,17 @@
         "ms-vscode.vscode-typescript-next",
         "dbaeumer.vscode-eslint",
         "Google.geminicodeassist",
-        "anthropic.claude-code" 
-      ]
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
     }
   },
-  "remoteUser": "node"
+  "remoteUser": "node",
+  "remoteEnv": {
+    "GOOGLE_CLOUD_PROJECT": "raycave-ai"
+  }
 }
