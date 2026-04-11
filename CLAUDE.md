@@ -1,5 +1,7 @@
 # LoanChop — Loan Prepayment Calculator
 
+> **SEO recovery playbook:** See `/workspace/.claude/skills/calculator-seo-recovery/SKILL.md` for the reusable playbook and `/workspace/SEO-RECOVERY.md` for per-calc status. Reference implementation: `ajdesigner.com/linear-interpolation/`.
+
 ## Base Patterns (All Sites)
 
 ### Goals & Approach
@@ -141,7 +143,8 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 - `src/app/calculator-catalog.ts` — Single-entry catalog (Loan Prepayment Calculator at `/`)
 - `src/components/` — Shared UI (CalculatorShell, AdSlot, ShareButtons, ui/)
 - `src/shared-math/` — math-config.ts (BigNumber), units.ts
-- `customHttp.yml` — Amplify headers/redirects
+- `customHttp.yml` — Custom HTTP **headers only** (X-Frame-Options, X-Content-Type-Options). Redirects live in the Amplify Console (App settings → Rewrites and redirects); version-controlled mirror at `amplify-redirects.json`.
+- `amplify-redirects.json` — Version-controlled backup of Amplify Console redirect rules.
 - `legacy-php-backup/` — READ-ONLY archive
 - `.claude/skills/calculator-checklist/` — Skill to validate calculator implementation
 
