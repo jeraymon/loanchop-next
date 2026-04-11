@@ -129,7 +129,7 @@ export default function BalanceChart({
 
       {/* Chart */}
       <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 360, height: 280 }}>
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
             <XAxis

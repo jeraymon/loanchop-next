@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
               <Link href="/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
             </nav>
-            <p>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
+            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
           </footer>
         </ThemeProvider>
       </body>
