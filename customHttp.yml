@@ -5,10 +5,10 @@ customHeaders:
         value: "SAMEORIGIN"
       - key: "X-Content-Type-Options"
         value: "nosniff"
-customRules:
-  - source: /index.php
-    target: /
-    status: "301"
-  - source: /legal.php
-    target: /terms/
-    status: "301"
+
+# NOTE: Redirects (301s, rewrites, etc.) are NOT configured in this file.
+# Amplify only reads the customHeaders: block from customHttp.yml.
+# Redirects live in the Amplify Console → App settings → Rewrites and redirects.
+# A version-controlled backup of the active redirect rules is in:
+#   ./amplify-redirects.json
+# To modify redirects: update amplify-redirects.json AND paste it into the Console.
