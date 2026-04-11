@@ -1,0 +1,22 @@
+[
+  {
+    "source": "https://loanchop.com",
+    "status": "301",
+    "target": "https://www.loanchop.com"
+  },
+  {
+    "source": "/index.php",
+    "status": "301",
+    "target": "/"
+  },
+  {
+    "source": "/legal.php",
+    "status": "301",
+    "target": "/terms/"
+  },
+  {
+    "source": "/<*>",
+    "status": "404-200",
+    "target": "/index.html"
+  }
+]
