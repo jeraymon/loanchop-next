@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Link as LinkIcon, Mail, Share2 } from "lucide-react";
+import { Link as LinkIcon, Mail, SquareArrowUp } from "lucide-react";
 
 // Inline SVGs for brand icons (no dependency needed)
 function XIcon({ className }: { className?: string }) {
@@ -128,7 +128,7 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
           aria-label="Share this calculator"
           title="Share"
         >
-          <Share2 className="w-5 h-5" />
+          <SquareArrowUp className="w-5 h-5" />
         </button>
       )}
 
