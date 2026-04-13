@@ -1,13 +1,29 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Link as LinkIcon } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Link as LinkIcon, Mail, Share2 } from "lucide-react";
 
 // Inline SVGs for brand icons (no dependency needed)
 function XIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
     </svg>
   );
 }
@@ -28,10 +44,15 @@ interface ShareButtonsProps {
 
 export default function ShareButtons({ title, solutionLabel, solutionValue }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share);
+  }, []);
 
   const url = typeof window !== "undefined" ? window.location.href : "";
-  const solution = [solutionLabel, solutionValue].filter(Boolean).join(" ");
-  const shareText = `${title}: ${solution}`;
+  const solutionText = [solutionLabel, solutionValue].filter(Boolean).join(" ");
+  const shareText = `${title}: ${solutionText}`;
 
   const copyLink = useCallback(async () => {
     try {
@@ -39,7 +60,6 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const input = document.createElement("input");
       input.value = url;
       document.body.appendChild(input);
@@ -51,48 +71,110 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
     }
   }, [url]);
 
+  const nativeShare = useCallback(async () => {
+    try {
+      await navigator.share({ title, text: shareText, url });
+    } catch {
+      // User cancelled or share failed — no-op
+    }
+  }, [title, shareText, url]);
+
   const shareOnX = useCallback(() => {
     const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`;
     window.open(xUrl, "_blank", "noopener,noreferrer,width=550,height=420");
   }, [shareText, url]);
+
+  const shareOnLinkedIn = useCallback(() => {
+    const liUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+    window.open(liUrl, "_blank", "noopener,noreferrer,width=600,height=500");
+  }, [url]);
+
+  const shareOnFacebook = useCallback(() => {
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(fbUrl, "_blank", "noopener,noreferrer,width=600,height=500");
+  }, [url]);
 
   const shareOnReddit = useCallback(() => {
     const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(shareText)}`;
     window.open(redditUrl, "_blank", "noopener,noreferrer,width=800,height=600");
   }, [shareText, url]);
 
+  const emailSubject = encodeURIComponent(title);
+  const emailBody = encodeURIComponent(`${shareText}\n\n${url}`);
+  const mailtoHref = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+
   return (
     <div className="flex items-center justify-end gap-3 mt-3">
-      <span className="text-xs text-muted-foreground">Share:</span>
+      <span className="text-sm text-muted-foreground">Share:</span>
+
+      {/* Native share — mobile devices with Web Share API */}
+      {canNativeShare && (
+        <button
+          onClick={nativeShare}
+          className="text-foreground/60 hover:text-foreground transition-colors"
+          aria-label="Share this calculator"
+          title="Share"
+        >
+          <Share2 className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Copy link — always visible */}
       <button
         onClick={copyLink}
-        className="text-muted-foreground hover:text-indigo-600 transition-colors relative"
+        className="text-slate-500 hover:text-foreground transition-colors relative"
         aria-label={copied ? "Link copied" : "Copy link to this result"}
         title={copied ? "Copied!" : "Copy link"}
       >
-        <LinkIcon className="w-4 h-4" />
+        <LinkIcon className="w-5 h-5" />
         {copied && (
           <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-slate-800 text-white px-2 py-0.5 rounded whitespace-nowrap">
             Copied!
           </span>
         )}
       </button>
+
+      {/* Platform buttons — desktop fallback row (also visible on mobile alongside native share) */}
       <button
         onClick={shareOnX}
-        className="text-muted-foreground hover:text-indigo-600 transition-colors"
+        className="text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors"
         aria-label="Share on X"
         title="Share on X"
       >
-        <XIcon className="w-4 h-4" />
+        <XIcon className="w-5 h-5" />
+      </button>
+      <button
+        onClick={shareOnLinkedIn}
+        className="text-[#0A66C2]/60 hover:text-[#0A66C2] transition-colors"
+        aria-label="Share on LinkedIn"
+        title="Share on LinkedIn"
+      >
+        <LinkedInIcon className="w-5 h-5" />
+      </button>
+      <button
+        onClick={shareOnFacebook}
+        className="text-[#1877F2]/60 hover:text-[#1877F2] transition-colors"
+        aria-label="Share on Facebook"
+        title="Share on Facebook"
+      >
+        <FacebookIcon className="w-5 h-5" />
       </button>
       <button
         onClick={shareOnReddit}
-        className="text-muted-foreground hover:text-indigo-600 transition-colors"
+        className="text-[#FF4500]/60 hover:text-[#FF4500] transition-colors"
         aria-label="Share on Reddit"
         title="Share on Reddit"
       >
-        <RedditIcon className="w-4 h-4" />
+        <RedditIcon className="w-5 h-5" />
       </button>
+      <a
+        href={mailtoHref}
+        className="text-slate-500 hover:text-foreground transition-colors"
+        aria-label="Share via email"
+        title="Share via email"
+      >
+        <Mail className="w-5 h-5" />
+      </a>
     </div>
   );
 }
