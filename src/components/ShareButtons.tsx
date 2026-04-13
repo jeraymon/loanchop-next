@@ -93,6 +93,16 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
     <div className="flex items-center justify-center gap-3 mt-3">
       <span className="text-sm text-muted-foreground">Share:</span>
 
+      {/* WhatsApp */}
+      <button
+        onClick={shareOnWhatsApp}
+        className="text-[#25D366]/60 hover:text-[#25D366] transition-colors"
+        aria-label="Share on WhatsApp"
+        title="Share on WhatsApp"
+      >
+        <WhatsAppIcon className="w-5 h-5" />
+      </button>
+
       {/* Copy link */}
       <button
         onClick={copyLink}
@@ -106,16 +116,6 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
             Copied!
           </span>
         )}
-      </button>
-
-      {/* WhatsApp */}
-      <button
-        onClick={shareOnWhatsApp}
-        className="text-[#25D366]/60 hover:text-[#25D366] transition-colors"
-        aria-label="Share on WhatsApp"
-        title="Share on WhatsApp"
-      >
-        <WhatsAppIcon className="w-5 h-5" />
       </button>
 
       {/* X */}
