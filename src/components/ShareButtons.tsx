@@ -93,7 +93,7 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
     <div className="flex items-center justify-center gap-3 mt-3">
       <span className="text-sm text-muted-foreground">Share:</span>
 
-      {/* WhatsApp */}
+      {/* Platforms */}
       <button
         onClick={shareOnWhatsApp}
         className="text-[#25D366]/60 hover:text-[#25D366] transition-colors"
@@ -102,8 +102,16 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
       >
         <WhatsAppIcon className="w-5 h-5" />
       </button>
+      <button
+        onClick={shareOnX}
+        className="text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors"
+        aria-label="Share on X"
+        title="Share on X"
+      >
+        <XIcon className="w-5 h-5" />
+      </button>
 
-      {/* Copy link */}
+      {/* Utilities */}
       <button
         onClick={copyLink}
         className="text-slate-500 hover:text-foreground transition-colors relative"
@@ -117,18 +125,6 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
           </span>
         )}
       </button>
-
-      {/* X */}
-      <button
-        onClick={shareOnX}
-        className="text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors"
-        aria-label="Share on X"
-        title="Share on X"
-      >
-        <XIcon className="w-5 h-5" />
-      </button>
-
-      {/* Email */}
       <a
         href={mailtoHref}
         className="text-slate-500 hover:text-foreground transition-colors"
