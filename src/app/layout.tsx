@@ -30,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
               <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
               <Link href="/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
+              <a href="mailto:aj@ajdesigner.com" className="hover:text-foreground transition-colors">Contact</a>
             </nav>
             <p suppressHydrationWarning>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
           </footer>
