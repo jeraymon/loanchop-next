@@ -104,7 +104,7 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
   const mailtoHref = `mailto:?subject=${emailSubject}&body=${emailBody}`;
 
   return (
-    <div className="flex items-center justify-end gap-3 mt-3">
+    <div className="flex items-center justify-center gap-3 mt-3">
       <span className="text-sm text-muted-foreground">Share:</span>
 
       {/* Native share — mobile devices with Web Share API */}
