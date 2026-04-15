@@ -29,7 +29,7 @@ export default function CalculatorShell({
   children: React.ReactNode;
 }) {
   return (
-    <article id={id} className="max-w-3xl mx-auto space-y-4 sm:space-y-6 overflow-hidden">
+    <article id={id} className="max-w-6xl mx-auto space-y-4 sm:space-y-6 overflow-hidden">
       <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground overflow-hidden">
         <div className="bg-indigo-600 dark:bg-indigo-700 text-white space-y-2 px-4 sm:px-6 py-2 sm:py-3">
           <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
