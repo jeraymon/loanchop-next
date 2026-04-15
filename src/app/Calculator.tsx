@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorIcon } from "@/components/ui/ErrorIcon";
 import { educationalContent } from "./educationalContent";
-import { useLoanChopCalculator, fmtCurrency, fmtMonths, payoffDate, monthToDate } from "./useLoanChopCalculator";
+import { useLoanChopCalculator, fmtCurrency, fmtMonths } from "./useLoanChopCalculator";
 
 const BalanceChart = dynamic(() => import("./BalanceChart"), { ssr: false });
 
@@ -44,6 +44,14 @@ export default function Calculator() {
     setShowAllRows,
     normalByMonth,
     displaySchedule,
+    startDateInputValue,
+    handleStartDateChange,
+    monthToDate,
+    payoffDate,
+    slotStatuses,
+    saveToSlot,
+    loadFromSlot,
+    deleteSlot,
   } = useLoanChopCalculator();
 
   // ---------------------------------------------------------------------------
@@ -318,6 +326,78 @@ export default function Calculator() {
           ) : undefined
         }
       >
+        {/* Saved loans — 3 slots, legacy-compatible localStorage keys so any
+            loan saved in the old Sencha version loads here automatically. */}
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-3 space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Saved Loans
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Stored only in your browser — never sent anywhere.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {([1, 2, 3] as const).map((slot) => {
+              const filled = slotStatuses[slot - 1];
+              return (
+                <div
+                  key={slot}
+                  className={`rounded border px-2.5 py-2 flex items-center justify-between gap-2 ${
+                    filled
+                      ? "border-indigo-300 dark:border-indigo-700 bg-indigo-50/60 dark:bg-indigo-950/20"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+                  }`}
+                >
+                  <span className="text-xs font-medium">
+                    Slot {slot}
+                    <span className={`ml-1 text-[10px] uppercase tracking-wide ${filled ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground"}`}>
+                      {filled ? "Saved" : "Empty"}
+                    </span>
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (filled && !window.confirm(`Slot ${slot} already has a saved loan. Overwrite it with the current values? (The previous save will be replaced.)`)) {
+                          return;
+                        }
+                        const result = saveToSlot(slot);
+                        if (!result.ok) {
+                          window.alert(result.reason);
+                        }
+                      }}
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-400 rounded px-1.5 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!filled}
+                      onClick={() => loadFromSlot(slot)}
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-400 rounded px-1.5 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:text-slate-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                    >
+                      Open
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!filled}
+                      onClick={() => {
+                        if (window.confirm(`Delete the loan saved in Slot ${slot}? This cannot be undone.`)) {
+                          deleteSlot(slot);
+                        }
+                      }}
+                      className="text-xs font-medium text-red-500 hover:text-red-600 rounded px-1.5 py-0.5 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:text-slate-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                    >
+                      Del
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Form inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -357,6 +437,15 @@ export default function Calculator() {
               {...reg("years")}
               onBlur={handleBlurOrEnter}
               onKeyDown={(e) => e.key === "Enter" && handleBlurOrEnter()}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="startDate">First Payment Date</Label>
+            <Input
+              id="startDate"
+              type="month"
+              value={startDateInputValue}
+              onChange={(e) => handleStartDateChange(e.target.value)}
             />
           </div>
           <div className="space-y-1.5">

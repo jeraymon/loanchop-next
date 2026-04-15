@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useAutoCalculate } from "@/hooks/useAutoCalculate";
@@ -58,18 +58,255 @@ export function fmtMonths(months: number): string {
   return `${y} yr${y !== 1 ? "s" : ""} ${m} mo`;
 }
 
-export function payoffDate(months: number): string {
-  const d = new Date();
-  d.setMonth(d.getMonth() + months);
+/** Resolve a start-date anchor. Month 1 of the schedule is the first payment,
+ *  so an anchor of { year: 2026, month: 3 } means row #1 is Mar 2026. If no
+ *  anchor is provided, the current month is used (preserves legacy behavior). */
+export interface StartDateAnchor {
+  year: number;
+  /** 1-12 (one-indexed). */
+  month: number;
+}
+
+export function payoffDate(months: number, anchor?: StartDateAnchor): string {
+  const base = anchor
+    ? new Date(anchor.year, anchor.month - 1, 1)
+    : new Date();
+  // payoffDate reports the month AFTER the last payment clears the loan,
+  // which for a schedule of length `months` is anchor + (months - 1) months
+  // when anchor = month of the first payment. Subtract 1 to land on the
+  // final payment's month rather than overshooting by one.
+  const offset = anchor ? Math.max(months - 1, 0) : months;
+  const d = new Date(base.getFullYear(), base.getMonth() + offset, 1);
   return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
 export const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export function monthToDate(monthNum: number): string {
-  const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() + monthNum, 1);
+export function monthToDate(monthNum: number, anchor?: StartDateAnchor): string {
+  const base = anchor
+    ? new Date(anchor.year, anchor.month - 1, 1)
+    : new Date();
+  // With an anchor, row #1 is the anchor month itself. Without one, preserve
+  // the historical "current month + monthNum" behavior (which starts the
+  // schedule one month past today).
+  const offset = anchor ? monthNum - 1 : monthNum;
+  const d = new Date(base.getFullYear(), base.getMonth() + offset, 1);
   return `${d.getFullYear()}-${MONTH_ABBR[d.getMonth()]}`;
+}
+
+// ---------------------------------------------------------------------------
+// One-time legacy backup
+// ---------------------------------------------------------------------------
+
+/** Immutable snapshot of every legacy loanchop localStorage key at the moment
+ *  the user first lands on the new Next.js calculator. Written once — if this
+ *  key already exists it is NEVER touched again, regardless of later app
+ *  behavior. This protects users like Cory whose data dates back to the
+ *  Sencha version: any bug in our save/delete logic can still clobber the
+ *  live slots, but the backup remains intact and recoverable via DevTools. */
+const LEGACY_BACKUP_KEY = "loanchop_legacy_backup_v1";
+
+/** Matches every key the legacy Sencha app and this calculator write to:
+ *  base fields across 3 slots + per-month recurring/single extras across
+ *  3 slots. Anything else in localStorage is ignored. */
+function isLegacyLoanchopKey(key: string): boolean {
+  const BASE_NAMES = ["loanAmount", "loanInterestRate", "loanTermYears", "loanMonth", "loanYear", "loanExists"];
+  for (const name of BASE_NAMES) {
+    if (key === name || key === `${name}a2` || key === `${name}a3`) return true;
+  }
+  if (/^recurringExtraPayment\d+(a[23])?$/.test(key)) return true;
+  if (/^singleExtraPayment\d+(a[23])?$/.test(key)) return true;
+  return false;
+}
+
+/** Create the immutable legacy backup if it doesn't exist yet. Guaranteed to
+ *  be a no-op on every call after the first. Safe to call during mount. */
+function createLegacyBackupIfMissing(): void {
+  if (typeof window === "undefined") return;
+  try {
+    // If the backup already exists — even if it's an empty marker written
+    // on a prior visit by a user who had no legacy data — do not touch it.
+    if (localStorage.getItem(LEGACY_BACKUP_KEY) != null) return;
+
+    const snapshot: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !isLegacyLoanchopKey(k)) continue;
+      const v = localStorage.getItem(k);
+      if (v != null) snapshot[k] = v;
+    }
+
+    // Always write the marker, even when the snapshot is empty. This way a
+    // brand-new user (who has no legacy data on first visit but later saves
+    // through the new UI) does NOT retroactively "back up" their own live
+    // saves the next time the page loads — the backup step is truly once.
+    const payload = JSON.stringify({
+      createdAt: new Date().toISOString(),
+      keys: snapshot,
+    });
+    localStorage.setItem(LEGACY_BACKUP_KEY, payload);
+  } catch {
+    // If storage is unavailable (private mode, quota), silently skip the
+    // backup rather than break the page. No user data is harmed.
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Save-slot persistence (3 slots, legacy-compatible localStorage keys)
+// ---------------------------------------------------------------------------
+
+export type SlotNumber = 1 | 2 | 3;
+
+/** Legacy Sencha app used suffix = "" for slot 1, "a2" for slot 2, "a3" for
+ *  slot 3. Per-month extras are stored as `recurringExtraPayment{month}{suf}`
+ *  and `singleExtraPayment{month}{suf}`. Keeping these keys identical means
+ *  any existing legacy saved loan in a user's browser loads transparently. */
+function slotSuffix(slot: SlotNumber): string {
+  return slot === 1 ? "" : `a${slot}`;
+}
+
+/** Max months we'll scan for per-month extras. 30yr × 12 + a little slack. */
+const MAX_EXTRA_MONTHS = 480;
+
+export interface SavedLoan {
+  principal: string;
+  annualRate: string;
+  years: string;
+  loanMonth: number;
+  loanYear: number;
+  extraEntries: ExtraPaymentEntry[];
+}
+
+export type SaveResult = { ok: true } | { ok: false; reason: string };
+
+function readSlot(slot: SlotNumber): SavedLoan | null {
+  if (typeof window === "undefined") return null;
+  const s = slotSuffix(slot);
+  if (!localStorage.getItem(`loanExists${s}`)) return null;
+
+  const principal = localStorage.getItem(`loanAmount${s}`);
+  const annualRate = localStorage.getItem(`loanInterestRate${s}`);
+  const years = localStorage.getItem(`loanTermYears${s}`);
+  const loanMonthRaw = localStorage.getItem(`loanMonth${s}`);
+  const loanYearRaw = localStorage.getItem(`loanYear${s}`);
+  // Reject partially-written / corrupted slots: the base fields must be
+  // present AND parse as valid numbers. Loading garbage would silently
+  // replace the user's form and look like data loss to them.
+  if (!principal || !annualRate || !years) return null;
+  if (!(Number(principal) > 0)) return null;
+  if (Number.isNaN(Number(annualRate)) || Number(annualRate) < 0) return null;
+  if (!(Number(years) > 0)) return null;
+
+  const now = new Date();
+  const loanMonth = Number(loanMonthRaw);
+  const loanYear = Number(loanYearRaw);
+
+  const extraEntries: ExtraPaymentEntry[] = [];
+  for (let m = 1; m <= MAX_EXTRA_MONTHS; m++) {
+    const rec = parseFloat(localStorage.getItem(`recurringExtraPayment${m}${s}`) ?? "0");
+    const sin = parseFloat(localStorage.getItem(`singleExtraPayment${m}${s}`) ?? "0");
+    if (rec > 0 || sin > 0) {
+      extraEntries.push({ month: m, recurring: rec > 0 ? rec : 0, single: sin > 0 ? sin : 0 });
+    }
+  }
+
+  return {
+    principal,
+    annualRate,
+    years,
+    loanMonth: Number.isFinite(loanMonth) && loanMonth >= 1 && loanMonth <= 12 ? loanMonth : now.getMonth() + 1,
+    loanYear: Number.isFinite(loanYear) && loanYear > 1900 ? loanYear : now.getFullYear(),
+    extraEntries,
+  };
+}
+
+/** Capture every key belonging to a slot so we can roll back if a write
+ *  partially succeeds (quota exceeded, Safari private mode, disk full, etc.).
+ *  Without this, a throw mid-write could leave the slot half-cleared and the
+ *  user's real data gone. */
+function snapshotSlot(slot: SlotNumber): Record<string, string | null> {
+  if (typeof window === "undefined") return {};
+  const s = slotSuffix(slot);
+  const snap: Record<string, string | null> = {};
+  const baseKeys = [
+    `loanAmount${s}`, `loanInterestRate${s}`, `loanTermYears${s}`,
+    `loanMonth${s}`, `loanYear${s}`, `loanExists${s}`,
+  ];
+  for (const k of baseKeys) snap[k] = localStorage.getItem(k);
+  for (let m = 1; m <= MAX_EXTRA_MONTHS; m++) {
+    const rk = `recurringExtraPayment${m}${s}`;
+    const sk = `singleExtraPayment${m}${s}`;
+    const rv = localStorage.getItem(rk);
+    const sv = localStorage.getItem(sk);
+    if (rv != null) snap[rk] = rv;
+    if (sv != null) snap[sk] = sv;
+  }
+  return snap;
+}
+
+function restoreSnapshot(snap: Record<string, string | null>): void {
+  if (typeof window === "undefined") return;
+  // Best-effort restore; if this throws too, we accept the damage rather
+  // than loop. The user's original data was already copied into `snap` so
+  // at worst they can re-save from the captured values out-of-band.
+  for (const [k, v] of Object.entries(snap)) {
+    try {
+      if (v == null) localStorage.removeItem(k);
+      else localStorage.setItem(k, v);
+    } catch {
+      /* swallow and continue — best effort */
+    }
+  }
+}
+
+/** Returns true on successful write, false on any storage error (quota,
+ *  private-browsing restriction, etc.). On failure, the slot is rolled back
+ *  to its pre-write state so existing data is never lost. */
+function writeSlot(slot: SlotNumber, loan: SavedLoan): boolean {
+  if (typeof window === "undefined") return false;
+  const s = slotSuffix(slot);
+  const snap = snapshotSlot(slot);
+  try {
+    localStorage.setItem(`loanAmount${s}`, loan.principal);
+    localStorage.setItem(`loanInterestRate${s}`, loan.annualRate);
+    localStorage.setItem(`loanTermYears${s}`, loan.years);
+    localStorage.setItem(`loanMonth${s}`, String(loan.loanMonth));
+    localStorage.setItem(`loanYear${s}`, String(loan.loanYear));
+    localStorage.setItem(`loanExists${s}`, "1");
+    // Clear any previous per-month extras so we don't leave stale entries behind.
+    for (let m = 1; m <= MAX_EXTRA_MONTHS; m++) {
+      localStorage.removeItem(`recurringExtraPayment${m}${s}`);
+      localStorage.removeItem(`singleExtraPayment${m}${s}`);
+    }
+    for (const e of loan.extraEntries) {
+      if (e.recurring > 0) localStorage.setItem(`recurringExtraPayment${e.month}${s}`, String(e.recurring));
+      if (e.single > 0) localStorage.setItem(`singleExtraPayment${e.month}${s}`, String(e.single));
+    }
+    return true;
+  } catch {
+    restoreSnapshot(snap);
+    return false;
+  }
+}
+
+function clearSlot(slot: SlotNumber): void {
+  if (typeof window === "undefined") return;
+  const s = slotSuffix(slot);
+  localStorage.removeItem(`loanAmount${s}`);
+  localStorage.removeItem(`loanInterestRate${s}`);
+  localStorage.removeItem(`loanTermYears${s}`);
+  localStorage.removeItem(`loanMonth${s}`);
+  localStorage.removeItem(`loanYear${s}`);
+  localStorage.removeItem(`loanExists${s}`);
+  for (let m = 1; m <= MAX_EXTRA_MONTHS; m++) {
+    localStorage.removeItem(`recurringExtraPayment${m}${s}`);
+    localStorage.removeItem(`singleExtraPayment${m}${s}`);
+  }
+}
+
+function slotExists(slot: SlotNumber): boolean {
+  if (typeof window === "undefined") return false;
+  return !!localStorage.getItem(`loanExists${slotSuffix(slot)}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +321,7 @@ export function useLoanChopCalculator() {
   const {
     register,
     getValues,
+    setValue,
     setError,
     clearErrors,
     formState: { errors },
@@ -95,6 +333,16 @@ export function useLoanChopCalculator() {
       extraPayment: "0",
     },
   });
+
+  // First payment anchor. Lazily initialized to the current month so month #1
+  // of the amortization table lands on the user's current month by default —
+  // matching the legacy calculator's behavior when no loan is loaded.
+  const [startMonth, setStartMonth] = useState<number>(() => new Date().getMonth() + 1);
+  const [startYear, setStartYear] = useState<number>(() => new Date().getFullYear());
+  const startAnchor = useMemo<StartDateAnchor>(
+    () => ({ month: startMonth, year: startYear }),
+    [startMonth, startYear],
+  );
 
   // Per-row extra payment entries (editable in the amortization table)
   const [extraEntries, setExtraEntries] = useState<ExtraPaymentEntry[]>([]);
@@ -256,6 +504,120 @@ export function useLoanChopCalculator() {
     handleExtraEntriesChange([]);
   }, [handleExtraEntriesChange]);
 
+  // -------------------------------------------------------------------------
+  // Save / Open / Delete slots
+  // -------------------------------------------------------------------------
+
+  // Tri-state of whether each slot currently holds a saved loan. Populated
+  // from localStorage on mount (client-only; SSR returns all false to match
+  // the static HTML the initial render produced).
+  const [slotStatuses, setSlotStatuses] = useState<[boolean, boolean, boolean]>([false, false, false]);
+
+  const refreshSlotStatuses = useCallback(() => {
+    setSlotStatuses([slotExists(1), slotExists(2), slotExists(3)]);
+  }, []);
+
+  useEffect(() => {
+    // Freeze the user's pre-existing legacy data BEFORE we render any UI
+    // that can write to those keys. Idempotent: the check-and-bail inside
+    // createLegacyBackupIfMissing ensures the backup is captured exactly
+    // once per browser.
+    createLegacyBackupIfMissing();
+    refreshSlotStatuses();
+  }, [refreshSlotStatuses]);
+
+  const saveToSlot = useCallback(
+    (slot: SlotNumber): SaveResult => {
+      const v = getValues();
+      // Refuse to save an invalid form. Writing empty / garbage values
+      // would overwrite a previously-saved (valid) slot and look like data
+      // loss to the user. safeParse is cheap — same schema the compute
+      // path uses.
+      const parsed = schema.safeParse(v);
+      if (!parsed.success) {
+        return { ok: false, reason: "Enter a valid loan amount, rate, and term before saving." };
+      }
+      const wrote = writeSlot(slot, {
+        principal: v.principal,
+        annualRate: v.annualRate,
+        years: v.years,
+        loanMonth: startMonth,
+        loanYear: startYear,
+        extraEntries,
+      });
+      if (!wrote) {
+        return {
+          ok: false,
+          reason: "Your browser blocked the save (storage may be full, or this may be a private/incognito window). Your previous save was not changed.",
+        };
+      }
+      refreshSlotStatuses();
+      return { ok: true };
+    },
+    [extraEntries, getValues, refreshSlotStatuses, startMonth, startYear],
+  );
+
+  const loadFromSlot = useCallback(
+    (slot: SlotNumber) => {
+      const loan = readSlot(slot);
+      if (!loan) return false;
+      setValue("principal", loan.principal, { shouldValidate: true });
+      setValue("annualRate", loan.annualRate, { shouldValidate: true });
+      setValue("years", loan.years, { shouldValidate: true });
+      // Legacy used per-month extras only — so the new "flat extra" field
+      // resets to 0 on load and all prepayments live in extraEntries.
+      setValue("extraPayment", "0", { shouldValidate: true });
+      setStartMonth(loan.loanMonth);
+      setStartYear(loan.loanYear);
+      setExtraEntries(loan.extraEntries);
+      setEditingMonth(null);
+      // Defer so the setValue + setExtraEntries state commits land before
+      // compute reads them. extraEntries is a React state, not an RHF field,
+      // so the setTimeout mirrors handleExtraEntriesChange.
+      setTimeout(() => computeImmediate(getValues(), "default"), 0);
+      return true;
+    },
+    [computeImmediate, getValues, setValue],
+  );
+
+  const deleteSlot = useCallback(
+    (slot: SlotNumber) => {
+      clearSlot(slot);
+      refreshSlotStatuses();
+    },
+    [refreshSlotStatuses],
+  );
+
+  // -------------------------------------------------------------------------
+  // Start-date handlers
+  // -------------------------------------------------------------------------
+
+  /** Accepts an HTML `<input type="month">` value ("YYYY-MM"). */
+  const handleStartDateChange = useCallback(
+    (monthInputValue: string) => {
+      const match = /^(\d{4})-(\d{2})$/.exec(monthInputValue);
+      if (!match) return;
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return;
+      setStartYear(year);
+      setStartMonth(month);
+    },
+    [],
+  );
+
+  const startDateInputValue = `${startYear}-${String(startMonth).padStart(2, "0")}`;
+
+  // Bound display helpers — consumers don't need to pass the anchor every call.
+  const monthToDateBound = useCallback(
+    (monthNum: number) => monthToDate(monthNum, startAnchor),
+    [startAnchor],
+  );
+  const payoffDateBound = useCallback(
+    (months: number) => payoffDate(months, startAnchor),
+    [startAnchor],
+  );
+
   return {
     // Solution display
     solutionLabel,
@@ -292,5 +654,19 @@ export function useLoanChopCalculator() {
     setShowAllRows,
     normalByMonth,
     displaySchedule,
+
+    // Start date (first payment anchor)
+    startDateInputValue,
+    startMonth,
+    startYear,
+    handleStartDateChange,
+    monthToDate: monthToDateBound,
+    payoffDate: payoffDateBound,
+
+    // Saved loans
+    slotStatuses,
+    saveToSlot,
+    loadFromSlot,
+    deleteSlot,
   };
 }
