@@ -238,8 +238,8 @@ export default function Calculator() {
                                   }}
                                 />
                               </td>
-                              <td colSpan={11} className="px-2 py-1 text-right">
-                                <div className="flex justify-end gap-1">
+                              <td colSpan={11} className="px-2 py-1 text-left">
+                                <div className="flex justify-start gap-1">
                                   <button
                                     type="button"
                                     onClick={saveEdit}
