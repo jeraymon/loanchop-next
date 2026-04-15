@@ -444,27 +444,18 @@ export function useLoanChopCalculator() {
     return fullSchedule.filter((r) => r.month % 12 === 0 || r.month === 1 || r.month === fullSchedule.length);
   }, [fullSchedule, showAllRows]);
 
-  // Build a lookup of extra entries by month for display
+  // Build a lookup of extra entries by month for display. Per-month only — no
+  // carry-forward. Recurring expansion happens at edit time in saveEdit below,
+  // so extraEntries already contains one entry per affected month.
   const extraByMonth = useMemo(() => {
     const map = new Map<number, { recurring: number; single: number }>();
-    // Resolve effective recurring for display
-    let currentRecurring = 0;
-    const totalMonths = result ? result.normalSchedule.length : 0;
-    const recurringMap = new Map<number, number>();
-    const singleMap = new Map<number, number>();
     for (const e of extraEntries) {
-      if (e.recurring > 0) recurringMap.set(e.month, e.recurring);
-      if (e.single > 0) singleMap.set(e.month, e.single);
-    }
-    for (let m = 1; m <= totalMonths; m++) {
-      if (recurringMap.has(m)) currentRecurring = recurringMap.get(m)!;
-      const s = singleMap.get(m) ?? 0;
-      if (currentRecurring > 0 || s > 0) {
-        map.set(m, { recurring: currentRecurring, single: s });
+      if (e.recurring > 0 || e.single > 0) {
+        map.set(e.month, { recurring: e.recurring, single: e.single });
       }
     }
     return map;
-  }, [extraEntries, result]);
+  }, [extraEntries]);
 
   // Start editing a row
   const startEdit = useCallback(
@@ -479,20 +470,46 @@ export function useLoanChopCalculator() {
     [extraByMonth, extraEntries],
   );
 
-  // Save the edited row
+  // Save the edited row. Matches legacy Sencha semantics: a recurring edit at
+  // month M propagates the recurring value to months M..totalMonths, while
+  // `single` applies to month M only. Existing `single` values at later
+  // months are preserved; existing recurring values in the range are
+  // overwritten. Setting recurring=0 at month M stops a prior recurring.
   const saveEdit = useCallback(() => {
     if (editingMonth === null) return;
     const recurring = Math.max(0, parseFloat(editRecurring) || 0);
     const single = Math.max(0, parseFloat(editSingle) || 0);
 
-    const next = extraEntries.filter((e) => e.month !== editingMonth);
-    if (recurring > 0 || single > 0) {
-      next.push({ month: editingMonth, recurring, single });
-      next.sort((a, b) => a.month - b.month);
+    const years = Number(getValues().years);
+    const totalMonths =
+      Number.isFinite(years) && years > 0 ? Math.round(years * 12) : 0;
+    if (totalMonths === 0) {
+      setEditingMonth(null);
+      return;
     }
+
+    const map = new Map<number, { recurring: number; single: number }>();
+    for (const e of extraEntries) {
+      map.set(e.month, { recurring: e.recurring, single: e.single });
+    }
+
+    map.set(editingMonth, { recurring, single });
+    for (let m = editingMonth + 1; m <= totalMonths; m++) {
+      const existing = map.get(m) ?? { recurring: 0, single: 0 };
+      map.set(m, { recurring, single: existing.single });
+    }
+
+    const next: ExtraPaymentEntry[] = [];
+    for (const [month, vals] of map.entries()) {
+      if (vals.recurring > 0 || vals.single > 0) {
+        next.push({ month, recurring: vals.recurring, single: vals.single });
+      }
+    }
+    next.sort((a, b) => a.month - b.month);
+
     setEditingMonth(null);
     handleExtraEntriesChange(next);
-  }, [editingMonth, editRecurring, editSingle, extraEntries, handleExtraEntriesChange]);
+  }, [editingMonth, editRecurring, editSingle, extraEntries, getValues, handleExtraEntriesChange]);
 
   const cancelEdit = useCallback(() => {
     setEditingMonth(null);

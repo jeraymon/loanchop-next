@@ -60,24 +60,47 @@ describe("buildAmortization", () => {
   });
 });
 
-describe("buildAmortization with per-row entries", () => {
-  it("recurring entry from month 1 behaves like flat extra", () => {
+// Helper: expand a recurring amount over a month range (inclusive).
+// Matches what the UI's saveEdit does on a recurring edit.
+function recurringRange(
+  fromMonth: number,
+  toMonth: number,
+  amount: number,
+): ExtraPaymentEntry[] {
+  const out: ExtraPaymentEntry[] = [];
+  for (let m = fromMonth; m <= toMonth; m++) {
+    out.push({ month: m, recurring: amount, single: 0 });
+  }
+  return out;
+}
+
+describe("buildAmortization with per-row entries (per-month, no carry-forward)", () => {
+  it("a single recurring entry at month 1 affects ONLY month 1 — not a flat extra", () => {
+    // Regression: legacy bug over-applied recurring to every subsequent month,
+    // paying off real loans years early (see Cory's report).
+    const normal = buildAmortization(200_000, 6, 30, 0);
     const entries: ExtraPaymentEntry[] = [{ month: 1, recurring: 200, single: 0 }];
+    const withOne = buildAmortization(200_000, 6, 30, 0, entries);
+    // Schedule length should differ by at most a month — a single $200 bump
+    // cannot meaningfully shorten a 30-year loan.
+    expect(Math.abs(withOne.length - normal.length)).toBeLessThanOrEqual(1);
+  });
+
+  it("recurring expanded across all months equals flat extra", () => {
+    const entries = recurringRange(1, 360, 200);
     const withEntries = buildAmortization(200_000, 6, 30, 0, entries);
     const withFlat = buildAmortization(200_000, 6, 30, 200);
     expect(withEntries.length).toBe(withFlat.length);
-    // Total interest should match
     const entriesInterest = withEntries[withEntries.length - 1].cumulativeInterest;
     const flatInterest = withFlat[withFlat.length - 1].cumulativeInterest;
     expect(entriesInterest).toBeCloseTo(flatInterest, 0);
   });
 
-  it("recurring entry starting mid-loan shortens schedule", () => {
+  it("recurring expanded from mid-loan onward shortens schedule; first months match normal", () => {
     const normal = buildAmortization(200_000, 6, 30, 0);
-    const entries: ExtraPaymentEntry[] = [{ month: 60, recurring: 500, single: 0 }];
+    const entries = recurringRange(60, 360, 500);
     const withRecurring = buildAmortization(200_000, 6, 30, 0, entries);
     expect(withRecurring.length).toBeLessThan(normal.length);
-    // First 59 months should be identical to normal
     for (let i = 0; i < 59; i++) {
       expect(withRecurring[i].remainingBalance).toBeCloseTo(normal[i].remainingBalance, 1);
     }
@@ -87,39 +110,44 @@ describe("buildAmortization with per-row entries", () => {
     const entries: ExtraPaymentEntry[] = [{ month: 12, recurring: 0, single: 10_000 }];
     const normal = buildAmortization(200_000, 6, 30, 0);
     const withSingle = buildAmortization(200_000, 6, 30, 0, entries);
-    // Before month 12, balances should be the same
     expect(withSingle[10].remainingBalance).toBeCloseTo(normal[10].remainingBalance, 1);
-    // After month 12, balance should be lower by ~$10k
     expect(withSingle[12].remainingBalance).toBeLessThan(normal[12].remainingBalance - 9_000);
-    // Schedule should be shorter
     expect(withSingle.length).toBeLessThan(normal.length);
   });
 
-  it("combined recurring + single entries", () => {
+  it("combined recurring (expanded) + single entry", () => {
     const entries: ExtraPaymentEntry[] = [
-      { month: 1, recurring: 100, single: 0 },
-      { month: 24, recurring: 0, single: 5000 },
+      ...recurringRange(1, 360, 100),
+      { month: 24, recurring: 100, single: 5000 },
     ];
     const normal = buildAmortization(200_000, 6, 30, 0);
     const withBoth = buildAmortization(200_000, 6, 30, 0, entries);
     expect(withBoth.length).toBeLessThan(normal.length);
-    // Cumulative interest should be less
     const normalInterest = normal[normal.length - 1].cumulativeInterest;
     const bothInterest = withBoth[withBoth.length - 1].cumulativeInterest;
     expect(bothInterest).toBeLessThan(normalInterest);
   });
 
-  it("later recurring entry overrides earlier one", () => {
-    const entries: ExtraPaymentEntry[] = [
-      { month: 1, recurring: 100, single: 0 },
-      { month: 60, recurring: 500, single: 0 },
-    ];
-    const withOverride = buildAmortization(200_000, 6, 30, 0, entries);
-    // Just recurring 100 the whole time
-    const justHundred: ExtraPaymentEntry[] = [{ month: 1, recurring: 100, single: 0 }];
-    const withHundred = buildAmortization(200_000, 6, 30, 0, justHundred);
-    // Override should pay off faster (500 > 100 after month 60)
-    expect(withOverride.length).toBeLessThan(withHundred.length);
+  it("expanded recurring that stops mid-loan pays off slower than one that continues", () => {
+    // $100 for months 1..120 then nothing vs. $100 for months 1..360
+    const partial = recurringRange(1, 120, 100);
+    const full = recurringRange(1, 360, 100);
+    const withPartial = buildAmortization(200_000, 6, 30, 0, partial);
+    const withFull = buildAmortization(200_000, 6, 30, 0, full);
+    expect(withPartial.length).toBeGreaterThan(withFull.length);
+  });
+
+  it("Cory regression: sparse legacy entries (months 1..120 at $500) do NOT silently continue past month 120", () => {
+    // Under the broken carry-forward model, this would pay off a 30-year loan
+    // in ~15 years. Under per-month semantics, the extras stop at month 120.
+    const entries = recurringRange(1, 120, 500);
+    const result = buildAmortization(200_000, 6, 30, 0, entries);
+    // Sanity: there should still be a meaningful tail of payments after month 120.
+    expect(result.length).toBeGreaterThan(200);
+    // And the balance at month 120 should be well above zero (not "1 payment left").
+    const atM120 = result.find((r) => r.month === 120);
+    expect(atM120).toBeDefined();
+    expect(atM120!.remainingBalance).toBeGreaterThan(50_000);
   });
 });
 
@@ -150,7 +178,8 @@ describe("compareWithAndWithoutExtra", () => {
   });
 
   it("per-row entries are used when provided", () => {
-    const entries: ExtraPaymentEntry[] = [{ month: 1, recurring: 200, single: 0 }];
+    // $200 recurring expanded across the full term matches the flat-extra case.
+    const entries: ExtraPaymentEntry[] = recurringRange(1, 360, 200);
     const result = compareWithAndWithoutExtra(200_000, 6, 30, 0, entries);
     expect(result.monthsSaved).toBeGreaterThan(50);
     expect(result.interestSaved).toBeGreaterThan(50_000);

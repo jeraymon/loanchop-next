@@ -68,32 +68,31 @@ export function calcMonthlyPayment(
 }
 
 /**
- * Resolve the effective recurring extra for each month.
- * A recurring entry at month M sets the recurring amount for M and all
- * subsequent months (until a later recurring entry overrides it).
+ * Resolve the per-month extra for each month. Each ExtraPaymentEntry applies
+ * ONLY to its own month — no carry-forward. This matches the legacy Sencha
+ * storage model (dense per-month values where "no entry" meant "no extra").
+ *
+ * Why: the legacy UI expanded a "recurring from month M" edit into per-month
+ * entries at save time. Carrying forward at compute time on top of sparse
+ * loaded data over-applies extras (months not in the sparse map would inherit
+ * a prior recurring value and never stop), silently paying off real loans
+ * years early — see Cory's "$20k left → 1 payment left" report.
  */
 function resolveRecurring(
   entries: ExtraPaymentEntry[],
   totalMonths: number,
 ): { recurring: number; single: number }[] {
-  // Build sparse maps
-  const recurringByMonth = new Map<number, number>();
-  const singleByMonth = new Map<number, number>();
+  const byMonth = new Map<number, { recurring: number; single: number }>();
   for (const e of entries) {
-    if (e.recurring > 0) recurringByMonth.set(e.month, e.recurring);
-    if (e.single > 0) singleByMonth.set(e.month, e.single);
+    byMonth.set(e.month, { recurring: e.recurring, single: e.single });
   }
 
   const result: { recurring: number; single: number }[] = [];
-  let currentRecurring = 0;
-
   for (let m = 1; m <= totalMonths; m++) {
-    if (recurringByMonth.has(m)) {
-      currentRecurring = recurringByMonth.get(m)!;
-    }
+    const entry = byMonth.get(m);
     result.push({
-      recurring: currentRecurring,
-      single: singleByMonth.get(m) ?? 0,
+      recurring: entry?.recurring ?? 0,
+      single: entry?.single ?? 0,
     });
   }
   return result;
