@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import { Link as LinkIcon, Mail } from "lucide-react";
 
 // Inline SVGs for brand icons (no dependency needed)
@@ -38,15 +38,22 @@ interface ShareButtonsProps {
   solutionValue?: string;
 }
 
+const emptySubscribe = () => () => {};
+const getCanNativeShare = () => typeof navigator !== "undefined" && !!navigator.share;
+const getCurrentUrl = () => typeof window !== "undefined" ? window.location.href : "";
+
 export default function ShareButtons({ title, solutionLabel, solutionValue }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
-  const [canNativeShare, setCanNativeShare] = useState(false);
-
-  useEffect(() => {
-    setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share);
-  }, []);
-
-  const url = typeof window !== "undefined" ? window.location.href : "";
+  const canNativeShare = useSyncExternalStore(
+    emptySubscribe,
+    getCanNativeShare,
+    () => false,
+  );
+  const url = useSyncExternalStore(
+    emptySubscribe,
+    getCurrentUrl,
+    () => "",
+  );
   const solutionText = [solutionLabel, solutionValue].filter(Boolean).join(" ");
   const shareText = `${title}: ${solutionText}`;
 
