@@ -25,7 +25,7 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 - Calculator files live directly in `src/app/` (calc.ts, Calculator.tsx, page.tsx, BalanceChart.tsx)
 - AdSense library script is in `layout.tsx` `<head>` (plain `<script>` tag, NOT `next/script`). `AdSlot.tsx` contains only the `<ins>` tag and push call.
 - Auto-calculates via `useForm` + `watch()` + `useMemo` — results, chart, and table update instantly on input change (no Calculate button)
-- Chart appears only when extra payment > 0 (comparing normal vs accelerated payoff)
+- Chart always appears; the accelerated/extra line is hidden until an extra payment is entered
 
 ### Project Structure
 - `src/app/calc.ts` — Pure math functions (BigNumber, no React): `calcMonthlyPayment`, `buildAmortization`, `compareWithAndWithoutExtra`
@@ -49,7 +49,7 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 ### Calculator Implementation
 - **Shell:** `CalculatorShell` with `bg-indigo-600` header, indigo solution box, always-visible results
 - **Form pattern:** `useAutoCalculate` hook with `react-hook-form` for auto-calculate. No Calculate button, no `zodResolver`. Validation is manual via `setError`/`clearErrors`.
-- **Chart:** `BalanceChart` shows remaining balance over time for normal vs accelerated schedules. Only rendered when extra payment > 0.
+- **Chart:** `BalanceChart` shows remaining balance over time for normal vs accelerated schedules. Always rendered. The "Extra" series is suppressed when there's no acceleration, so an empty-extras loan shows just the normal balance curve.
 - **Table:** Summary cards (monthly payment, total interest, interest saved, time saved) + full amortization schedule with toggle between yearly and all-months view.
 - **No formula display** — this calculator does not use react-katex (loan math is straightforward).
 

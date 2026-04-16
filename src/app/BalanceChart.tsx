@@ -16,6 +16,9 @@ import type { AmortizationRow } from "./calc";
 interface BalanceChartProps {
   normalSchedule: AmortizationRow[];
   acceleratedSchedule: AmortizationRow[];
+  /** When false, only the "Normal" series renders — the accelerated line is
+   *  suppressed because it would just overlay the normal one. */
+  hasAcceleration: boolean;
 }
 
 type ChartTab =
@@ -59,6 +62,7 @@ function getFields(tab: ChartTab): {
 export default function BalanceChart({
   normalSchedule,
   acceleratedSchedule,
+  hasAcceleration,
 }: BalanceChartProps) {
   const [activeTab, setActiveTab] = useState<ChartTab>("balance");
 
@@ -162,15 +166,17 @@ export default function BalanceChart({
               dot={false}
               connectNulls
             />
-            <Line
-              type="linear"
-              dataKey="extra"
-              name="Extra"
-              stroke="#0891b2"
-              strokeWidth={2}
-              dot={false}
-              connectNulls
-            />
+            {hasAcceleration && (
+              <Line
+                type="linear"
+                dataKey="extra"
+                name="Extra"
+                stroke="#0891b2"
+                strokeWidth={2}
+                dot={false}
+                connectNulls
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
