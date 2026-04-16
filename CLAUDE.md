@@ -43,7 +43,6 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 
 ### Tech Stack (Site-Specific Additions)
 - `zod` + `react-hook-form` with `watch()` + `useMemo` for reactive auto-calculation
-- Base UI Select (`@base-ui/react`), NOT Radix
 - `recharts` for charts (lazy-load with `next/dynamic` + `{ ssr: false }`)
 
 ### Calculator Implementation
