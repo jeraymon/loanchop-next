@@ -90,35 +90,47 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
   const mailtoHref = `mailto:?subject=${emailSubject}&body=${emailBody}`;
 
   return (
-    <div className="flex items-center justify-center gap-3 mt-3">
-      <span className="text-sm text-muted-foreground">Share:</span>
+    <div className="flex items-center justify-center gap-0.5 mt-3">
+      <span className="text-sm text-muted-foreground mr-1">Share:</span>
+
+      {/* Native share — mobile only, prioritized first (overflow for all apps) */}
+      {canNativeShare && (
+        <button
+          onClick={nativeShare}
+          className="p-2 rounded-md text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          aria-label="More sharing options"
+          title="More sharing options"
+        >
+          <IOSShareIcon className="w-6 h-6" />
+        </button>
+      )}
 
       {/* Platforms */}
       <button
         onClick={shareOnWhatsApp}
-        className="text-[#25D366]/60 hover:text-[#25D366] transition-colors"
+        className="p-2 rounded-md text-[#25D366]/80 hover:text-[#25D366] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         aria-label="Share on WhatsApp"
         title="Share on WhatsApp"
       >
-        <WhatsAppIcon className="w-5 h-5" />
+        <WhatsAppIcon className="w-6 h-6" />
       </button>
       <button
         onClick={shareOnX}
-        className="text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors"
+        className="p-2 rounded-md text-black/80 hover:text-black dark:text-white/80 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         aria-label="Share on X"
         title="Share on X"
       >
-        <XIcon className="w-5 h-5" />
+        <XIcon className="w-6 h-6" />
       </button>
 
       {/* Utilities */}
       <button
         onClick={copyLink}
-        className="text-slate-500 hover:text-foreground transition-colors relative"
+        className="p-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
         aria-label={copied ? "Link copied" : "Copy link to this result"}
         title={copied ? "Copied!" : "Copy link"}
       >
-        <LinkIcon className="w-5 h-5" />
+        <LinkIcon className="w-6 h-6" />
         {copied && (
           <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-slate-800 text-white px-2 py-0.5 rounded whitespace-nowrap">
             Copied!
@@ -127,24 +139,12 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
       </button>
       <a
         href={mailtoHref}
-        className="text-slate-500 hover:text-foreground transition-colors"
+        className="p-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         aria-label="Share via email"
         title="Share via email"
       >
-        <Mail className="w-5 h-5" />
+        <Mail className="w-6 h-6" />
       </a>
-
-      {/* Native share — mobile only (overflow for all other apps) */}
-      {canNativeShare && (
-        <button
-          onClick={nativeShare}
-          className="text-foreground/60 hover:text-foreground transition-colors"
-          aria-label="More sharing options"
-          title="More sharing options"
-        >
-          <IOSShareIcon className="w-5 h-5" />
-        </button>
-      )}
     </div>
   );
 }
