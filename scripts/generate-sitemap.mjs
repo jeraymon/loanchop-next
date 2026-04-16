@@ -28,11 +28,15 @@ const staticPages = [
   { path: "/accessibility/", changefreq: "yearly", priority: "0.3" },
 ];
 
+function toAbsoluteUrl(path) {
+  return path === "/" ? SITE : `${SITE}${path}`;
+}
+
 // Build URL entries
 const entries = [
   ...staticPages.map(
     (p) =>
-      `  <url>\n    <loc>${SITE}${p.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
+      `  <url>\n    <loc>${toAbsoluteUrl(p.path)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
   ),
   ...liveHrefs.map(
     (href) =>
