@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useCallback, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { Link as LinkIcon, Mail } from "lucide-react";
+import { SITE_URL } from "@/app/seo-constants";
 
 // Inline SVGs for brand icons (no dependency needed)
 function XIcon({ className }: { className?: string }) {
@@ -40,20 +42,20 @@ interface ShareButtonsProps {
 
 const emptySubscribe = () => () => {};
 const getCanNativeShare = () => typeof navigator !== "undefined" && !!navigator.share;
-const getCurrentUrl = () => typeof window !== "undefined" ? window.location.href : "";
+const toShareUrl = (pathname: string | null) => {
+  if (!pathname || pathname === "/") return SITE_URL;
+  return `${SITE_URL}${pathname.replace(/\/?$/, "/")}`;
+};
 
 export default function ShareButtons({ title, solutionLabel, solutionValue }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const pathname = usePathname();
   const canNativeShare = useSyncExternalStore(
     emptySubscribe,
     getCanNativeShare,
     () => false,
   );
-  const url = useSyncExternalStore(
-    emptySubscribe,
-    getCurrentUrl,
-    () => "",
-  );
+  const url = toShareUrl(pathname);
   const solutionText = [solutionLabel, solutionValue].filter(Boolean).join(" ");
   const shareText = `${title}: ${solutionText}`;
 
