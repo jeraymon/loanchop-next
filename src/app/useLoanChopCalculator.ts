@@ -58,6 +58,16 @@ export function fmtMonths(months: number): string {
   return `${y} yr${y !== 1 ? "s" : ""} ${m} mo`;
 }
 
+export interface ExampleConfig {
+  principal: string;
+  annualRate: string;
+  years: string;
+  extraPayment: string;
+}
+
+const QUICK_ANSWER_DEFAULT =
+  "Compare a normal loan payoff against an accelerated payoff with extra payments to see monthly payment, total interest, and how much time you save.";
+
 /** Resolve a start-date anchor. Month 1 of the schedule is the first payment,
  *  so an anchor of { year: 2026, month: 3 } means row #1 is Mar 2026. If no
  *  anchor is provided, the current month is used (preserves legacy behavior). */
@@ -625,6 +635,39 @@ export function useLoanChopCalculator() {
 
   const startDateInputValue = `${startYear}-${String(startMonth).padStart(2, "0")}`;
 
+  const quickAnswer = useMemo(() => {
+    if (!result) return QUICK_ANSWER_DEFAULT;
+
+    if (showSavings) {
+      return `Adding ${fmtCurrency(Number(values.extraPayment) || 0)} per month saves ${fmtCurrency(result.interestSaved)} in interest and shortens the payoff time by ${fmtMonths(result.monthsSaved)}.`;
+    }
+
+    return `This loan's required monthly payment is ${fmtCurrency(result.monthlyPayment)}, and without extra payments it will cost ${fmtCurrency(result.normalTotalInterest)} in total interest over the full term.`;
+  }, [result, showSavings, values.extraPayment]);
+
+  const loadExample = useCallback((example: ExampleConfig) => {
+    setValue("principal", example.principal, { shouldValidate: true });
+    setValue("annualRate", example.annualRate, { shouldValidate: true });
+    setValue("years", example.years, { shouldValidate: true });
+    setValue("extraPayment", example.extraPayment, { shouldValidate: true });
+    setExtraEntries([]);
+    setEditingMonth(null);
+    setTimeout(() => {
+      computeImmediate(
+        {
+          principal: example.principal,
+          annualRate: example.annualRate,
+          years: example.years,
+          extraPayment: example.extraPayment,
+        },
+        "default",
+      );
+    }, 0);
+    requestAnimationFrame(() => {
+      document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
+    });
+  }, [computeImmediate, setValue]);
+
   // Bound display helpers — consumers don't need to pass the anchor every call.
   const monthToDateBound = useCallback(
     (monthNum: number) => monthToDate(monthNum, startAnchor),
@@ -679,6 +722,8 @@ export function useLoanChopCalculator() {
     handleStartDateChange,
     monthToDate: monthToDateBound,
     payoffDate: payoffDateBound,
+    quickAnswer,
+    loadExample,
 
     // Saved loans
     slotStatuses,

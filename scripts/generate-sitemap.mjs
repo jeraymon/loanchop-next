@@ -18,7 +18,7 @@ const catalogSrc = readFileSync(
   "utf-8"
 );
 const liveMatches = [...catalogSrc.matchAll(/live\(\s*"[^"]+"\s*,\s*"([^"]+)"\s*\)/g)];
-const liveHrefs = liveMatches.map((m) => m[1]);
+const liveHrefs = liveMatches.map((m) => m[1]).filter((href) => href !== "/");
 
 // Static pages
 const staticPages = [

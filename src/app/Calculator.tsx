@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import CalculatorShell from "@/components/CalculatorShell";
 import EducationalSection from "@/components/EducationalSection";
@@ -10,9 +10,87 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorIcon } from "@/components/ui/ErrorIcon";
 import { educationalContent } from "./educationalContent";
-import { useLoanChopCalculator, fmtCurrency, fmtMonths } from "./useLoanChopCalculator";
+import {
+  useLoanChopCalculator,
+  fmtCurrency,
+  fmtMonths,
+  type ExampleConfig,
+} from "./useLoanChopCalculator";
 
 const BalanceChart = dynamic(() => import("./BalanceChart"), { ssr: false });
+
+const workedExamples: Array<{
+  category: string;
+  title: string;
+  description: string;
+  steps: string[];
+  note: string;
+  example: ExampleConfig;
+}> = [
+  {
+    category: "Small Extra Payment",
+    title: "What happens if you add $100/month to a 30-year mortgage?",
+    description:
+      "Even a modest recurring extra payment can reduce total interest and move the payoff date earlier.",
+    steps: [
+      "Enter a $200,000 loan at 6% for 30 years.",
+      "Add an extra monthly payment of $100.",
+      "The calculator rebuilds the accelerated amortization schedule.",
+      "Because principal falls faster, later interest charges shrink too.",
+      "The result is a shorter payoff timeline and lower lifetime interest.",
+    ],
+    note:
+      "This is a useful starter scenario for borrowers who want to prepay without changing their budget dramatically.",
+    example: {
+      principal: "200000",
+      annualRate: "6",
+      years: "30",
+      extraPayment: "100",
+    },
+  },
+  {
+    category: "Aggressive Prepayment",
+    title: "How much can $300/month save on a 30-year loan?",
+    description:
+      "A larger recurring extra payment shows how quickly the payoff schedule compresses on a typical mortgage-sized balance.",
+    steps: [
+      "Enter a $250,000 loan at 6.5% for 30 years.",
+      "Set the extra monthly payment to $300.",
+      "The accelerated payoff path applies that extra principal every month.",
+      "Interest savings accumulate because the balance stays lower throughout the loan.",
+      "The summary cards show both the interest saved and the time saved.",
+    ],
+    note:
+      "This is a common scenario for homeowners aiming to cut years off the back end of a mortgage.",
+    example: {
+      principal: "250000",
+      annualRate: "6.5",
+      years: "30",
+      extraPayment: "300",
+    },
+  },
+  {
+    category: "Shorter Loan",
+    title: "Does extra principal still matter on a 15-year mortgage?",
+    description:
+      "Shorter loans already amortize faster, but extra principal can still reduce borrowing costs and shorten the schedule further.",
+    steps: [
+      "Enter a $350,000 loan at 5.75% for 15 years.",
+      "Add an extra payment of $500 per month.",
+      "The payment schedule is already principal-heavy compared with a 30-year loan.",
+      "The extra payment accelerates the balance even more in the early years.",
+      "This helps you compare whether aggressive prepayment still fits your broader financial plan.",
+    ],
+    note:
+      "This is a good planning example when deciding between faster mortgage payoff and other investment goals.",
+    example: {
+      principal: "350000",
+      annualRate: "5.75",
+      years: "15",
+      extraPayment: "500",
+    },
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Component
@@ -48,11 +126,47 @@ export default function Calculator() {
     handleStartDateChange,
     monthToDate,
     payoffDate,
+    quickAnswer,
+    loadExample,
     slotStatuses,
     saveToSlot,
     loadFromSlot,
     deleteSlot,
   } = useLoanChopCalculator();
+  const [copyState, setCopyState] = useState<"idle" | "ok" | "fail">("idle");
+
+  const copyResult = async () => {
+    if (!solutionLabel || !solutionValue) return;
+    try {
+      await navigator.clipboard.writeText(`${solutionLabel} ${solutionValue}. ${quickAnswer}`);
+      setCopyState("ok");
+    } catch {
+      setCopyState("fail");
+    }
+    setTimeout(() => setCopyState("idle"), 1500);
+  };
+
+  const afterSolution =
+    solutionLabel && solutionValue ? (
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={copyResult}
+          aria-live="polite"
+          className={`text-xs font-medium transition-colors ${
+            copyState === "fail"
+              ? "text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              : "text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+          }`}
+        >
+          {copyState === "ok"
+            ? "Copied!"
+            : copyState === "fail"
+              ? "Copy failed"
+              : "Copy result"}
+        </button>
+      </div>
+    ) : null;
 
   // ---------------------------------------------------------------------------
   // Render
@@ -66,6 +180,7 @@ export default function Calculator() {
         solutionLabel={solutionLabel}
         solutionValue={solutionValue}
         isStale={isStale}
+        afterSolution={afterSolution}
         chart={
           result ? (
             <BalanceChart
@@ -469,12 +584,57 @@ export default function Calculator() {
         </div>
       </CalculatorShell>
 
+      <aside
+        aria-label="Quick Answer"
+        className="max-w-3xl mx-auto rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/70 dark:bg-indigo-950/20 p-5 space-y-2"
+      >
+        <h2 className="text-base font-semibold text-indigo-800 dark:text-indigo-300">
+          Quick Answer
+        </h2>
+        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+          {quickAnswer}
+        </p>
+      </aside>
+
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} />
       </div>
       <div className="max-w-3xl mx-auto">
         <AdSlot />
       </div>
+
+      <section className="max-w-3xl mx-auto mt-8 space-y-4 text-sm text-muted-foreground leading-relaxed">
+        <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
+          Worked Examples
+        </h2>
+        <div className="space-y-4">
+          {workedExamples.map((example) => (
+            <article
+              key={example.title}
+              className="rounded-lg border border-slate-200 dark:border-slate-800 p-5 space-y-3"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-400">
+                {example.category}
+              </p>
+              <h3 className="font-medium text-foreground">{example.title}</h3>
+              <p>{example.description}</p>
+              <ol className="list-decimal pl-5 space-y-1">
+                {example.steps.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ol>
+              <p>{example.note}</p>
+              <button
+                type="button"
+                onClick={() => loadExample(example.example)}
+                className="inline-flex items-center gap-1 rounded-md border border-indigo-600 px-4 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors"
+              >
+                Load this example &uarr;
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <EducationalSection
         content={educationalContent}

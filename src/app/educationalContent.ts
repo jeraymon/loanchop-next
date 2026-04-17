@@ -4,72 +4,96 @@ export const educationalContent: EducationalContent = {
   equationCards: [
     {
       title: "Monthly Payment Formula",
-      formula: "M = P \u00d7 [r(1+r)^n] / [(1+r)^n \u2212 1]",
+      formula: "M = P × [r(1+r)^n] / [(1+r)^n − 1]",
       description:
-        "The standard amortization formula calculates the fixed monthly payment for a loan given the principal, monthly interest rate, and total number of payments. This is the foundation of every mortgage payment schedule.",
+        "This standard amortization formula calculates the fixed monthly payment for a loan using the principal P, monthly interest rate r, and total number of payments n. It is the starting point for both the normal and accelerated payoff schedules.",
       solveFor: "default",
       buttonLabel: "Calculate Payment",
     },
   ],
 
   howItWorks:
-    "When you make extra payments on your loan, the additional amount goes directly toward reducing your principal balance. Since interest is calculated on the remaining balance each month, a lower balance means less interest accrues. This creates a compounding effect: each extra dollar paid today saves you multiple dollars in future interest. Even modest additional payments of $50 to $200 per month can shave years off a 30-year mortgage and save tens of thousands in interest.",
+    "Loan prepayment works by pushing additional dollars directly toward principal instead of waiting for the standard amortization schedule to do the job gradually. Because interest is charged on the remaining balance each month, every extra principal payment lowers future interest charges as well. That means prepaying creates a compounding benefit: you save interest now, which helps later payments attack principal faster, which saves even more interest later. This calculator compares the normal schedule against an accelerated one so you can see monthly payment, total interest, time saved, and the changing balance path side by side.",
 
   exampleProblem: {
     setup:
-      "Consider a $250,000 mortgage at 6.5% annual interest for 30 years. The standard monthly payment is $1,580.17. Over the full term you would pay $318,861 in interest alone.",
+      "Suppose you have a $250,000 loan at 6.5% for 30 years and you want to add $300 per month in extra principal payments.",
     steps: [
-      "Standard monthly payment: $1,580.17 for 360 months",
-      "Total interest without extra payments: $318,861",
-      "Add $300/month in extra payments toward principal",
-      "New payoff time: approximately 21 years (252 months) instead of 30",
-      "Total interest with extra payments: approximately $198,000",
-      "Interest saved: approximately $120,000",
+      "Calculate the required monthly payment from the original principal, rate, and term.",
+      "Build the normal amortization schedule with no extra principal.",
+      "Build a second schedule that adds $300 to principal every month.",
+      "Compare how quickly the accelerated balance falls versus the normal balance.",
+      "Total the interest paid in each schedule to measure the savings from prepayment.",
+      "Compare the payoff lengths to find how many months or years earlier the accelerated plan finishes.",
     ],
     note:
-      "That $300 monthly investment effectively earns a guaranteed return equivalent to your mortgage rate, which is difficult to match with other low-risk investments.",
+      "This is why a relatively small recurring extra payment can produce large lifetime savings on long mortgages and installment loans.",
   },
 
   keyConcepts:
-    "Most lenders allow prepayment without penalties, though it is worth confirming with your loan servicer. Some loans have prepayment penalty clauses, particularly during the first few years. Federal law prohibits prepayment penalties on many types of mortgages originated after January 2014. This calculator supports two types of extra payments: repeating payments that apply from a selected month onward, and single lump-sum payments for one specific month.",
+    "Extra payments do not usually lower the required monthly payment on a fixed-rate loan; instead, they shorten the schedule and reduce total interest. A recurring extra payment is useful when you can commit to a steady amount each month, while a one-time lump sum models bonuses, tax refunds, or windfalls. Prepayment is mathematically similar to earning a guaranteed return equal to your loan's interest rate, but the best choice still depends on emergency savings, other debts, and investment opportunities.",
 
   applications: [
-    "Determining how much interest you save by adding a fixed extra monthly payment to your mortgage",
-    "Modeling a lump-sum principal payment from a bonus, tax refund, or inheritance",
-    "Comparing the payoff timeline with and without extra payments side by side",
-    "Planning a strategy to become mortgage-free before retirement",
-    "Evaluating whether extra payments or investing offers a better return given your interest rate",
+    "Testing whether small extra monthly payments meaningfully reduce mortgage interest",
+    "Planning a payoff strategy before retirement or another major life milestone",
+    "Modeling bonus or tax-refund lump sums as principal prepayments",
+    "Comparing a standard schedule against an accelerated schedule before making a refinance decision",
+    "Seeing how much faster a 15-year or 30-year loan ends with extra payments",
+    "Understanding how earlier principal reduction changes later interest charges",
   ],
 
   commonMistakes: [
-    "Assuming extra payments reduce your required monthly payment (they shorten the term instead)",
-    "Not confirming with your lender that extra payments are applied to principal rather than held for future payments",
-    "Ignoring prepayment penalty clauses that some loans carry in the first few years",
-    "Comparing a guaranteed mortgage paydown return to risky investment returns without accounting for risk tolerance",
+    "Assuming extra payments reduce the required monthly payment instead of shortening the payoff timeline",
+    "Forgetting to confirm that the lender applies extra money to principal rather than future scheduled payments",
+    "Ignoring prepayment penalties or loan-servicing rules that may apply in the first years of some loans",
+    "Comparing mortgage prepayment with investing without accounting for risk, liquidity, and emergency-fund needs",
+    "Treating one unusually high-payment month as a realistic long-term prepayment plan",
+    "Looking only at interest saved without considering how the faster cash commitment fits the monthly budget",
   ],
 
   faq: [
     {
-      question: "Should I make extra payments or invest the money instead?",
+      question: "Does an extra payment go straight to principal?",
       answer:
-        "Paying down your mortgage offers a guaranteed, risk-free return equal to your interest rate. If your mortgage rate is 6% or higher, extra payments are often a strong choice. If your rate is below 4%, you might earn more by investing in diversified index funds over the long term, though that carries market risk. Consider your risk tolerance, tax situation, and whether you have an adequate emergency fund before deciding.",
+        "Usually yes, but you should confirm with your loan servicer. Many lenders provide an 'additional principal' field for this reason. If the extra amount is not applied to principal, the savings will be much smaller than expected.",
     },
     {
-      question:
-        "Is it better to pay extra monthly or make a lump sum payment?",
+      question: "Do extra payments lower my monthly payment?",
       answer:
-        "Both approaches reduce your principal and save interest. A lump sum applied early in the loan has the largest impact because it reduces the balance when interest charges are highest. Monthly extra payments provide a disciplined, consistent approach that is easier to budget for. Mathematically, the earlier you apply the money, the more you save.",
+        "No. On a typical fixed-rate loan, the required monthly payment stays the same. The benefit is that the balance falls faster, total interest decreases, and the loan ends earlier.",
     },
     {
-      question: "Do extra payments reduce my monthly payment amount?",
+      question: "Is it better to make one lump-sum payment or smaller monthly extra payments?",
       answer:
-        "No. Extra payments reduce your remaining balance and shorten the loan term, but your required monthly payment stays the same. The benefit is that you pay off the loan sooner and pay significantly less total interest. If you need a lower monthly payment, you would need to refinance your loan.",
+        "Both help, but earlier principal reduction usually saves more interest. A lump sum applied early can have a powerful effect, while recurring monthly extras create a steady compounding benefit over time.",
     },
     {
-      question:
-        "How do I tell my lender to apply extra payments to principal?",
+      question: "Should I prepay my mortgage or invest instead?",
       answer:
-        "Most lenders apply extra payments to principal automatically, but it is wise to confirm. When making your payment, look for an \"additional principal\" field on your statement or online portal. You can also include a note with your payment specifying that the extra amount should be applied to principal, not held for future payments.",
+        "Prepaying gives you a guaranteed return equal to your loan rate, while investing may offer a higher expected return but with market risk. The right choice depends on your risk tolerance, cash reserves, and other financial goals.",
+    },
+    {
+      question: "Can extra payments save years on a 30-year mortgage?",
+      answer:
+        "Yes. Even modest recurring extra payments can cut years off a long amortization schedule because they reduce principal early, which lowers future interest charges month after month.",
+    },
+    {
+      question: "Does this calculator include taxes, insurance, or escrow?",
+      answer:
+        "No. It focuses on loan principal and interest only. Property taxes, homeowners insurance, HOA dues, and escrow are separate cash-flow items and are not part of the amortization math shown here.",
+    },
+    {
+      question: "What if I make irregular extra payments instead of the same amount every month?",
+      answer:
+        "That is exactly why the schedule supports per-row extra payments. You can model one-time lump sums or changes that begin in a specific month and continue afterward.",
+    },
+    {
+      question: "Why do earlier extra payments matter more than later ones?",
+      answer:
+        "Interest charges are larger in the early years because the balance is larger. Reducing principal early lowers a bigger stream of future interest than making the same extra payment near the end of the loan.",
     },
   ],
+
+  reference:
+    "Principal-and-interest comparison only. This calculator does not include taxes, insurance, escrow, fees, or financial advice.",
 };

@@ -3,12 +3,12 @@ import Calculator from "./Calculator";
 import { educationalContent } from "./educationalContent";
 import { SITE_NAME, SITE_URL, OG_IMAGE } from "./seo-constants";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const pageTitle = "Loan Prepayment Calculator — Extra Payment Savings";
-  const pageDescription =
-    "See how extra monthly payments reduce total interest and shorten your loan term. Compare normal vs. accelerated payoff with an interactive amortization schedule.";
-  const canonicalUrl = SITE_URL;
+const pageTitle = "Loan Prepayment Calculator — Extra Payment Savings";
+const pageDescription =
+  "See how extra monthly payments reduce total interest and shorten your loan term. Compare normal vs. accelerated payoff with an interactive amortization schedule.";
+const canonicalUrl = SITE_URL;
 
+export async function generateMetadata(): Promise<Metadata> {
   return {
     title: pageTitle,
     icons: { icon: "/favicon.svg", apple: "/apple-icon.png" },
@@ -82,7 +82,7 @@ const breadcrumbJsonLd = {
       "@type": "ListItem",
       position: 1,
       name: "LoanChop",
-      item: "https://www.loanchop.com",
+      item: canonicalUrl,
     },
   ],
 };
@@ -91,34 +91,12 @@ const howToJsonLd = {
   "@context": "https://schema.org",
   "@type": "HowTo",
   name: "How to Calculate Loan Prepayment Savings",
-  description: "Use the LoanChop calculator to see how extra monthly payments reduce total interest and shorten your mortgage term.",
-  step: [
-    {
-      "@type": "HowToStep",
-      name: "Enter your loan amount",
-      text: "Type your total loan principal (e.g., $200,000) into the Loan Amount field.",
-    },
-    {
-      "@type": "HowToStep",
-      name: "Enter your interest rate",
-      text: "Type your annual interest rate (e.g., 6%) into the Annual Interest Rate field.",
-    },
-    {
-      "@type": "HowToStep",
-      name: "Enter your loan term",
-      text: "Type the loan duration in years (e.g., 30) into the Loan Term field.",
-    },
-    {
-      "@type": "HowToStep",
-      name: "Enter your extra monthly payment",
-      text: "Type the additional amount you plan to pay each month (e.g., $200) into the Extra Monthly Payment field.",
-    },
-    {
-      "@type": "HowToStep",
-      name: "Review your results",
-      text: "The calculator instantly shows your monthly payment, interest saved, time saved, and a side-by-side amortization schedule comparing normal vs. accelerated payoff.",
-    },
-  ],
+  description: pageDescription,
+  step: educationalContent.exampleProblem.steps.map((text, index) => ({
+    "@type": "HowToStep",
+    position: index + 1,
+    text,
+  })),
 };
 
 export default function HomePage() {
