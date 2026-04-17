@@ -346,11 +346,14 @@ export function useLoanChopCalculator() {
     },
   });
 
-  // First payment anchor. Lazily initialized to the current month so month #1
-  // of the amortization table lands on the user's current month by default —
-  // matching the legacy calculator's behavior when no loan is loaded.
-  const [startMonth, setStartMonth] = useState<number>(() => new Date().getMonth() + 1);
-  const [startYear, setStartYear] = useState<number>(() => new Date().getFullYear());
+  // First payment anchor. Stable literal defaults so SSG prerender and
+  // client hydration produce matching HTML; the real current month/year is
+  // applied in a mount effect below. Cannot seed from `new Date()` in the
+  // initializer because SSG runs it at build time and freezes the build
+  // month into the static HTML — every visitor would then see a stale
+  // month until the next deploy, plus a hydration mismatch warning.
+  const [startMonth, setStartMonth] = useState<number>(1);
+  const [startYear, setStartYear] = useState<number>(2026);
   const startAnchor = useMemo<StartDateAnchor>(
     () => ({ month: startMonth, year: startYear }),
     [startMonth, startYear],
@@ -555,6 +558,18 @@ export function useLoanChopCalculator() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshSlotStatuses();
   }, [refreshSlotStatuses]);
+
+  useEffect(() => {
+    // Replace the SSR-stable defaults with the user's actual current month
+    // and year after hydration. Runs once on mount; Date() is client-only.
+    // The rule fires on the first setState in the effect body; disabling
+    // because this is the documented-valid "sync from runtime-only source"
+    // pattern (Date is client-only, same as localStorage above).
+    const now = new Date();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStartMonth(now.getMonth() + 1);
+    setStartYear(now.getFullYear());
+  }, []);
 
   const saveToSlot = useCallback(
     (slot: SlotNumber): SaveResult => {
