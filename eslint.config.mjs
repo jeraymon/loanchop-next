@@ -9,12 +9,6 @@ export default [
     },
   },
   {
-    files: ["src/app/**/use*Calculator*.ts"],
-    rules: {
-      "react-hooks/set-state-in-effect": "off",
-    },
-  },
-  {
     ignores: ["out/", ".next/", "node_modules/"],
   },
 ];

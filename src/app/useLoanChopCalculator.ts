@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useAutoCalculate } from "@/hooks/useAutoCalculate";
+import { useStableEvent } from "@/hooks/useStableEvent";
 import {
   compareWithAndWithoutExtra,
   type AmortizationRow,
@@ -365,7 +367,7 @@ export function useLoanChopCalculator() {
   // Determine if per-row entries are active
   const hasPerRowEntries = extraEntries.length > 0;
 
-  const compute = useCallback((data: Record<string, string>) => {
+  const compute = useStableEvent((data: Record<string, string>) => {
     const parsed = schema.safeParse(data);
     if (!parsed.success) {
       setSolutionLabel(null);
@@ -393,7 +395,7 @@ export function useLoanChopCalculator() {
     setResult(r);
     setSolutionLabel("Monthly Payment =");
     setSolutionValue(fmtCurrency(r.monthlyPayment));
-  }, [hasPerRowEntries, extraEntries]);
+  });
 
   const { isStale, reg, handleBlurOrEnter, computeImmediate } = useAutoCalculate({
     schemas,
@@ -406,13 +408,13 @@ export function useLoanChopCalculator() {
     compute,
   });
 
-  // Re-compute when extraEntries change
+  // Re-compute when extraEntries change. flushSync commits the setState
+  // synchronously so compute (via useStableEvent) reads the new entries.
   const handleExtraEntriesChange = useCallback((newEntries: ExtraPaymentEntry[]) => {
-    setExtraEntries(newEntries);
-    // We need to recompute after state updates, so we use a timeout
-    setTimeout(() => {
-      computeImmediate(getValues(), "default");
-    }, 0);
+    flushSync(() => {
+      setExtraEntries(newEntries);
+    });
+    computeImmediate(getValues(), "default");
   }, [computeImmediate, getValues]);
 
   const values = getValues();
@@ -545,11 +547,12 @@ export function useLoanChopCalculator() {
   }, []);
 
   useEffect(() => {
-    // Freeze the user's pre-existing legacy data BEFORE we render any UI
-    // that can write to those keys. Idempotent: the check-and-bail inside
-    // createLegacyBackupIfMissing ensures the backup is captured exactly
-    // once per browser.
+    // Mount-only: sync localStorage → React state. The dep is a stable
+    // useCallback([]) so this runs exactly once. Disabling set-state-in-effect
+    // here because localStorage is an external system and reading it on the
+    // client is the documented-valid use of this pattern.
     createLegacyBackupIfMissing();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshSlotStatuses();
   }, [refreshSlotStatuses]);
 
@@ -588,20 +591,22 @@ export function useLoanChopCalculator() {
     (slot: SlotNumber) => {
       const loan = readSlot(slot);
       if (!loan) return false;
-      setValue("principal", loan.principal, { shouldValidate: true });
-      setValue("annualRate", loan.annualRate, { shouldValidate: true });
-      setValue("years", loan.years, { shouldValidate: true });
-      // Legacy used per-month extras only — so the new "flat extra" field
-      // resets to 0 on load and all prepayments live in extraEntries.
-      setValue("extraPayment", "0", { shouldValidate: true });
-      setStartMonth(loan.loanMonth);
-      setStartYear(loan.loanYear);
-      setExtraEntries(loan.extraEntries);
-      setEditingMonth(null);
-      // Defer so the setValue + setExtraEntries state commits land before
-      // compute reads them. extraEntries is a React state, not an RHF field,
-      // so the setTimeout mirrors handleExtraEntriesChange.
-      setTimeout(() => computeImmediate(getValues(), "default"), 0);
+      // Batch RHF setValue + React state inside one flushSync so the commit
+      // lands before computeImmediate runs. extraEntries is React state (not
+      // an RHF field) and compute reads it from closure via useStableEvent.
+      flushSync(() => {
+        setValue("principal", loan.principal, { shouldValidate: true });
+        setValue("annualRate", loan.annualRate, { shouldValidate: true });
+        setValue("years", loan.years, { shouldValidate: true });
+        // Legacy used per-month extras only — so the new "flat extra" field
+        // resets to 0 on load and all prepayments live in extraEntries.
+        setValue("extraPayment", "0", { shouldValidate: true });
+        setStartMonth(loan.loanMonth);
+        setStartYear(loan.loanYear);
+        setExtraEntries(loan.extraEntries);
+        setEditingMonth(null);
+      });
+      computeImmediate(getValues(), "default");
       return true;
     },
     [computeImmediate, getValues, setValue],
@@ -639,30 +644,43 @@ export function useLoanChopCalculator() {
     if (!result) return QUICK_ANSWER_DEFAULT;
 
     if (showSavings) {
-      return `Adding ${fmtCurrency(Number(values.extraPayment) || 0)} per month saves ${fmtCurrency(result.interestSaved)} in interest and shortens the payoff time by ${fmtMonths(result.monthsSaved)}.`;
+      const flat = Number(values.extraPayment) || 0;
+      const saved = fmtCurrency(result.interestSaved);
+      const shorter = fmtMonths(result.monthsSaved);
+      // Per-row entries (with or without a flat top-up) can't be summarized
+      // as a single "$X per month" — loadFromSlot resets flat to $0 and
+      // keeps the real plan in extraEntries, so the flat-only wording
+      // would falsely claim "Adding $0.00 per month saves …".
+      if (hasPerRowEntries && flat > 0) {
+        return `Adding ${fmtCurrency(flat)} per month plus your per-month extras saves ${saved} in interest and shortens the payoff time by ${shorter}.`;
+      }
+      if (hasPerRowEntries) {
+        return `Your per-month extra payments save ${saved} in interest and shorten the payoff time by ${shorter}.`;
+      }
+      return `Adding ${fmtCurrency(flat)} per month saves ${saved} in interest and shortens the payoff time by ${shorter}.`;
     }
 
     return `This loan's required monthly payment is ${fmtCurrency(result.monthlyPayment)}, and without extra payments it will cost ${fmtCurrency(result.normalTotalInterest)} in total interest over the full term.`;
-  }, [result, showSavings, values.extraPayment]);
+  }, [result, showSavings, values.extraPayment, hasPerRowEntries]);
 
   const loadExample = useCallback((example: ExampleConfig) => {
-    setValue("principal", example.principal, { shouldValidate: true });
-    setValue("annualRate", example.annualRate, { shouldValidate: true });
-    setValue("years", example.years, { shouldValidate: true });
-    setValue("extraPayment", example.extraPayment, { shouldValidate: true });
-    setExtraEntries([]);
-    setEditingMonth(null);
-    setTimeout(() => {
-      computeImmediate(
-        {
-          principal: example.principal,
-          annualRate: example.annualRate,
-          years: example.years,
-          extraPayment: example.extraPayment,
-        },
-        "default",
-      );
-    }, 0);
+    flushSync(() => {
+      setValue("principal", example.principal, { shouldValidate: true });
+      setValue("annualRate", example.annualRate, { shouldValidate: true });
+      setValue("years", example.years, { shouldValidate: true });
+      setValue("extraPayment", example.extraPayment, { shouldValidate: true });
+      setExtraEntries([]);
+      setEditingMonth(null);
+    });
+    computeImmediate(
+      {
+        principal: example.principal,
+        annualRate: example.annualRate,
+        years: example.years,
+        extraPayment: example.extraPayment,
+      },
+      "default",
+    );
     requestAnimationFrame(() => {
       document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
     });
