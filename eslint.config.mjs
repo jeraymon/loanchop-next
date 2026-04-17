@@ -1,20 +1,17 @@
-import reactHooks from "eslint-plugin-react-hooks";
-import tsParser from "@typescript-eslint/parser";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 
 export default [
+  ...nextCoreWebVitals,
   {
     files: ["src/**/*.{ts,tsx}"],
-    languageOptions: {
-      parser: tsParser,
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "@typescript-eslint": tsPlugin,
-    },
     rules: {
-      "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+  {
+    files: ["src/app/**/use*Calculator*.ts"],
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
     },
   },
   {

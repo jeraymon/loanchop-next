@@ -31,7 +31,6 @@ interface UseAutoCalculateReturn {
   /** Whether the displayed solution is stale (user is typing) */
   isStale: boolean;
   /** Wraps register(id) to include onInputChange in onChange */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reg: (id: string) => Record<string, any>;
   /** Attach to input onBlur — cancels debounce timer and computes immediately */
   handleBlurOrEnter: () => void;
