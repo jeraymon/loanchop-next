@@ -1,13 +1,9 @@
 "use client";
 import React from "react";
-import { BlockMath } from "react-katex";
-import "katex/dist/katex.min.css";
 
 export default function CalculatorShell({
   id,
   title,
-  latexFormula,
-  srFormulaText,
   solutionLabel,
   solutionValue,
   isStale,
@@ -18,8 +14,6 @@ export default function CalculatorShell({
 }: {
   id?: string;
   title: string;
-  latexFormula?: string;
-  srFormulaText?: string;
   solutionLabel?: string | null;
   solutionValue?: string | null;
   isStale?: boolean;
@@ -35,12 +29,6 @@ export default function CalculatorShell({
           <h1 className="text-xl sm:text-2xl font-bold text-white">{title}</h1>
         </div>
         <div className="px-3 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
-          {latexFormula && (
-            <section aria-label="Formula" className="bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 py-1 sm:py-2 rounded-lg border text-center overflow-x-auto">
-              <div aria-hidden="true"><BlockMath math={latexFormula} /></div>
-              {srFormulaText && <span className="sr-only">{srFormulaText}</span>}
-            </section>
-          )}
           <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>{children}</form>
           <section aria-label="Result" className="mt-2">
             <div className={`bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded-xl text-center border border-indigo-200 dark:border-indigo-900 ${isStale ? "opacity-50" : "opacity-100"} transition-opacity duration-200`} aria-live="polite">
