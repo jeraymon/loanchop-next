@@ -15,7 +15,7 @@ See `/workspace/CLAUDE.md` for all base patterns, conventions, and guardrails th
 - **Navigation:** Single-calculator site — no sidebar, no internal navigation. Footer has legal page links only.
 - **Summary cards:** Interest Saved and Time Saved highlighted with cyan tinting (`border-cyan-200 bg-cyan-50`). Other summary cards use standard slate borders.
 - **Amortization table:** Toggle between yearly snapshots and all-months view. Columns: Month, Payment, Interest, Principal, Extra (when applicable), Balance.
-- **No formula display** — loan math is straightforward, no react-katex needed.
+- **No formula display** — loan math is presented inline in educational content as plain text. Runtime KaTeX was removed April 2026 (`d0d6630`) and the `latexFormula` shell props purged.
 
 ### SECTION 2: ARCHITECTURAL STANDARDS (Site-Specific)
 - **Auto-calculate pattern (this site):** Uses `zod` + `react-hook-form` with `mode: "onChange"` and `watch()` to read all form values reactively. Results derive from `useMemo` that calls `schema.safeParse(values)` — if validation fails, result is null and solution shows "—". No Calculate button. This is a hybrid approach: zod handles validation display, useMemo handles reactive calculation.
