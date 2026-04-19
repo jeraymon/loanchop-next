@@ -47,7 +47,7 @@ See `AGENT.md` for architecture details, coding patterns, and calculator formula
 
 ### Calculator Implementation
 - **Shell:** `CalculatorShell` with `bg-indigo-600` header, indigo solution box, always-visible results
-- **Form pattern:** `useAutoCalculate` hook with `react-hook-form` for auto-calculate. No Calculate button, no `zodResolver`. Validation is manual via `setError`/`clearErrors`.
+- **Form pattern:** `useAutoCalculate` hook with `react-hook-form` for auto-calculate. No Calculate button, no `zodResolver`. Validation is manual via `setError`/`clearErrors`. When adding new form-based calcs here, consider porting `useFormCalculatorController` from `ajdesigner-next/src/lib/calculators/` — it wraps `useForm` + `useAutoCalculate` + `flushSync` into a single typed controller. See root `/workspace/CLAUDE.md` "Calculator Controller Pattern".
 - **Chart:** `BalanceChart` shows remaining balance over time for normal vs accelerated schedules. Always rendered. The "Extra" series is suppressed when there's no acceleration, so an empty-extras loan shows just the normal balance curve.
 - **Table:** Summary cards (monthly payment, total interest, interest saved, time saved) + full amortization schedule with toggle between yearly and all-months view.
 - **No formula display** — this calculator presents loan math inline as plain text in educational content. The `latexFormula` shell props were removed April 2026 (`d0d6630`).
