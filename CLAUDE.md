@@ -10,6 +10,7 @@
 - Dependency-array guardrail: do not depend on whole wrapper objects like `controller.actions`; destructure stable members first
 - Module-scope defaults: keep `DEFAULT_INPUTS`, `DEFAULT_FORM_VALUES`, and schemas outside the hook body
 - Non-JSX hook files should use `.ts`
+- Shared charts: prefer `src/components/charts/CalcLineChart`, `CalcBarChart`, and `CalcMultiLineChart` over bespoke recharts implementations when the chart fits those patterns
 
 ## Reference
 

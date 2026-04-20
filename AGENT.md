@@ -34,6 +34,15 @@ return {
 - Keep truly tiny or lookup-style calculators bespoke if the controller would only add ceremony.
 - If this repo already has a dedicated converter helper, keep using that for pure unit-converter flows.
 
+## Shared Charts
+
+- For compatible charts, use the shared visx family in `src/components/charts/`:
+  - `CalcLineChart` for simple single-series line charts
+  - `CalcBarChart` for categorical/grouped/stacked bar charts
+  - `CalcMultiLineChart` for comparison charts with multiple series
+- Keep bespoke charts bespoke only when they do not fit those shared primitives cleanly.
+- Prefer thin route-local `*Chart.tsx` wrappers that adapt local data into the shared chart props.
+
 ## Reference
 
 See [src/lib/calculators/README.md](src/lib/calculators/README.md) for the local scaffold contract and a usage sketch.

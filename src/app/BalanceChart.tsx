@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from "recharts";
+import CalcMultiLineChart from "@/components/charts/CalcMultiLineChart";
 import type { AmortizationRow } from "./calc";
 
 interface BalanceChartProps {
@@ -111,6 +102,30 @@ export default function BalanceChart({
   const fmt = (v: number) =>
     v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
 
+  const series = hasAcceleration
+    ? [
+        {
+          key: "normal",
+          label: "Normal",
+          color: "#94a3b8",
+          connectNulls: true,
+        },
+        {
+          key: "extra",
+          label: "Extra",
+          color: "#0891b2",
+          connectNulls: true,
+        },
+      ]
+    : [
+        {
+          key: "normal",
+          label: "Normal",
+          color: "#94a3b8",
+          connectNulls: true,
+        },
+      ];
+
   return (
     <div className="space-y-2">
       {/* Tab bar */}
@@ -133,52 +148,35 @@ export default function BalanceChart({
 
       {/* Chart */}
       <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 360, height: 280 }}>
-          <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-            <XAxis
-              dataKey="month"
-              type="number"
-              domain={["dataMin", "dataMax"]}
-              label={{ value: "Months", position: "insideBottom", offset: -2 }}
-              tick={{ fontSize: 12 }}
-            />
-            <YAxis
-              type="number"
-              tickFormatter={fmt}
-              tick={{ fontSize: 12 }}
-              width={60}
-              label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 10, style: { fontSize: 11 } }}
-            />
-            <Tooltip
-              formatter={(value) => [
-                `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-              ]}
-              labelFormatter={(label) => `Month ${label}`}
-            />
-            <Legend verticalAlign="top" />
-            <Line
-              type="linear"
-              dataKey="normal"
-              name="Normal"
-              stroke="#94a3b8"
-              strokeWidth={2}
-              dot={false}
-              connectNulls
-            />
-            {hasAcceleration && (
-              <Line
-                type="linear"
-                dataKey="extra"
-                name="Extra"
-                stroke="#0891b2"
-                strokeWidth={2}
-                dot={false}
-                connectNulls
-              />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
+        <CalcMultiLineChart
+          data={data}
+          xKey="month"
+          series={series}
+          xLabel="Months"
+          yLabel={yLabel}
+          ariaLabel={`${TABS.find((tab) => tab.key === activeTab)?.label ?? "Loan"} comparison over time`}
+          yTickFormat={fmt}
+          tooltipFormat={(row, chartSeries) => (
+            <>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>
+                Month {Number(row.month)}
+              </div>
+              {chartSeries.map((seriesItem) => {
+                const value = row[seriesItem.key];
+                if (typeof value !== "number" || !Number.isFinite(value)) return null;
+                return (
+                  <div key={seriesItem.key}>
+                    {seriesItem.label}: $
+                    {value.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                );
+              })}
+            </>
+          )}
+        />
       </div>
     </div>
   );
