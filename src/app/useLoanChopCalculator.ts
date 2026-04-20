@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { flushSync } from "react-dom";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { useAutoCalculate } from "@/hooks/useAutoCalculate";
 import { useStableEvent } from "@/hooks/useStableEvent";
+import { useFormCalculatorController } from "@/lib/calculators/useFormCalculatorController";
+import { useObjectState } from "@/lib/calculators/useObjectState";
 import {
   compareWithAndWithoutExtra,
   type AmortizationRow,
@@ -38,6 +37,13 @@ const schema = z.object({
 });
 
 const schemas = { default: schema } as const;
+const DEFAULT_FORM_VALUES = {
+  principal: "200000",
+  annualRate: "6",
+  years: "30",
+  extraPayment: "0",
+};
+type SolveFor = "default";
 
 // ---------------------------------------------------------------------------
 // Formatting helpers
@@ -326,24 +332,14 @@ function slotExists(slot: SlotNumber): boolean {
 // ---------------------------------------------------------------------------
 
 export function useLoanChopCalculator() {
-  const [solutionLabel, setSolutionLabel] = useState<string | null>(null);
-  const [solutionValue, setSolutionValue] = useState<string | null>(null);
-  const [result, setResult] = useState<ComparisonResult | null>(null);
-
-  const {
-    register,
-    getValues,
-    setValue,
-    setError,
-    clearErrors,
-    formState: { errors },
-  } = useForm<Record<string, string>>({
-    defaultValues: {
-      principal: "200000",
-      annualRate: "6",
-      years: "30",
-      extraPayment: "0",
-    },
+  const derivedState = useObjectState<{
+    solutionLabel: string | null;
+    solutionValue: string | null;
+    result: ComparisonResult | null;
+  }>({
+    solutionLabel: null,
+    solutionValue: null,
+    result: null,
   });
 
   // First payment anchor. Stable literal defaults so SSG prerender and
@@ -370,12 +366,15 @@ export function useLoanChopCalculator() {
   // Determine if per-row entries are active
   const hasPerRowEntries = extraEntries.length > 0;
 
-  const compute = useStableEvent((data: Record<string, string>) => {
+  const compute = useStableEvent((data: Record<string, string>, _solveFor: SolveFor) => {
+    void _solveFor;
     const parsed = schema.safeParse(data);
     if (!parsed.success) {
-      setSolutionLabel(null);
-      setSolutionValue(null);
-      setResult(null);
+      derivedState.merge({
+        solutionLabel: null,
+        solutionValue: null,
+        result: null,
+      });
       return;
     }
     const principal = Number(data.principal);
@@ -383,9 +382,11 @@ export function useLoanChopCalculator() {
     const years = Number(data.years);
     const extraPayment = Number(data.extraPayment);
     if (principal <= 0 || years <= 0) {
-      setSolutionLabel(null);
-      setSolutionValue(null);
-      setResult(null);
+      derivedState.merge({
+        solutionLabel: null,
+        solutionValue: null,
+        result: null,
+      });
       return;
     }
     const r = compareWithAndWithoutExtra(
@@ -395,32 +396,32 @@ export function useLoanChopCalculator() {
       extraPayment,
       hasPerRowEntries ? extraEntries : undefined,
     );
-    setResult(r);
-    setSolutionLabel("Monthly Payment =");
-    setSolutionValue(fmtCurrency(r.monthlyPayment));
+    derivedState.merge({
+      result: r,
+      solutionLabel: "Monthly Payment =",
+      solutionValue: fmtCurrency(r.monthlyPayment),
+    });
   });
 
-  const { isStale, reg, handleBlurOrEnter, computeImmediate } = useAutoCalculate({
+  const controller = useFormCalculatorController<SolveFor>({
+    defaultValues: DEFAULT_FORM_VALUES,
     schemas,
-    solveFor: "default",
-    getValues,
-    register,
-    setError,
-    clearErrors,
-    errors,
+    initialSolveFor: "default",
     compute,
   });
+  const { getValues } = controller.form;
+  const { applyAndRecompute, loadValues } = controller.actions;
 
-  // Re-compute when extraEntries change. flushSync commits the setState
-  // synchronously so compute (via useStableEvent) reads the new entries.
+  // Re-compute when extraEntries change so compute (via useStableEvent)
+  // reads the new entries immediately in the same update cycle.
   const handleExtraEntriesChange = useCallback((newEntries: ExtraPaymentEntry[]) => {
-    flushSync(() => {
+    applyAndRecompute(() => {
       setExtraEntries(newEntries);
     });
-    computeImmediate(getValues(), "default");
-  }, [computeImmediate, getValues]);
+  }, [applyAndRecompute]);
 
   const values = getValues();
+  const result = derivedState.state.result;
   const hasExtra =
     result &&
     (Number(values.extraPayment) > 0 || hasPerRowEntries) &&
@@ -606,25 +607,23 @@ export function useLoanChopCalculator() {
     (slot: SlotNumber) => {
       const loan = readSlot(slot);
       if (!loan) return false;
-      // Batch RHF setValue + React state inside one flushSync so the commit
-      // lands before computeImmediate runs. extraEntries is React state (not
-      // an RHF field) and compute reads it from closure via useStableEvent.
-      flushSync(() => {
-        setValue("principal", loan.principal, { shouldValidate: true });
-        setValue("annualRate", loan.annualRate, { shouldValidate: true });
-        setValue("years", loan.years, { shouldValidate: true });
-        // Legacy used per-month extras only — so the new "flat extra" field
-        // resets to 0 on load and all prepayments live in extraEntries.
-        setValue("extraPayment", "0", { shouldValidate: true });
-        setStartMonth(loan.loanMonth);
-        setStartYear(loan.loanYear);
-        setExtraEntries(loan.extraEntries);
-        setEditingMonth(null);
+      loadValues({
+        values: {
+          principal: loan.principal,
+          annualRate: loan.annualRate,
+          years: loan.years,
+          extraPayment: "0",
+        },
+        apply: () => {
+          setStartMonth(loan.loanMonth);
+          setStartYear(loan.loanYear);
+          setExtraEntries(loan.extraEntries);
+          setEditingMonth(null);
+        },
       });
-      computeImmediate(getValues(), "default");
       return true;
     },
-    [computeImmediate, getValues, setValue],
+    [loadValues],
   );
 
   const deleteSlot = useCallback(
@@ -679,27 +678,22 @@ export function useLoanChopCalculator() {
   }, [result, showSavings, values.extraPayment, hasPerRowEntries]);
 
   const loadExample = useCallback((example: ExampleConfig) => {
-    flushSync(() => {
-      setValue("principal", example.principal, { shouldValidate: true });
-      setValue("annualRate", example.annualRate, { shouldValidate: true });
-      setValue("years", example.years, { shouldValidate: true });
-      setValue("extraPayment", example.extraPayment, { shouldValidate: true });
-      setExtraEntries([]);
-      setEditingMonth(null);
-    });
-    computeImmediate(
-      {
+    loadValues({
+      values: {
         principal: example.principal,
         annualRate: example.annualRate,
         years: example.years,
         extraPayment: example.extraPayment,
       },
-      "default",
-    );
+      apply: () => {
+        setExtraEntries([]);
+        setEditingMonth(null);
+      },
+    });
     requestAnimationFrame(() => {
       document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
     });
-  }, [computeImmediate, setValue]);
+  }, [loadValues]);
 
   // Bound display helpers — consumers don't need to pass the anchor every call.
   const monthToDateBound = useCallback(
@@ -712,56 +706,51 @@ export function useLoanChopCalculator() {
   );
 
   return {
-    // Solution display
-    solutionLabel,
-    solutionValue,
-    result,
-    isStale,
-
-    // Form
-    errors,
-    reg,
-    handleBlurOrEnter,
-
-    // Extra payment state
-    hasPerRowEntries,
-    extraEntries,
-    extraByMonth,
-
-    // Editing state
-    editingMonth,
-    editRecurring,
-    setEditRecurring,
-    editSingle,
-    setEditSingle,
-    startEdit,
-    saveEdit,
-    cancelEdit,
-    clearAllEntries,
-
-    // Derived display data
-    values,
-    hasExtra,
-    showSavings,
-    showAllRows,
-    setShowAllRows,
-    normalByMonth,
-    displaySchedule,
-
-    // Start date (first payment anchor)
-    startDateInputValue,
-    startMonth,
-    startYear,
-    handleStartDateChange,
-    monthToDate: monthToDateBound,
-    payoffDate: payoffDateBound,
-    quickAnswer,
-    loadExample,
-
-    // Saved loans
-    slotStatuses,
-    saveToSlot,
-    loadFromSlot,
-    deleteSlot,
+    state: {
+      editingMonth,
+      editRecurring,
+      editSingle,
+      showAllRows,
+      startDateInputValue,
+      startMonth,
+      startYear,
+      slotStatuses,
+    },
+    actions: {
+      setEditRecurring,
+      setEditSingle,
+      startEdit,
+      saveEdit,
+      cancelEdit,
+      clearAllEntries,
+      setShowAllRows,
+      handleStartDateChange,
+      loadExample,
+      saveToSlot,
+      loadFromSlot,
+      deleteSlot,
+    },
+    derived: {
+      solutionLabel: derivedState.state.solutionLabel,
+      solutionValue: derivedState.state.solutionValue,
+      result,
+      isStale: controller.derived.isStale,
+      errors: controller.derived.errors,
+      hasPerRowEntries,
+      extraEntries,
+      extraByMonth,
+      values,
+      hasExtra,
+      showSavings,
+      normalByMonth,
+      displaySchedule,
+      quickAnswer,
+    },
+    ui: {
+      reg: controller.form.reg,
+      handleBlurOrEnter: controller.form.handleBlurOrEnter,
+      monthToDate: monthToDateBound,
+      payoffDate: payoffDateBound,
+    },
   };
 }

@@ -97,42 +97,44 @@ const workedExamples: Array<{
 // ---------------------------------------------------------------------------
 
 export default function Calculator() {
+  const { state, actions, derived, ui } = useLoanChopCalculator();
+  const {
+    editingMonth,
+    editRecurring,
+    editSingle,
+    showAllRows,
+    startDateInputValue,
+    slotStatuses,
+  } = state;
+  const {
+    setEditRecurring,
+    setEditSingle,
+    startEdit,
+    saveEdit,
+    cancelEdit,
+    clearAllEntries,
+    setShowAllRows,
+    handleStartDateChange,
+    loadExample,
+    saveToSlot,
+    loadFromSlot,
+    deleteSlot,
+  } = actions;
   const {
     solutionLabel,
     solutionValue,
     result,
     isStale,
     errors,
-    reg,
-    handleBlurOrEnter,
     hasPerRowEntries,
     extraByMonth,
-    editingMonth,
-    editRecurring,
-    setEditRecurring,
-    editSingle,
-    setEditSingle,
-    startEdit,
-    saveEdit,
-    cancelEdit,
-    clearAllEntries,
     values,
     showSavings,
-    showAllRows,
-    setShowAllRows,
     normalByMonth,
     displaySchedule,
-    startDateInputValue,
-    handleStartDateChange,
-    monthToDate,
-    payoffDate,
     quickAnswer,
-    loadExample,
-    slotStatuses,
-    saveToSlot,
-    loadFromSlot,
-    deleteSlot,
-  } = useLoanChopCalculator();
+  } = derived;
+  const { reg, handleBlurOrEnter, monthToDate, payoffDate } = ui;
   const [copyState, setCopyState] = useState<"idle" | "ok" | "fail">("idle");
 
   const copyResult = async () => {

@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { UseFormRegister, UseFormGetValues, UseFormSetError, UseFormClearErrors, FieldErrors } from "react-hook-form";
-import type { z } from "zod";
+import { z } from "zod";
 
 const DEBOUNCE_MS = 1000;
 
 type FormData = Record<string, string>;
-type SchemaMap = Record<string, z.ZodObject<Record<string, z.ZodTypeAny>>>;
+type SchemaMap = Record<string, z.ZodTypeAny>;
+
+const getSchemaFields = (schema: z.ZodTypeAny): string[] => {
+  if (schema instanceof z.ZodObject) return Object.keys(schema.shape);
+  if (schema instanceof z.ZodEffects) {
+    const inner = schema.innerType();
+    if (inner instanceof z.ZodObject) return Object.keys(inner.shape);
+  }
+  return [];
+};
 
 interface UseAutoCalculateOptions<S extends SchemaMap> {
   /** Map of solve-for key → zod schema (only input fields, not the solved variable) */
@@ -86,7 +95,7 @@ export function useAutoCalculate<S extends SchemaMap>({
     const schema = schemas[sf];
     if (!schema) return false;
     const result = schema.safeParse(data);
-    const requiredFields = Object.keys(schema.shape);
+    const requiredFields = getSchemaFields(schema);
     if (result.success) {
       clearErrors();
     } else {
