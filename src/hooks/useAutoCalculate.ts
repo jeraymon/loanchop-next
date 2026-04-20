@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { UseFormRegister, UseFormGetValues, UseFormSetError, UseFormClearErrors, FieldErrors } from "react-hook-form";
+import type { UseFormRegister, UseFormGetValues, UseFormSetError, UseFormClearErrors, FieldErrors, UseFormRegisterReturn } from "react-hook-form";
 import { z } from "zod";
+import { useIsoLayoutEffect } from "./useIsoLayoutEffect";
 
 const DEBOUNCE_MS = 1000;
 
@@ -40,7 +41,7 @@ interface UseAutoCalculateReturn {
   /** Whether the displayed solution is stale (user is typing) */
   isStale: boolean;
   /** Wraps register(id) to include onInputChange in onChange */
-  reg: (id: string) => Record<string, any>;
+  reg: (id: string) => UseFormRegisterReturn;
   /** Attach to input onBlur — cancels debounce timer and computes immediately */
   handleBlurOrEnter: () => void;
   /** Call from handlers (equation/pill/unit switch) to compute immediately with no dimming */
@@ -75,12 +76,16 @@ export function useAutoCalculate<S extends SchemaMap>({
 }: UseAutoCalculateOptions<S>): UseAutoCalculateReturn {
   const [isStale, setIsStale] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasInitializedRef = useRef(false);
 
   // Refs so callbacks always read the latest without recreating
   const solveForRef = useRef(solveFor);
-  solveForRef.current = solveFor;
   const computeRef = useRef(compute);
-  computeRef.current = compute;
+
+  useIsoLayoutEffect(() => {
+    solveForRef.current = solveFor;
+    computeRef.current = compute;
+  }, [solveFor, compute]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -164,12 +169,15 @@ export function useAutoCalculate<S extends SchemaMap>({
 
   const reg = useCallback((id: string) => {
     const { onChange, ...rest } = register(id);
+    const wrappedOnChange: typeof onChange = (e) => {
+      const result = onChange(e);
+      onInputChange();
+      return result;
+    };
+
     return {
       ...rest,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange(e);
-        onInputChange();
-      },
+      onChange: wrappedOnChange,
     };
   }, [register, onInputChange]);
 
@@ -178,9 +186,13 @@ export function useAutoCalculate<S extends SchemaMap>({
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    computeImmediate(getValues(), solveFor);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+    const timeoutId = setTimeout(() => {
+      computeImmediate(getValues(), solveFor);
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, [computeImmediate, getValues, solveFor]);
 
   return { isStale, reg, handleBlurOrEnter, computeImmediate, validate };
 }
