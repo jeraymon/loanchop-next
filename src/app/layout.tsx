@@ -1,4 +1,5 @@
 import "./globals.css";
+import Script from "next/script";
 import { Inter, Geist } from "next/font/google";
 import Link from "next/link";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -13,13 +14,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6158058519275033"
-          crossOrigin="anonymous"
-        />
       </head>
       <body className={inter.className}>
+        {/* AdSense library — lazyOnload defers script until after window 'load',
+            keeping first-party hydration off the critical path. */}
+        <Script
+          id="adsbygoogle-init"
+          strategy="lazyOnload"
+          crossOrigin="anonymous"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6158058519275033"
+        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <main className="flex-1 px-2 py-3 sm:px-6 sm:py-6 lg:px-12 lg:py-6 bg-background overflow-x-hidden min-h-screen">
             {children}

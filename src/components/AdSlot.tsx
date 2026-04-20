@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function AdSlot() {
+  // Guards against React Strict Mode double-push (dev only) and any
+  // accidental remount path, which would trigger AdSense's
+  // "already has ads" console error. Safe no-op in production.
+  const adLoaded = useRef(false);
+
   useEffect(() => {
+    if (adLoaded.current) return;
     try {
-      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-    } catch (err) {
+      (
+        (window as unknown as { adsbygoogle?: object[] }).adsbygoogle ||= []
+      ).push({});
+      adLoaded.current = true;
+    } catch {
       console.warn("AdSense logic skipped or blocked.");
     }
   }, []);
@@ -16,7 +25,7 @@ export default function AdSlot() {
       aria-label="Advertisement"
       className="flex flex-col items-center justify-center w-full my-[50px] min-h-[250px]"
     >
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
+      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">
         Advertisement
       </span>
       <ins
