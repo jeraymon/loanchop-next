@@ -34,6 +34,7 @@ export function useFormCalculatorController<
   const {
     register,
     getValues,
+    watch,
     setValue,
     setError,
     clearErrors,
@@ -120,6 +121,7 @@ export function useFormCalculatorController<
       reg,
       handleBlurOrEnter,
       getValues,
+      watch,
       validate,
     },
   };
