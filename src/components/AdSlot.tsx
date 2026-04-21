@@ -25,9 +25,6 @@ export default function AdSlot() {
       aria-label="Advertisement"
       className="flex flex-col items-center justify-center w-full my-[50px] min-h-[280px]"
     >
-      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">
-        Advertisement
-      </span>
       <ins
         className="adsbygoogle"
         style={{ display: "block", minWidth: "250px", minHeight: "280px", textAlign: "center" }}
