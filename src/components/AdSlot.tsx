@@ -20,19 +20,26 @@ export default function AdSlot() {
     }
   }, []);
 
+  // Self-contained: outer <div> owns width constraint + 280px reservation
+  // (AdSense strips min-height: 0 !important on the immediate <aside> parent
+  // of <ins>, but does NOT touch this outer wrapper — so the reservation
+  // actually holds). The <aside> centers the served ad within the reserved
+  // area. <ins> style is Google's documented responsive baseline.
   return (
-    <aside
-      aria-label="Advertisement"
-      className="flex flex-col items-center justify-center w-full my-[50px] min-h-[280px]"
-    >
-      <ins
-        className="adsbygoogle"
-        style={{ display: "block", minWidth: "250px", minHeight: "280px", textAlign: "center" }}
-        data-ad-client="ca-pub-6158058519275033"
-        data-ad-slot="5439322335"
-        data-ad-format="rectangle, horizontal"
-        data-full-width-responsive="true"
-      />
-    </aside>
+    <div className="max-w-3xl lg:max-w-[970px] mx-auto my-[50px] min-h-[280px] flex items-center justify-center">
+      <aside
+        aria-label="Advertisement"
+        className="w-full flex items-center justify-center"
+      >
+        <ins
+          className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-6158058519275033"
+          data-ad-slot="5439322335"
+          data-ad-format="rectangle, horizontal"
+          data-full-width-responsive="true"
+        />
+      </aside>
+    </div>
   );
 }

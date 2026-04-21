@@ -90,11 +90,11 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] `<ShareButtons />` wrapped in `<div className="max-w-3xl mx-auto">` — must align with the calculator card
 - [ ] Share buttons are always visible (pass `solutionLabel ?? ""` and `solutionValue ?? ""`, not conditional on solution existing)
 - [ ] `AdSlot` placed **outside** the shell (shells have no internal AdSlot)
-- [ ] `<AdSlot />` wrapped in `<div className="max-w-3xl lg:max-w-[970px] mx-auto">` — desktop widens to 970px so Billboard 970×250 can serve; unwrapped ads stretch full viewport width
+- [ ] `<AdSlot />` is **self-contained** — no wrapper in Calculator.tsx. The component owns its own `max-w-3xl lg:max-w-[970px] mx-auto my-[50px] min-h-[280px]` outer div so the 280px reservation survives AdSense's runtime `min-height: 0 !important` override (which only targets the immediate ad-container ancestor of `<ins>`)
 - [ ] AdSense library loads via `next/script` with `strategy="lazyOnload"` in `layout.tsx` `<body>` (deferred until after `window 'load'` to keep first-party hydration off the critical path)
 - [ ] `AdSlot` contains only the `<ins>` tag and `useEffect` push call — no `<script>` tag in JSX
 - [ ] AdSlot push call uses `window.adsbygoogle` (WITH `window.` prefix)
-- [ ] `AdSlot` values match exactly: `data-ad-client="ca-pub-6158058519275033"`, `data-ad-slot="5439322335"`, `data-ad-format="rectangle, horizontal"`, `data-full-width-responsive="true"`. Style: `display: block, minWidth: 250px, minHeight: 280px, textAlign: center` — no explicit `width` (matches Google's baseline so aside's flex centering positions the ad). Outer `<aside>` uses `min-h-[280px]`. No `overflow-hidden` on the `<aside>` container — NEVER modify these
+- [ ] `AdSlot` values match exactly: `data-ad-client="ca-pub-6158058519275033"`, `data-ad-slot="5439322335"`, `data-ad-format="rectangle, horizontal"`, `data-full-width-responsive="true"`. Style: `display: block` only (Google's exact responsive baseline — we dropped minWidth/minHeight/textAlign since AdSense overrides `min-height: 0 !important` on `<ins>` at runtime and the `<ins>` sizes to the served ad). The 280px reservation lives on AdSlot's outer `<div>` wrapper (safe from AdSense's override). No `overflow-hidden` on the `<aside>` container — NEVER modify these
 - [ ] AdSense library loads via `next/script` `strategy="lazyOnload"` in `layout.tsx` `<body>` (loaded once for all pages)
 - [ ] `ads.txt` exists at `public/ads.txt` with correct publisher ID
 

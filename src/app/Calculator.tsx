@@ -601,9 +601,7 @@ export default function Calculator() {
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} />
       </div>
-      <div className="max-w-3xl lg:max-w-[970px] mx-auto">
-        <AdSlot />
-      </div>
+      <AdSlot />
 
       <section className="max-w-3xl mx-auto mt-8 space-y-4 text-sm text-muted-foreground leading-relaxed">
         <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
