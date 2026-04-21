@@ -90,12 +90,12 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] `<ShareButtons />` wrapped in `<div className="max-w-3xl mx-auto">` — must align with the calculator card
 - [ ] Share buttons are always visible (pass `solutionLabel ?? ""` and `solutionValue ?? ""`, not conditional on solution existing)
 - [ ] `AdSlot` placed **outside** the shell (shells have no internal AdSlot)
-- [ ] `<AdSlot />` wrapped in `<div className="max-w-3xl mx-auto">` — unwrapped ads stretch full viewport width
-- [ ] `layout.tsx` has AdSense library `<script>` in `<head>` (plain tag, NOT `next/script`)
+- [ ] `<AdSlot />` wrapped in `<div className="max-w-3xl lg:max-w-[970px] mx-auto">` — desktop widens to 970px so Billboard 970×250 can serve; unwrapped ads stretch full viewport width
+- [ ] AdSense library loads via `next/script` with `strategy="lazyOnload"` in `layout.tsx` `<body>` (deferred until after `window 'load'` to keep first-party hydration off the critical path)
 - [ ] `AdSlot` contains only the `<ins>` tag and `useEffect` push call — no `<script>` tag in JSX
 - [ ] AdSlot push call uses `window.adsbygoogle` (WITH `window.` prefix)
-- [ ] `AdSlot` values match exactly: `data-ad-client="ca-pub-6158058519275033"`, `data-ad-slot="5439322335"`, `data-ad-format="rectangle, horizontal"`, `data-full-width-responsive="true"`. Style: `display: block, width: 100%, minWidth: 250px, minHeight: 250px`. No `overflow-hidden` on the `<aside>` container — NEVER modify these
-- [ ] AdSense library `<script>` is in `layout.tsx` `<head>` (loaded once for all pages)
+- [ ] `AdSlot` values match exactly: `data-ad-client="ca-pub-6158058519275033"`, `data-ad-slot="5439322335"`, `data-ad-format="rectangle, horizontal"`, `data-full-width-responsive="true"`. Style: `display: block, minWidth: 250px, minHeight: 280px, textAlign: center` — no explicit `width` (matches Google's baseline so aside's flex centering positions the ad). Outer `<aside>` uses `min-h-[280px]`. No `overflow-hidden` on the `<aside>` container — NEVER modify these
+- [ ] AdSense library loads via `next/script` `strategy="lazyOnload"` in `layout.tsx` `<body>` (loaded once for all pages)
 - [ ] `ads.txt` exists at `public/ads.txt` with correct publisher ID
 
 ### Sharing
