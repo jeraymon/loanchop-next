@@ -76,7 +76,6 @@ export function useAutoCalculate<S extends SchemaMap>({
 }: UseAutoCalculateOptions<S>): UseAutoCalculateReturn {
   const [isStale, setIsStale] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hasInitializedRef = useRef(false);
 
   // Refs so callbacks always read the latest without recreating
   const solveForRef = useRef(solveFor);
@@ -186,13 +185,9 @@ export function useAutoCalculate<S extends SchemaMap>({
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-    const timeoutId = setTimeout(() => {
-      computeImmediate(getValues(), solveFor);
-    }, 0);
-    return () => clearTimeout(timeoutId);
-  }, [computeImmediate, getValues, solveFor]);
+    computeImmediate(getValues(), solveFor);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { isStale, reg, handleBlurOrEnter, computeImmediate, validate };
 }
