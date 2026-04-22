@@ -27,13 +27,10 @@ export default function AdSlot() {
   // area. <ins> style is Google's documented responsive baseline.
   return (
     <div className="max-w-3xl lg:max-w-[970px] mx-auto my-[50px] min-h-[280px] flex items-center justify-center">
-      <aside
-        aria-label="Advertisement"
-        className="w-full flex items-center justify-center"
-      >
+      <aside aria-label="Advertisement" className="w-full">
         <ins
           className="adsbygoogle"
-          style={{ display: "block" }}
+          style={{ display: "block", textAlign: "center" }}
           data-ad-client="ca-pub-6158058519275033"
           data-ad-slot="5439322335"
           data-ad-format="rectangle, horizontal"
