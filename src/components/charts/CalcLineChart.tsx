@@ -16,7 +16,6 @@ import {
   DEFAULT_DOT_COLOR,
   DEFAULT_LINE_COLOR,
   formatTick,
-  niceTicks,
   type ReferenceLineSpec,
 } from "./chartHelpers";
 
@@ -125,17 +124,15 @@ function ChartInner({
     const xMax = Math.max(...xs);
     const yMin = includeZeroY ? Math.min(...ys, 0) : Math.min(...ys);
     const yMax = Math.max(...ys);
-    const xRange = xMax - xMin || 1;
-    const yRange = yMax - yMin || 1;
-    const xT = niceTicks(xMin, xMax + xRange * 0.1, 5);
-    const yT = niceTicks(yMin, yMax + yRange * 0.1, 5);
     const innerW = Math.max(0, width - CHART_MARGIN.left - CHART_MARGIN.right);
     const innerH = Math.max(0, height - CHART_MARGIN.top - CHART_MARGIN.bottom);
+    const xS = scaleLinear<number>({ domain: [xMin, xMax], range: [0, innerW] }).nice(5);
+    const yS = scaleLinear<number>({ domain: [yMin, yMax], range: [innerH, 0] }).nice(5);
     return {
-      xScale: scaleLinear<number>({ domain: [xT[0], xT[xT.length - 1]], range: [0, innerW] }),
-      yScale: scaleLinear<number>({ domain: [yT[0], yT[yT.length - 1]], range: [innerH, 0] }),
-      xTicks: xT,
-      yTicks: yT,
+      xScale: xS,
+      yScale: yS,
+      xTicks: xS.ticks(5),
+      yTicks: yS.ticks(5),
       innerWidth: innerW,
       innerHeight: innerH,
     };
