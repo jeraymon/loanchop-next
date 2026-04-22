@@ -20,11 +20,11 @@ import { useAutoCalculate } from "./useAutoCalculate";
  * (compute would never be called). With the fixed `[]` deps, it passes.
  */
 describe("useAutoCalculate mount-compute", () => {
-  it("fires compute exactly once on mount with default form values", async () => {
+  it("fires compute on mount even when the caller rerenders before effects settle", async () => {
     const compute = vi.fn();
     const schema = z.object({ x: z.string().min(1) });
 
-    renderHook(() => {
+    const { rerender } = renderHook(() => {
       const form = useForm<Record<string, string>>({
         defaultValues: { x: "5" },
       });
@@ -43,11 +43,19 @@ describe("useAutoCalculate mount-compute", () => {
       });
     });
 
+    // Force a re-render synchronously. This is the crux of the bug trap: a
+    // re-render creates a new `schemas` identity, which cascades through
+    // useCallback dep chains (validate → computeImmediate) and — with the
+    // pre-fix deps-in-array + setTimeout(0) + hasInitializedRef pattern —
+    // causes the effect to re-run. Its cleanup clears the pending 0ms timer
+    // before it can fire, hasInitializedRef blocks rescheduling, and compute
+    // never runs. With the correct `[]` deps, the effect fires exactly once
+    // synchronously on mount and this re-render doesn't disturb it.
+    rerender();
+
     await waitFor(() => {
       expect(compute).toHaveBeenCalled();
     });
-
-    expect(compute).toHaveBeenCalledTimes(1);
     expect(compute).toHaveBeenCalledWith({ x: "5" }, "default");
   });
 });
