@@ -21,6 +21,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 ### Shell & Design
 - [ ] Uses `CalculatorShell` (the unified shell for all calculators)
 - [ ] All calculators use `CalculatorShell` with auto-calculate (no Calculate button)
+- [ ] `src/hooks/useAutoCalculate.ts` mount-compute effect uses `[]` deps + eslint-disable (NOT `[computeImmediate, getValues, solveFor]`). The deps-in-array + `setTimeout(0)` + cleanup `clearTimeout` + `hasInitializedRef` combination silently breaks initial compute — cleanup cancels the 0ms timer before it fires, `hasInitializedRef` blocks rescheduling, compute never runs, `result` stays null, result-dependent reservations (Data Table / Show Your Work) sit empty. Fixed network-wide 2026-04-22.
 - [ ] Shell has `id="calculator"` prop
 - [ ] Formula display uses `react-katex` (`BlockMath`) — if the calculator displays a formula. Not all calculators need one (e.g., BOGO, paycheck, loan comparison).
 - [ ] Shell header uses the site accent color (see CLAUDE.md Site-Specific palette) background with white bold text
