@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calculator, FlaskConical, Wrench, Sigma, DollarSign, Droplets, Hash, Heart, Mountain, Thermometer, Search } from "lucide-react";
+import { Calculator, FlaskConical, Wrench, Sigma, DollarSign, Droplets, Hash, Heart, Mountain, Thermometer, Search, X } from "lucide-react";
 import { categories } from "@/app/calculator-catalog";
 import {
   Sidebar,
@@ -38,6 +38,13 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = React.useState("");
+  const searchRef = React.useRef<HTMLInputElement>(null);
+  const clearSearch = React.useCallback(() => {
+    setQuery("");
+    // Re-focus the input after clearing so mobile keyboards stay open and
+    // keyboard-only users don't lose their place when the X unmounts.
+    searchRef.current?.focus();
+  }, []);
   const results = React.useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
@@ -57,12 +64,26 @@ export function AppSidebar() {
             <div className="relative px-2">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <input
+                ref={searchRef}
                 type="text"
                 placeholder="Search calculators..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-md border bg-background px-8 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") clearSearch();
+                }}
+                className="w-full rounded-md border bg-background pl-8 pr-10 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
+              {query && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  aria-label="Clear search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
