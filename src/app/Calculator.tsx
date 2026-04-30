@@ -96,6 +96,10 @@ const workedExamples: Array<{
 // Component
 // ---------------------------------------------------------------------------
 
+const QUICK_ANSWER_STATIC = "The loan prepayment calculator builds a full month-by-month amortization schedule for any fixed-rate loan, then layers extra principal payments on top — either a recurring monthly amount, single one-time payments on specific months, or both — and shows interest saved, months saved, and the new payoff date. Because every extra dollar of principal lowers the balance that future interest accrues against, prepayment compounds savings non-linearly over the life of the loan.";
+
+const QUICK_ANSWER_EXAMPLE = "A $200,000 loan at 6% over 30 years has a base monthly payment ≈ $1,199.10 and total interest ≈ $231,676. Adding an extra $100/month brings total interest down to ≈ $190,418 and pays the loan off about 4.5 years early — roughly $41,000 saved on $36,000 of extra principal contributed.";
+
 export default function Calculator() {
   const { state, actions, derived, ui } = useLoanChopCalculator();
   const {
@@ -586,15 +590,17 @@ export default function Calculator() {
         </div>
       </CalculatorShell>
 
+      {/* Quick Answer — definitional + worked example for SEO snippet eligibility */}
       <aside
+        className="max-w-3xl mx-auto mt-8 rounded-lg border-l-4 border-cyan-500 bg-cyan-50 dark:bg-cyan-950/30 p-4 space-y-2"
         aria-label="Quick Answer"
-        className="max-w-3xl mx-auto rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/70 dark:bg-indigo-950/20 p-5 space-y-2"
       >
-        <h2 className="text-base font-semibold text-indigo-800 dark:text-indigo-300">
+        <p className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 uppercase tracking-wide">
           Quick Answer
-        </h2>
-        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-          {quickAnswer}
+        </p>
+        <p className="text-sm text-slate-800 dark:text-slate-100">{QUICK_ANSWER_STATIC}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          <span className="font-medium text-slate-800 dark:text-slate-100">Your example:</span> {QUICK_ANSWER_EXAMPLE}
         </p>
       </aside>
 
