@@ -98,7 +98,7 @@ const workedExamples: Array<{
 
 const QUICK_ANSWER_STATIC = "The loan prepayment calculator builds a full month-by-month amortization schedule for any fixed-rate loan, then layers extra principal payments on top — either a recurring monthly amount, single one-time payments on specific months, or both — and shows interest saved, months saved, and the new payoff date. Because every extra dollar of principal lowers the balance that future interest accrues against, prepayment compounds savings non-linearly over the life of the loan.";
 
-const QUICK_ANSWER_EXAMPLE = "A $200,000 loan at 6% over 30 years has a base monthly payment ≈ $1,199.10 and total interest ≈ $231,676. Adding an extra $100/month brings total interest down to ≈ $190,418 and pays the loan off about 4.5 years early — roughly $41,000 saved on $36,000 of extra principal contributed.";
+const QUICK_ANSWER_EXAMPLE = "A $200,000 loan at 6% over 30 years has a base monthly payment ≈ $1,199.10 and total interest ≈ $231,676. Adding an extra $100/month brings total interest down to ≈ $182,538 and pays the loan off 65 months (about 5.4 years) early — roughly $49,138 saved on about $29,500 of extra principal contributed (the $100/mo payments stop once the loan is paid off).";
 
 export default function Calculator() {
   const { state, actions, derived, ui } = useLoanChopCalculator();
