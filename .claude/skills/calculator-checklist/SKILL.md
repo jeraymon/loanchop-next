@@ -244,4 +244,28 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 - [ ] Worked example uses real numbers that users can verify
 - [ ] FAQ covers common questions (invest vs prepay, lump sum vs monthly, payment amount unchanged, how to instruct lender)
 
+## Network Standards (2026-05-01)
+
+These checks apply to every calculator across all 15 sites. Added after the network-wide non-finite hardening pass (see root `/workspace/CLAUDE.md` "Two-Line Quick Answer Pattern", "Validator finite-check standard", and "Chart non-finite handling").
+
+### Two-Line Quick Answer aside
+- [ ] Calculator page renders a `<aside aria-label="Quick Answer">` between `<AdSlot />` and `<EducationalSection>` — the cyan-bordered two-paragraph block (`max-w-3xl mx-auto mt-8 rounded-lg border-l-4 border-cyan-500 bg-cyan-50 dark:bg-cyan-950/30 p-4 space-y-2`).
+- [ ] **Static line:** `QUICK_ANSWER_STATIC` module-scope const, leading with the literal phrase "The [domain noun] calculator…" (SEO requirement). Renders in `text-sm text-slate-800 dark:text-slate-100`.
+- [ ] **Example line:** either a static `QUICK_ANSWER_EXAMPLE` const with verified arithmetic OR a live `{quickAnswer}` / `{seoContent.quickAnswer}` value from the hook. Prefixed with bold "Your example:" lead. Renders in `text-sm text-slate-600 dark:text-slate-400`.
+- [ ] Aside is **always rendered** (the static line is the SEO anchor); only the example paragraph is conditionally rendered when a live result isn't ready.
+- [ ] No filler phrases in copy: forbid "instant", "side-by-side", "above the fold", "in one place", "and many more". Every numeric example reproducible against `calc.ts`.
+
+### Validator finite-check standard
+- [ ] All zod refines in `src/shared-math/validators.ts` use `Number.isFinite(Number(v))` — never the older `!isNaN(Number(v))` (which accepts `"Infinity"` / `"1e500"`).
+- [ ] Per-calc compute guards on numeric variables use `!Number.isFinite(value)` instead of `Number.isNaN(value)`. Date-method checks like `Number.isNaN(date.getTime())` are still fine — `getTime()` returns NaN or a finite number, never Infinity.
+- [ ] Schema-level upper bounds on inputs that drive loops, allocations, or chart-domain math (loan years, hours worked, contract count, CSV value count, operand digit length, etc.). Without caps, large-but-finite inputs can still freeze the page.
+
+### Chart non-finite handling
+- [ ] Chart components filter non-finite values before computing axis domains. Don't `Math.min(...arr)` / `Math.max(...arr)` without filtering — `Math.min(...[]) === Infinity` and the result poisons `scaleLinear`.
+- [ ] When the filtered xs/ys arrays are empty, fall back to a sane `[0, 1]` domain so `scaleLinear` renders a blank canvas instead of crashing.
+- [ ] `chartHelpers.niceTicks` rejects non-finite `min`/`max`/`range`/`step` and falls back to `[min, max]` rather than looping forever. Don't bypass with manual tick generation that lacks the same guards.
+- [ ] Don't use `Math.min(...values)` / `Math.max(...values)` spread on potentially-large arrays — the spread operator stack-overflows on >~10⁵ elements. Use a forward loop with `Number.POSITIVE_INFINITY` / `Number.NEGATIVE_INFINITY` seeds.
+
+---
+
 Report each item as PASS or FAIL with a brief note for failures. Summarize the total at the end.
