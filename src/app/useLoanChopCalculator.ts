@@ -16,23 +16,39 @@ import {
 // Schema (string-based for useAutoCalculate)
 // ---------------------------------------------------------------------------
 
+// Bounded validators. The amortization schedule allocates `years × 12` rows,
+// so an unbounded `years` value would allocate millions of rows and lock the
+// browser. Recurring extra-payment edits (`onClickApplyToRest`) iterate
+// `editingMonth..totalMonths`, which inherits the same bound. We also use
+// `Number.isFinite` to reject "Infinity"/"1e500" strings (the old `!isNaN`
+// check accepts them since `isNaN(Infinity)` is false).
+const PRINCIPAL_MAX = 1_000_000_000; // $1B is generous
+const RATE_MAX = 100; // 100% APR is generous
+const YEARS_MAX = 50; // longest realistic mortgage; caps schedule at 600 rows
 const positiveNum = z.string().min(1, "Required").refine(
-  (v) => !isNaN(Number(v)) && Number(v) > 0,
-  "Must be a positive number",
+  (v) => Number.isFinite(Number(v)) && Number(v) > 0 && Number(v) <= PRINCIPAL_MAX,
+  `Must be a positive number ≤ ${PRINCIPAL_MAX.toLocaleString()}`,
 );
 const nonNegativeNum = z.string().min(1, "Required").refine(
-  (v) => !isNaN(Number(v)) && Number(v) >= 0,
-  "Cannot be negative",
+  (v) => Number.isFinite(Number(v)) && Number(v) >= 0 && Number(v) <= PRINCIPAL_MAX,
+  `Must be a non-negative number ≤ ${PRINCIPAL_MAX.toLocaleString()}`,
 );
-const positiveInt = z.string().min(1, "Required").refine(
-  (v) => !isNaN(Number(v)) && Number(v) > 0 && Number.isInteger(Number(v)),
-  "Must be a positive whole number",
+const nonNegativeRate = z.string().min(1, "Required").refine(
+  (v) => Number.isFinite(Number(v)) && Number(v) >= 0 && Number(v) <= RATE_MAX,
+  `Must be a non-negative number ≤ ${RATE_MAX}`,
+);
+const positiveIntYears = z.string().min(1, "Required").refine(
+  (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 && n <= YEARS_MAX && Number.isInteger(n);
+  },
+  `Must be a positive whole number ≤ ${YEARS_MAX}`,
 );
 
 const schema = z.object({
   principal: positiveNum,
-  annualRate: nonNegativeNum,
-  years: positiveInt,
+  annualRate: nonNegativeRate,
+  years: positiveIntYears,
   extraPayment: nonNegativeNum,
 });
 
