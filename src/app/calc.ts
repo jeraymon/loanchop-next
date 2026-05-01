@@ -47,6 +47,17 @@ export function calcMonthlyPayment(
   annualRate: number,
   years: number,
 ): number {
+  if (
+    !Number.isFinite(principal) ||
+    !Number.isFinite(annualRate) ||
+    !Number.isFinite(years) ||
+    principal < 0 ||
+    annualRate < 0 ||
+    years <= 0
+  ) {
+    return NaN;
+  }
+
   const P = new BigNumber(principal);
   const annualPct = new BigNumber(annualRate);
   const n = new BigNumber(years).times(12);
@@ -58,7 +69,10 @@ export function calcMonthlyPayment(
 
   const r = annualPct.div(100).div(12); // monthly rate
   const onePlusR = r.plus(1);
-  const onePlusRpowN = onePlusR.pow(n.toNumber());
+  const months = n.toNumber();
+  if (!Number.isFinite(months)) return NaN;
+  const onePlusRpowN = onePlusR.pow(months);
+  if (!onePlusRpowN.isFinite()) return NaN;
 
   // M = P * r * (1+r)^n / ((1+r)^n - 1)
   const numerator = P.times(r).times(onePlusRpowN);
@@ -84,7 +98,11 @@ function resolveRecurring(
 ): { recurring: number; single: number }[] {
   const byMonth = new Map<number, { recurring: number; single: number }>();
   for (const e of entries) {
-    byMonth.set(e.month, { recurring: e.recurring, single: e.single });
+    if (!Number.isInteger(e.month) || e.month < 1 || e.month > totalMonths) continue;
+    byMonth.set(e.month, {
+      recurring: Number.isFinite(e.recurring) && e.recurring > 0 ? e.recurring : 0,
+      single: Number.isFinite(e.single) && e.single > 0 ? e.single : 0,
+    });
   }
 
   const result: { recurring: number; single: number }[] = [];
@@ -113,14 +131,29 @@ export function buildAmortization(
   extraMonthlyPayment: number = 0,
   extraEntries?: ExtraPaymentEntry[],
 ): AmortizationRow[] {
+  const totalMonths = years * 12;
+  if (
+    !Number.isFinite(principal) ||
+    !Number.isFinite(annualRate) ||
+    !Number.isFinite(years) ||
+    !Number.isFinite(totalMonths) ||
+    principal < 0 ||
+    annualRate < 0 ||
+    years <= 0
+  ) {
+    return [];
+  }
+
   const monthlyPayment = calcMonthlyPayment(principal, annualRate, years);
+  if (!Number.isFinite(monthlyPayment)) return [];
+
   const annualPct = new BigNumber(annualRate);
   const isZeroRate = annualPct.isZero();
   const monthlyRate = isZeroRate
     ? new BigNumber(0)
     : annualPct.div(100).div(12);
-
-  const totalMonths = years * 12;
+  const safeExtraMonthlyPayment =
+    Number.isFinite(extraMonthlyPayment) && extraMonthlyPayment > 0 ? extraMonthlyPayment : 0;
 
   // Resolve per-month extras
   const perMonth =
@@ -143,7 +176,7 @@ export function buildAmortization(
       const pm = perMonth[month - 1];
       extraThisMonth = new BigNumber(pm.recurring).plus(pm.single);
     } else {
-      extraThisMonth = new BigNumber(extraMonthlyPayment);
+      extraThisMonth = new BigNumber(safeExtraMonthlyPayment);
     }
 
     const interestPortion = balance.times(monthlyRate).dp(2, BigNumber.ROUND_HALF_UP);
@@ -206,7 +239,40 @@ export function compareWithAndWithoutExtra(
   extraPayment: number,
   extraEntries?: ExtraPaymentEntry[],
 ): ComparisonResult {
+  if (
+    !Number.isFinite(principal) ||
+    !Number.isFinite(annualRate) ||
+    !Number.isFinite(years) ||
+    !Number.isFinite(extraPayment) ||
+    principal < 0 ||
+    annualRate < 0 ||
+    years <= 0 ||
+    extraPayment < 0
+  ) {
+    return {
+      normalSchedule: [],
+      acceleratedSchedule: [],
+      monthsSaved: 0,
+      interestSaved: 0,
+      normalTotalInterest: 0,
+      acceleratedTotalInterest: 0,
+      monthlyPayment: NaN,
+    };
+  }
+
   const monthlyPayment = calcMonthlyPayment(principal, annualRate, years);
+  if (!Number.isFinite(monthlyPayment)) {
+    return {
+      normalSchedule: [],
+      acceleratedSchedule: [],
+      monthsSaved: 0,
+      interestSaved: 0,
+      normalTotalInterest: 0,
+      acceleratedTotalInterest: 0,
+      monthlyPayment: NaN,
+    };
+  }
+
   const normalSchedule = buildAmortization(principal, annualRate, years, 0);
   const acceleratedSchedule =
     extraEntries && extraEntries.length > 0

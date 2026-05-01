@@ -90,6 +90,11 @@ type InnerProps<
   height: number;
 };
 
+function finiteNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 function BarChartInner<
   TRow extends object,
   TCategoryKey extends keyof TRow & string,
@@ -120,10 +125,16 @@ function BarChartInner<
     const yValues: number[] = [];
     for (const row of data) {
       if (stacked) {
-        const sum = series.reduce((acc, s) => acc + Number(row[s.key] ?? 0), 0);
+        const sum = series.reduce((acc, s) => {
+          const value = finiteNumber(row[s.key] ?? 0);
+          return value === null ? acc : acc + value;
+        }, 0);
         yValues.push(sum);
       } else {
-        for (const s of series) yValues.push(Number(row[s.key] ?? 0));
+        for (const s of series) {
+          const value = finiteNumber(row[s.key] ?? 0);
+          if (value !== null) yValues.push(value);
+        }
       }
     }
     const yMin = Math.min(0, ...yValues);
@@ -171,10 +182,12 @@ function BarChartInner<
       {srs.map((s, i) => {
         const color = s.color ?? DEFAULT_BAR_COLORS[i % DEFAULT_BAR_COLORS.length];
         const value = row[s.key];
+        const numericValue = finiteNumber(value);
+        if (numericValue === null) return null;
         return (
           <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ width: 8, height: 8, borderRadius: 2, background: color, display: "inline-block" }} />
-            <span>{s.label}: {typeof value === "number" ? formatTick(value) : String(value)}</span>
+            <span>{s.label}: {formatTick(numericValue)}</span>
           </div>
         );
       })}
@@ -215,7 +228,8 @@ function BarChartInner<
                 {(() => {
                   let stackTotal = 0;
                   return series.map((s, si) => {
-                    const value = Number(row[s.key] ?? 0);
+                    const value = finiteNumber(row[s.key] ?? 0);
+                    if (value === null) return null;
                     const color = s.color ?? DEFAULT_BAR_COLORS[si % DEFAULT_BAR_COLORS.length];
                     if (stacked) {
                       const y = yScale(stackTotal + value);
@@ -234,7 +248,7 @@ function BarChartInner<
             );
           })}
           {referenceLines?.map((ref, i) => {
-            if (ref.y === undefined) return null;
+            if (ref.y === undefined || !Number.isFinite(ref.y)) return null;
             const ry = yScale(ref.y);
             const color = ref.color ?? "#94a3b8";
             const dashArray = ref.dashed === false ? undefined : "4 4";

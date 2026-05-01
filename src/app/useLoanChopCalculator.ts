@@ -20,8 +20,8 @@ import {
 // so an unbounded `years` value would allocate millions of rows and lock the
 // browser. Recurring extra-payment edits (`onClickApplyToRest`) iterate
 // `editingMonth..totalMonths`, which inherits the same bound. We also use
-// `Number.isFinite` to reject "Infinity"/"1e500" strings (the old `!isNaN`
-// check accepts them since `isNaN(Infinity)` is false).
+// `Number.isFinite` to reject "Infinity"/"1e500" strings before they reach
+// Number/BigNumber math.
 const PRINCIPAL_MAX = 1_000_000_000; // $1B is generous
 const RATE_MAX = 100; // 100% APR is generous
 const YEARS_MAX = 50; // longest realistic mortgage; caps schedule at 600 rows
@@ -66,6 +66,7 @@ type SolveFor = "default";
 // ---------------------------------------------------------------------------
 
 export function fmtCurrency(n: number): string {
+  if (!Number.isFinite(n)) return "Invalid";
   return n.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -199,6 +200,11 @@ function slotSuffix(slot: SlotNumber): string {
   return slot === 1 ? "" : `a${slot}`;
 }
 
+function parseFiniteNonNegative(value: string | null): number {
+  const n = Number(value ?? "0");
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
 /** Max months we'll scan for per-month extras. 30yr × 12 + a little slack. */
 const MAX_EXTRA_MONTHS = 480;
 
@@ -227,9 +233,12 @@ function readSlot(slot: SlotNumber): SavedLoan | null {
   // present AND parse as valid numbers. Loading garbage would silently
   // replace the user's form and look like data loss to them.
   if (!principal || !annualRate || !years) return null;
-  if (!(Number(principal) > 0)) return null;
-  if (Number.isNaN(Number(annualRate)) || Number(annualRate) < 0) return null;
-  if (!(Number(years) > 0)) return null;
+  const principalValue = Number(principal);
+  const annualRateValue = Number(annualRate);
+  const yearsValue = Number(years);
+  if (!Number.isFinite(principalValue) || principalValue <= 0) return null;
+  if (!Number.isFinite(annualRateValue) || annualRateValue < 0) return null;
+  if (!Number.isFinite(yearsValue) || yearsValue <= 0) return null;
 
   const now = new Date();
   const loanMonth = Number(loanMonthRaw);
@@ -237,10 +246,10 @@ function readSlot(slot: SlotNumber): SavedLoan | null {
 
   const extraEntries: ExtraPaymentEntry[] = [];
   for (let m = 1; m <= MAX_EXTRA_MONTHS; m++) {
-    const rec = parseFloat(localStorage.getItem(`recurringExtraPayment${m}${s}`) ?? "0");
-    const sin = parseFloat(localStorage.getItem(`singleExtraPayment${m}${s}`) ?? "0");
+    const rec = parseFiniteNonNegative(localStorage.getItem(`recurringExtraPayment${m}${s}`));
+    const sin = parseFiniteNonNegative(localStorage.getItem(`singleExtraPayment${m}${s}`));
     if (rec > 0 || sin > 0) {
-      extraEntries.push({ month: m, recurring: rec > 0 ? rec : 0, single: sin > 0 ? sin : 0 });
+      extraEntries.push({ month: m, recurring: rec, single: sin });
     }
   }
 
@@ -313,8 +322,9 @@ function writeSlot(slot: SlotNumber, loan: SavedLoan): boolean {
       localStorage.removeItem(`singleExtraPayment${m}${s}`);
     }
     for (const e of loan.extraEntries) {
-      if (e.recurring > 0) localStorage.setItem(`recurringExtraPayment${e.month}${s}`, String(e.recurring));
-      if (e.single > 0) localStorage.setItem(`singleExtraPayment${e.month}${s}`, String(e.single));
+      if (!Number.isInteger(e.month) || e.month < 1 || e.month > MAX_EXTRA_MONTHS) continue;
+      if (Number.isFinite(e.recurring) && e.recurring > 0) localStorage.setItem(`recurringExtraPayment${e.month}${s}`, String(e.recurring));
+      if (Number.isFinite(e.single) && e.single > 0) localStorage.setItem(`singleExtraPayment${e.month}${s}`, String(e.single));
     }
     return true;
   } catch {
@@ -438,14 +448,16 @@ export function useLoanChopCalculator() {
 
   const values = getValues();
   const result = derivedState.state.result;
+  const flatExtraValue = Number(values.extraPayment);
+  const hasFlatExtra = Number.isFinite(flatExtraValue) && flatExtraValue > 0;
   const hasExtra =
     result &&
-    (Number(values.extraPayment) > 0 || hasPerRowEntries) &&
+    (hasFlatExtra || hasPerRowEntries) &&
     result.acceleratedSchedule.length < result.normalSchedule.length;
   // Also show savings cards if interest was actually saved (even if same # months)
   const showSavings =
     result &&
-    (Number(values.extraPayment) > 0 || hasPerRowEntries) &&
+    (hasFlatExtra || hasPerRowEntries) &&
     result.interestSaved > 0;
 
   // Amortization table (scrollable, shows every 12th month by default)
@@ -482,8 +494,10 @@ export function useLoanChopCalculator() {
   const extraByMonth = useMemo(() => {
     const map = new Map<number, { recurring: number; single: number }>();
     for (const e of extraEntries) {
-      if (e.recurring > 0 || e.single > 0) {
-        map.set(e.month, { recurring: e.recurring, single: e.single });
+      const recurring = Number.isFinite(e.recurring) && e.recurring > 0 ? e.recurring : 0;
+      const single = Number.isFinite(e.single) && e.single > 0 ? e.single : 0;
+      if (Number.isFinite(e.month) && (recurring > 0 || single > 0)) {
+        map.set(e.month, { recurring, single });
       }
     }
     return map;
@@ -508,9 +522,9 @@ export function useLoanChopCalculator() {
   // months are preserved; existing recurring values in the range are
   // overwritten. Setting recurring=0 at month M stops a prior recurring.
   const saveEdit = useCallback(() => {
-    if (editingMonth === null) return;
-    const recurring = Math.max(0, parseFloat(editRecurring) || 0);
-    const single = Math.max(0, parseFloat(editSingle) || 0);
+    if (editingMonth === null || !Number.isFinite(editingMonth)) return;
+    const recurring = parseFiniteNonNegative(editRecurring);
+    const single = parseFiniteNonNegative(editSingle);
 
     const years = Number(getValues().years);
     const totalMonths =
@@ -522,7 +536,11 @@ export function useLoanChopCalculator() {
 
     const map = new Map<number, { recurring: number; single: number }>();
     for (const e of extraEntries) {
-      map.set(e.month, { recurring: e.recurring, single: e.single });
+      const recurring = Number.isFinite(e.recurring) && e.recurring > 0 ? e.recurring : 0;
+      const single = Number.isFinite(e.single) && e.single > 0 ? e.single : 0;
+      if (Number.isFinite(e.month)) {
+        map.set(e.month, { recurring, single });
+      }
     }
 
     map.set(editingMonth, { recurring, single });
@@ -533,8 +551,10 @@ export function useLoanChopCalculator() {
 
     const next: ExtraPaymentEntry[] = [];
     for (const [month, vals] of map.entries()) {
-      if (vals.recurring > 0 || vals.single > 0) {
-        next.push({ month, recurring: vals.recurring, single: vals.single });
+      const nextRecurring = Number.isFinite(vals.recurring) && vals.recurring > 0 ? vals.recurring : 0;
+      const nextSingle = Number.isFinite(vals.single) && vals.single > 0 ? vals.single : 0;
+      if (Number.isFinite(month) && (nextRecurring > 0 || nextSingle > 0)) {
+        next.push({ month, recurring: nextRecurring, single: nextSingle });
       }
     }
     next.sort((a, b) => a.month - b.month);
@@ -674,7 +694,7 @@ export function useLoanChopCalculator() {
     if (!result) return QUICK_ANSWER_DEFAULT;
 
     if (showSavings) {
-      const flat = Number(values.extraPayment) || 0;
+      const flat = hasFlatExtra ? flatExtraValue : 0;
       const saved = fmtCurrency(result.interestSaved);
       const shorter = fmtMonths(result.monthsSaved);
       // Per-row entries (with or without a flat top-up) can't be summarized
@@ -691,7 +711,7 @@ export function useLoanChopCalculator() {
     }
 
     return `This loan's required monthly payment is ${fmtCurrency(result.monthlyPayment)}, and without extra payments it will cost ${fmtCurrency(result.normalTotalInterest)} in total interest over the full term.`;
-  }, [result, showSavings, values.extraPayment, hasPerRowEntries]);
+  }, [result, showSavings, values.extraPayment, hasPerRowEntries, hasFlatExtra, flatExtraValue]);
 
   const loadExample = useCallback((example: ExampleConfig) => {
     loadValues({

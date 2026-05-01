@@ -60,6 +60,8 @@ export default function BalanceChart({
   const { normalKey, extraKey, yLabel } = getFields(activeTab);
 
   const data = useMemo(() => {
+    if (normalSchedule.length === 0) return [];
+
     const step = Math.max(1, Math.floor(normalSchedule.length / 60));
     const points: { month: number; normal: number; extra: number | null }[] = [];
 
@@ -100,7 +102,9 @@ export default function BalanceChart({
   }, [normalSchedule, acceleratedSchedule, normalKey, extraKey]);
 
   const fmt = (v: number) =>
-    v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`;
+    Number.isFinite(v)
+      ? v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v.toFixed(0)}`
+      : "Invalid";
 
   const series = hasAcceleration
     ? [

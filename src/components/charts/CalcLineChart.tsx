@@ -97,6 +97,18 @@ type InnerProps = Required<
   height: number;
 };
 
+function expandDomain(min: number, max: number): [number, number] {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
+  if (min !== max) return [min, max];
+
+  const delta = min === 0 ? 1 : Math.abs(min) * 0.01;
+  const low = min - delta;
+  const high = max + delta;
+  return Number.isFinite(low) && Number.isFinite(high) && low !== high
+    ? [low, high]
+    : [0, 1];
+}
+
 function ChartInner({
   lineData,
   highlight,
@@ -117,17 +129,22 @@ function ChartInner({
   const { tooltipOpen, tooltipData, tooltipLeft, tooltipTop, showTooltip, hideTooltip } =
     useTooltip<ChartPoint>();
 
-  const { xScale, yScale, xTicks, yTicks, innerWidth, innerHeight } = useMemo(() => {
-    const xs = lineData.map((p) => p.x).concat(highlight?.x ?? []);
-    const ys = lineData.map((p) => p.y).concat(highlight?.y ?? []);
-    const xMin = includeZeroX ? Math.min(...xs, 0) : Math.min(...xs);
-    const xMax = Math.max(...xs);
-    const yMin = includeZeroY ? Math.min(...ys, 0) : Math.min(...ys);
-    const yMax = Math.max(...ys);
+  const { xScale, yScale, xTicks, yTicks, innerWidth, innerHeight, finiteLineData, finiteHighlight } = useMemo(() => {
+    const validLineData = lineData.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y));
+    const validHighlight =
+      highlight && Number.isFinite(highlight.x) && Number.isFinite(highlight.y)
+        ? highlight
+        : undefined;
+    const xs = validLineData.map((p) => p.x).concat(validHighlight?.x ?? []);
+    const ys = validLineData.map((p) => p.y).concat(validHighlight?.y ?? []);
+    const xMin = xs.length === 0 ? 0 : includeZeroX ? Math.min(...xs, 0) : Math.min(...xs);
+    const xMax = xs.length === 0 ? 1 : Math.max(...xs);
+    const yMin = ys.length === 0 ? 0 : includeZeroY ? Math.min(...ys, 0) : Math.min(...ys);
+    const yMax = ys.length === 0 ? 1 : Math.max(...ys);
     const innerW = Math.max(0, width - CHART_MARGIN.left - CHART_MARGIN.right);
     const innerH = Math.max(0, height - CHART_MARGIN.top - CHART_MARGIN.bottom);
-    const xS = scaleLinear<number>({ domain: [xMin, xMax], range: [0, innerW] }).nice(5);
-    const yS = scaleLinear<number>({ domain: [yMin, yMax], range: [innerH, 0] }).nice(5);
+    const xS = scaleLinear<number>({ domain: expandDomain(xMin, xMax), range: [0, innerW] }).nice(5);
+    const yS = scaleLinear<number>({ domain: expandDomain(yMin, yMax), range: [innerH, 0] }).nice(5);
     return {
       xScale: xS,
       yScale: yS,
@@ -135,10 +152,12 @@ function ChartInner({
       yTicks: yS.ticks(5),
       innerWidth: innerW,
       innerHeight: innerH,
+      finiteLineData: validLineData,
+      finiteHighlight: validHighlight,
     };
   }, [lineData, highlight, width, height, includeZeroX, includeZeroY]);
 
-  if (innerWidth < 10 || innerHeight < 10) return null;
+  if (innerWidth < 10 || innerHeight < 10 || finiteLineData.length === 0) return null;
 
   // Unified pointer handler — works for mouse, pen, and touch via Pointer Events.
   const handlePointerMove = (event: React.PointerEvent<SVGRectElement>) => {
@@ -149,9 +168,9 @@ function ChartInner({
       return;
     }
     const xValue = xScale.invert(svgX);
-    let nearest = lineData[0];
+    let nearest = finiteLineData[0];
     let nearestDx = Math.abs(nearest.x - xValue);
-    for (const p of lineData) {
+    for (const p of finiteLineData) {
       const dx = Math.abs(p.x - xValue);
       if (dx < nearestDx) {
         nearest = p;
@@ -187,7 +206,7 @@ function ChartInner({
           />
           {fillColor && (
             <AreaClosed
-              data={lineData}
+              data={finiteLineData}
               x={(d) => xScale(d.x)}
               y={(d) => yScale(d.y)}
               yScale={yScale}
@@ -197,7 +216,7 @@ function ChartInner({
             />
           )}
           <LinePath
-            data={lineData}
+            data={finiteLineData}
             x={(d) => xScale(d.x)}
             y={(d) => yScale(d.y)}
             stroke={lineColor}
@@ -206,7 +225,7 @@ function ChartInner({
           {referenceLines?.map((ref, i) => {
             const color = ref.color ?? "#94a3b8";
             const dashArray = ref.dashed === false ? undefined : "4 4";
-            if (ref.x !== undefined) {
+            if (ref.x !== undefined && Number.isFinite(ref.x)) {
               const rx = xScale(ref.x);
               return (
                 <g key={`ref-${i}`}>
@@ -219,7 +238,7 @@ function ChartInner({
                 </g>
               );
             }
-            if (ref.y !== undefined) {
+            if (ref.y !== undefined && Number.isFinite(ref.y)) {
               const ry = yScale(ref.y);
               return (
                 <g key={`ref-${i}`}>
@@ -234,10 +253,10 @@ function ChartInner({
             }
             return null;
           })}
-          {highlight && (
+          {finiteHighlight && (
             <Circle
-              cx={xScale(highlight.x)}
-              cy={yScale(highlight.y)}
+              cx={xScale(finiteHighlight.x)}
+              cy={yScale(finiteHighlight.y)}
               r={7}
               fill={dotColor}
               stroke="#fff"

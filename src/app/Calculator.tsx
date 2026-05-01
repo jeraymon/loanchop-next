@@ -174,6 +174,9 @@ export default function Calculator() {
       </div>
     ) : null;
 
+  const flatExtra = Number(values.extraPayment);
+  const hasFlatExtra = Number.isFinite(flatExtra) && flatExtra > 0;
+
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
@@ -192,7 +195,7 @@ export default function Calculator() {
             <BalanceChart
               normalSchedule={result.normalSchedule}
               acceleratedSchedule={result.acceleratedSchedule}
-              hasAcceleration={Number(values.extraPayment) > 0 || hasPerRowEntries}
+              hasAcceleration={hasFlatExtra || hasPerRowEntries}
             />
           ) : undefined
         }

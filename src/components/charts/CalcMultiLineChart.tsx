@@ -116,6 +116,28 @@ type InnerProps = Required<
   height: number;
 };
 
+function expandDomain(min: number, max: number): [number, number] {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
+  if (min !== max) return [min, max];
+
+  const delta = min === 0 ? 1 : Math.abs(min) * 0.01;
+  const low = min - delta;
+  const high = max + delta;
+  return Number.isFinite(low) && Number.isFinite(high) && low !== high
+    ? [low, high]
+    : [0, 1];
+}
+
+function finiteX(row: Record<string, number | null | string>, xKey: string): number | null {
+  const x = Number(row[xKey]);
+  return Number.isFinite(x) ? x : null;
+}
+
+function finiteY(row: Record<string, number | null | string>, key: string): number | null {
+  const y = row[key];
+  return typeof y === "number" && Number.isFinite(y) ? y : null;
+}
+
 function MultiLineInner({
   data,
   xKey,
@@ -135,16 +157,17 @@ function MultiLineInner({
   const { tooltipOpen, tooltipData, tooltipLeft, tooltipTop, showTooltip, hideTooltip } =
     useTooltip<Record<string, number | null | string>>();
 
-  const { xScale, yScale, xTicks, yTicks, innerWidth, innerHeight } = useMemo(() => {
+  const { xScale, yScale, xTicks, yTicks, innerWidth, innerHeight, finiteRows, hasPlottableData } = useMemo(() => {
     const innerW = Math.max(0, width - CHART_MARGIN.left - CHART_MARGIN.right);
     const innerH = Math.max(0, height - CHART_MARGIN.top - CHART_MARGIN.bottom);
 
-    const xs: number[] = data.map((d) => Number(d[xKey])).filter((n) => Number.isFinite(n));
+    const rowsWithFiniteX = data.filter((row) => finiteX(row, xKey) !== null);
+    const xs: number[] = rowsWithFiniteX.map((row) => finiteX(row, xKey)!);
     const ys: number[] = [];
-    for (const row of data) {
+    for (const row of rowsWithFiniteX) {
       for (const s of series) {
-        const v = row[s.key];
-        if (typeof v === "number" && Number.isFinite(v)) ys.push(v);
+        const v = finiteY(row, s.key);
+        if (v !== null) ys.push(v);
       }
     }
     for (const m of markers ?? []) {
@@ -152,12 +175,12 @@ function MultiLineInner({
       if (Number.isFinite(m.y)) ys.push(m.y);
     }
 
-    const xMin = includeZeroX ? Math.min(...xs, 0) : Math.min(...xs);
-    const xMax = Math.max(...xs);
-    const yMin = includeZeroY ? Math.min(...ys, 0) : Math.min(...ys);
-    const yMax = Math.max(...ys);
-    const xS = scaleLinear<number>({ domain: [xMin, xMax], range: [0, innerW] }).nice(5);
-    const yS = scaleLinear<number>({ domain: [yMin, yMax], range: [innerH, 0] }).nice(5);
+    const xMin = xs.length === 0 ? 0 : includeZeroX ? Math.min(...xs, 0) : Math.min(...xs);
+    const xMax = xs.length === 0 ? 1 : Math.max(...xs);
+    const yMin = ys.length === 0 ? 0 : includeZeroY ? Math.min(...ys, 0) : Math.min(...ys);
+    const yMax = ys.length === 0 ? 1 : Math.max(...ys);
+    const xS = scaleLinear<number>({ domain: expandDomain(xMin, xMax), range: [0, innerW] }).nice(5);
+    const yS = scaleLinear<number>({ domain: expandDomain(yMin, yMax), range: [innerH, 0] }).nice(5);
 
     return {
       xScale: xS,
@@ -166,10 +189,12 @@ function MultiLineInner({
       yTicks: yS.ticks(5),
       innerWidth: innerW,
       innerHeight: innerH,
+      finiteRows: rowsWithFiniteX,
+      hasPlottableData: rowsWithFiniteX.length > 0 && ys.length > 0,
     };
   }, [data, xKey, series, markers, width, height, includeZeroX, includeZeroY]);
 
-  if (innerWidth < 10 || innerHeight < 10) return null;
+  if (innerWidth < 10 || innerHeight < 10 || !hasPlottableData) return null;
 
   // Pointer handler — snap to nearest row by x-distance.
   const handlePointerMove = (event: React.PointerEvent<SVGRectElement>) => {
@@ -180,10 +205,10 @@ function MultiLineInner({
       return;
     }
     const xValue = xScale.invert(svgX);
-    let nearest = data[0];
-    let nearestDx = Math.abs(Number(nearest[xKey]) - xValue);
-    for (const row of data) {
-      const dx = Math.abs(Number(row[xKey]) - xValue);
+    let nearest = finiteRows[0];
+    let nearestDx = Math.abs(finiteX(nearest, xKey)! - xValue);
+    for (const row of finiteRows) {
+      const dx = Math.abs(finiteX(row, xKey)! - xValue);
       if (dx < nearestDx) {
         nearest = row;
         nearestDx = dx;
@@ -191,7 +216,7 @@ function MultiLineInner({
     }
     showTooltip({
       tooltipData: nearest,
-      tooltipLeft: CHART_MARGIN.left + xScale(Number(nearest[xKey])),
+      tooltipLeft: CHART_MARGIN.left + xScale(finiteX(nearest, xKey)!),
       tooltipTop: event.clientY - svgRect.top,
     });
   };
@@ -243,8 +268,7 @@ function MultiLineInner({
             const width = s.strokeWidth ?? 2;
             const dashArray = s.dashArray;
             const isDefined = (d: Record<string, number | null | string>) => {
-              const v = d[s.key];
-              return typeof v === "number" && Number.isFinite(v);
+              return finiteX(d, xKey) !== null && finiteY(d, s.key) !== null;
             };
             // connectNulls=true: pre-filter data to skip undefined rows entirely, so
             // the LinePath draws a continuous run across them. Default (false) relies
@@ -253,11 +277,11 @@ function MultiLineInner({
             return (
               <LinePath
                 key={s.key}
-                data={seriesData}
-                x={(d) => xScale(Number(d[xKey]))}
+                data={seriesData.filter((d) => finiteX(d, xKey) !== null)}
+                x={(d) => xScale(finiteX(d, xKey)!)}
                 y={(d) => {
-                  const v = d[s.key];
-                  return typeof v === "number" && Number.isFinite(v) ? yScale(v) : NaN;
+                  const v = finiteY(d, s.key);
+                  return v !== null ? yScale(v) : NaN;
                 }}
                 defined={isDefined}
                 stroke={color}
@@ -269,7 +293,7 @@ function MultiLineInner({
           {referenceLines?.map((ref, i) => {
             const color = ref.color ?? "#94a3b8";
             const dashArray = ref.dashed === false ? undefined : "4 4";
-            if (ref.x !== undefined) {
+            if (ref.x !== undefined && Number.isFinite(ref.x)) {
               const rx = xScale(ref.x);
               return (
                 <g key={`ref-${i}`}>
@@ -278,7 +302,7 @@ function MultiLineInner({
                 </g>
               );
             }
-            if (ref.y !== undefined) {
+            if (ref.y !== undefined && Number.isFinite(ref.y)) {
               const ry = yScale(ref.y);
               return (
                 <g key={`ref-${i}`}>
@@ -290,6 +314,7 @@ function MultiLineInner({
             return null;
           })}
           {markers?.map((m, i) => {
+            if (!Number.isFinite(m.x) || !Number.isFinite(m.y)) return null;
             const mx = xScale(m.x);
             const my = yScale(m.y);
             const color = m.color ?? "#16a34a";
