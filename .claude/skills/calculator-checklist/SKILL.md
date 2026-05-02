@@ -23,7 +23,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] All calculators use `CalculatorShell` with auto-calculate (no Calculate button)
 - [ ] `src/hooks/useAutoCalculate.ts` mount-compute effect uses `[]` deps + eslint-disable (NOT `[computeImmediate, getValues, solveFor]`). The deps-in-array + `setTimeout(0)` + cleanup `clearTimeout` + `hasInitializedRef` combination silently breaks initial compute — cleanup cancels the 0ms timer before it fires, `hasInitializedRef` blocks rescheduling, compute never runs, `result` stays null, result-dependent reservations (Data Table / Show Your Work) sit empty. Fixed network-wide 2026-04-22.
 - [ ] Shell has `id="calculator"` prop
-- [ ] Formula display uses `react-katex` (`BlockMath`) — if the calculator displays a formula. Not all calculators need one (e.g., BOGO, paycheck, loan comparison).
+- [ ] Formula display uses plain text via the shell's `formulaText` / `srFormulaText` props (or static SVG via `svgFormula` on ajdesigner). Runtime KaTeX (`react-katex`, `BlockMath`, `InlineMath`, `katex.min.css`) is retired site-wide. Not all calculators need a formula display.
 - [ ] Shell header uses the site accent color (see CLAUDE.md Site-Specific palette) background with white bold text
 - [ ] Shell header uses responsive sizing (`text-xl sm:text-2xl`, `px-4 sm:px-6`)
 - [ ] Solution box uses the site accent tinting (e.g., `bg-{accent}-50 dark:bg-{accent}-950/30`), always visible (shows "—" when invalid)
@@ -81,10 +81,10 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### Charts (if applicable)
 - [ ] Chart component lazy-loaded via `next/dynamic` with `{ ssr: false }`
-- [ ] `ResponsiveContainer` wrapped in a div with explicit height (e.g., `h-[300px]`)
-- [ ] Recharts Tooltip formatter params are NOT type-annotated
+- [ ] Charts use the shared visx family (`CalcLineChart` / `CalcBarChart` / `CalcMultiLineChart`) which wrap their own `ParentSize` — no manual height wrapper needed. Bespoke visx charts use `<ParentSize>` directly. Recharts is retired network-wide.
+- [ ] visx tooltip components (`useTooltip` + `TooltipWithBounds`) handle their own typing — no Recharts-style formatter quirks.
 - [ ] LaTeX `latexFormula` props use `String.raw` backtick templates — NOT double-backslash JSX strings (double-backslash gets double-escaped in SSG static HTML)
-- [ ] Chart wrapper/section does NOT have `overflow-hidden` class (clips Recharts tooltips near chart edges)
+- [ ] Chart wrapper/section does NOT have `overflow-hidden` class (clips visx tooltips near chart edges; same rule as Recharts had)
 
 ### Share & Ads
 - [ ] `ShareButtons` component placed **outside** the shell (not passed as a shell prop)
@@ -148,17 +148,18 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 
 ### Performance
 - [ ] Initial page load under 500 KB gzipped (excluding AdSense)
-- [ ] Recharts is lazy-loaded (not in initial bundle) — if applicable
+- [ ] Chart component is lazy-loaded via `next/dynamic` with `{ ssr: false }` — if applicable
 - [ ] `npx next build` succeeds with no errors
 - [ ] `npx vitest run` passes all tests
 
 Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acceptable exceptions as failures — check the Site-Specific section for overrides. Summarize the total at the end.
 ### Pre-Deployment
-- [ ] Check the live PHP site (if exists) for indexed URLs that need 301 redirects in `customHttp.yml`
-- [ ] `customHttp.yml` has redirect rules for all legacy PHP pages (e.g., `/legal.php` → `/terms/`, `/index.php` → `/`)
+- [ ] Check the live PHP site (if exists) for indexed URLs that need 301 redirects
+- [ ] Redirects are configured in the **Amplify Console** (App settings → Rewrites and redirects). The Console is authoritative; a version-controlled mirror lives in `amplify-redirects.json` at the site root. Do NOT put redirect rules in `customHttp.yml` — Amplify silently ignores `customRules:` there.
+- [ ] `amplify-redirects.json` has redirect rules for all legacy PHP pages (e.g., `/legal.php` → `/terms/`, `/index.php` → `/`)
 - [ ] Verify redirects cover any URLs appearing in Google Search Console or site: search results
-- [ ] All redirect destinations in `customHttp.yml` point to valid, existing routes in the app (not 404 paths)
-- [ ] All `customHttp.yml` redirect targets have **trailing slashes** on subpages (matching `trailingSlash: true`)
+- [ ] All redirect destinations point to valid, existing routes in the app (not 404 paths)
+- [ ] All redirect targets have **trailing slashes** on subpages (matching `trailingSlash: true`); homepage destination is bare `/` (no trailing slash)
 
 ## Site-Specific
 

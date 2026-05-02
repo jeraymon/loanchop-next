@@ -1,6 +1,6 @@
 ## Controller Pattern
 
-This repo ships the controller-hook scaffold used by `ajdesigner-next`.
+This repo ships the controller-hook scaffold used by `ajdesigner-next`, and the existing `useLoanChopCalculator` (the only calc hook) is already migrated to it (`compute = useStableEvent(...)`, `applyAndRecompute` / `loadValues` for transitions, no `useRef` companions for UI state).
 
 For new formula-based calculators, prefer:
 
@@ -42,6 +42,13 @@ return {
   - `CalcMultiLineChart` for comparison charts with multiple series
 - Keep bespoke charts bespoke only when they do not fit those shared primitives cleanly.
 - Prefer thin route-local `*Chart.tsx` wrappers that adapt local data into the shared chart props.
+
+## Lessons Learned
+
+- **Quick Answer arithmetic must reproduce against `calc.ts`.** The original `$29,500` figure for "extra principal contributed" in `QUICK_ANSWER_EXAMPLE` was off by one month — the calculator stops applying extra payments once the regular payment can clear the remaining balance, so only 294 months × $100 actually flow through. Fixed in commits `e99b7f7` and `7fe5e22`. When updating the example copy, run the numbers through `compareWithAndWithoutExtra` rather than estimating.
+- **Cap loan inputs** (`years`, `principal`) at the schema layer — `Number.isFinite` alone isn't enough. Commit `7bfb87b` added the caps after non-finite hardening exposed the amortization-schedule explosion path.
+- **Hook closure pattern is non-negotiable.** When migrating `useLoanChopCalculator` to the controller (`f382a5b`), the rule is: mutable UI state stays in `useState` only (no `useRef` companions), `compute` is wrapped in `useStableEvent`, and handlers use `applyAndRecompute` instead of effect-based recomputes.
+- **Redirects live in Amplify Console.** The version-controlled mirror is `amplify-redirects.json`, NOT `customHttp.yml` (which is headers-only). The `customHttp.yml` file in this repo has a comment block making this explicit — don't add `customRules:` blocks there.
 
 ## Reference
 
