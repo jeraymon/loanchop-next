@@ -20,5 +20,15 @@ export function formatResult(value: BigNumber, precision = 8): string {
   if (!abs.isZero() && (abs.gte(1e12) || abs.lt(1e-4))) {
     return value.toExponential(precision - 1).replace(/\.?0+e/, "e");
   }
-  return value.toPrecision(precision).replace(/\.?0+$/, "");
+  // toPrecision can return either fixed ("18000000", "9.81000000") or scientific
+  // ("1.2723444e+10") notation depending on magnitude vs precision. Strip trailing
+  // zeros only where they're padding from precision — never from whole-number
+  // integers (turned 18000000 → 18) and never from exponents (turned e+10 → e+1).
+  const s = value.toPrecision(precision);
+  if (s.includes("e") || s.includes("E")) {
+    // Scientific: clean trailing zeros from the mantissa only (.5000000e → .5e)
+    return s.replace(/\.?0+e/i, "e");
+  }
+  if (!s.includes(".")) return s;
+  return s.replace(/0+$/, "").replace(/\.$/, "");
 }
