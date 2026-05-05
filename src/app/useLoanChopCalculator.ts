@@ -711,7 +711,7 @@ export function useLoanChopCalculator() {
     }
 
     return `This loan's required monthly payment is ${fmtCurrency(result.monthlyPayment)}, and without extra payments it will cost ${fmtCurrency(result.normalTotalInterest)} in total interest over the full term.`;
-  }, [result, showSavings, values.extraPayment, hasPerRowEntries, hasFlatExtra, flatExtraValue]);
+  }, [result, showSavings, hasPerRowEntries, hasFlatExtra, flatExtraValue]);
 
   const loadExample = useCallback((example: ExampleConfig) => {
     loadValues({
