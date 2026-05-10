@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SITE_NAME, SITE_URL, buildPersonJsonLd } from "../seo-constants";
 
 const pageTitle = "About LoanChop — Loan Prepayment Calculator";
@@ -85,6 +86,12 @@ export default function AboutPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(profilePageJsonLd) }}
       />
       <article className="max-w-3xl mx-auto px-4 py-12 prose prose-slate dark:prose-invert">
+        <div className="not-prose mb-4">
+          <Breadcrumbs breadcrumbs={[
+            { label: "Home", href: "/" },
+            { label: "About", href: "/about/" },
+          ]} />
+        </div>
         <h1>About LoanChop</h1>
         <p>
           LoanChop is a free loan prepayment calculator that shows how extra

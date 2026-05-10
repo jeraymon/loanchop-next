@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Accessibility Statement — LoanChop",
@@ -8,6 +9,12 @@ export const metadata: Metadata = {
 export default function AccessibilityPage() {
   return (
     <article className="max-w-3xl mx-auto px-4 py-12 prose prose-slate dark:prose-invert">
+      <div className="not-prose mb-4">
+        <Breadcrumbs breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Accessibility", href: "/accessibility/" },
+        ]} />
+      </div>
       <h1>Accessibility Statement</h1>
       <p className="text-sm text-muted-foreground">Last updated: March 15, 2026</p>
 

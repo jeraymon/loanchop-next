@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — LoanChop",
@@ -8,6 +9,12 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <article className="max-w-3xl mx-auto px-4 py-12 prose prose-slate dark:prose-invert">
+      <div className="not-prose mb-4">
+        <Breadcrumbs breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Privacy Policy", href: "/privacy/" },
+        ]} />
+      </div>
       <h1>Privacy Policy</h1>
       <p className="text-sm text-muted-foreground">Last updated: March 15, 2026</p>
 

@@ -35,6 +35,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
               <a href="mailto:aj@ajdesigner.com" className="hover:text-foreground transition-colors">Contact</a>
             </nav>
+            <p className="text-xs max-w-2xl mx-auto">
+              Educational tool — not financial advice. Verify all results with a qualified professional before making financial decisions.
+            </p>
             <p suppressHydrationWarning>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
           </footer>
         </ThemeProvider>
