@@ -98,6 +98,8 @@ const howToJsonLd = {
   "@type": "HowTo",
   name: "How to Calculate Loan Prepayment Savings",
   description: pageDescription,
+  author: { "@id": "https://www.ajdesigner.com/about/#jimmy" },
+  dateModified: "2026-05-10",
   step: educationalContent.exampleProblem.steps.map((text, index) => ({
     "@type": "HowToStep",
     position: index + 1,

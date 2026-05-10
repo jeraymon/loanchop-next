@@ -6,6 +6,7 @@ import CalculatorShell from "@/components/CalculatorShell";
 import EducationalSection from "@/components/EducationalSection";
 import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
+import AuthorByline from "@/components/AuthorByline";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorIcon } from "@/components/ui/ErrorIcon";
@@ -651,6 +652,7 @@ export default function Calculator() {
           document.getElementById("calculator")?.scrollIntoView({ behavior: "smooth" });
         }}
       />
+      <AuthorByline lastReviewed="2026-05-10" />
 
       {/* Related Calculators */}
       <section className="max-w-3xl mx-auto space-y-6">
