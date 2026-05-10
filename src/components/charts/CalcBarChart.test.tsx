@@ -14,8 +14,8 @@ const DATA = [
 ];
 
 const SERIES = [
-  { key: "before", label: "Before Raise", color: "#94a3b8" },
-  { key: "after", label: "After Raise", color: "#0e7490" },
+  { key: "before" as const, label: "Before Raise", color: "#94a3b8" },
+  { key: "after" as const, label: "After Raise", color: "#0e7490" },
 ];
 
 describe("CalcBarChart", () => {
