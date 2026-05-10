@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Calculator from "./Calculator";
 import { educationalContent } from "./educationalContent";
-import { SITE_NAME, SITE_URL, OG_IMAGE } from "./seo-constants";
+import { SITE_NAME, SITE_URL, OG_IMAGE, buildOrganizationFounder } from "./seo-constants";
 
 const pageTitle = "Loan Prepayment Calculator — Extra Payment Savings";
 const pageDescription =
@@ -49,13 +49,19 @@ const faqJsonLd = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "AJ Design Software",
-  url: "https://www.ajdesigner.com",
+  name: SITE_NAME,
+  url: SITE_URL,
   logo: {
     "@type": "ImageObject",
     url: "https://www.loanchop.com/images/logo.png",
   },
   email: "aj@ajdesigner.com",
+  parentOrganization: {
+    "@type": "Organization",
+    name: "AJ Design Software",
+    url: "https://www.ajdesigner.com",
+  },
+  founder: buildOrganizationFounder({ siteUrl: SITE_URL }),
   sameAs: [
     "https://www.ajdesigner.com",
     "https://www.cameradof.com",
