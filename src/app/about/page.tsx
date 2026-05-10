@@ -61,7 +61,16 @@ const personJsonLd = buildPersonJsonLd({
 const profilePageJsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfilePage",
+  "@id": `${canonicalUrl}#profilepage`,
   url: canonicalUrl,
+  name: pageTitle,
+  breadcrumb: {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "About", item: canonicalUrl },
+    ],
+  },
   mainEntity: personJsonLd,
   dateCreated: pageCreatedDate,
   dateModified: pageModifiedDate,
@@ -167,13 +176,15 @@ export default function AboutPage() {
         <h2>Contact</h2>
         <p>
           Email me at{" "}
-          <a href="mailto:aj@ajdesigner.com">aj@ajdesigner.com</a> for
+          <a href="mailto:aj@ajdesigner.com" className="underline decoration-slate-300 hover:decoration-slate-500 dark:decoration-slate-700 dark:hover:decoration-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm">aj@ajdesigner.com</a> for
           corrections, feature requests, or general feedback. You can also find
           me on{" "}
           <a
             href="https://www.linkedin.com/in/jimmyraymond/"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Jimmy Raymond on LinkedIn (opens in new tab)"
+            className="underline decoration-slate-300 hover:decoration-slate-500 dark:decoration-slate-700 dark:hover:decoration-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
           >
             LinkedIn
           </a>

@@ -7,6 +7,14 @@ export const OG_IMAGE = {
   alt: "LoanChop Loan Prepayment Calculator",
 };
 
+// Last reviewed date used by HowTo.dateModified and AuthorByline.lastReviewed.
+// Update this date when you do a network-wide review pass. Both forms are
+// exported so callers can pick: LAST_REVIEWED for date-only display strings
+// (e.g., the visible byline), LAST_REVIEWED_ISO for schema.org dateModified
+// (full ISO 8601 datetime per Google's structured-data guidelines).
+export const LAST_REVIEWED = "2026-05-10";
+export const LAST_REVIEWED_ISO = "2026-05-10T00:00:00Z";
+
 // Canonical Person @id used across the entire 15-site network. Every site's
 // Organization.founder and every calc page's HowTo.author should reference
 // this exact @id so Google consolidates the founder into a single Knowledge
@@ -57,7 +65,12 @@ export function buildPersonJsonLd({ siteUrl, knowsAbout, description }: BuildPer
     name: "Jimmy Raymond",
     url: localAboutUrl,
     description,
-    image: `${siteUrl}/images/jimmy-raymond.jpg`,
+    image: {
+      "@type": "ImageObject",
+      url: `${siteUrl}/images/jimmy-raymond.jpg`,
+      width: 225,
+      height: 225,
+    },
     jobTitle: "Engineer",
     alumniOf: [
       { "@type": "CollegeOrUniversity", name: "New Mexico Institute of Mining and Technology" },
@@ -89,6 +102,20 @@ interface BuildOrganizationFounderArgs {
  *  returns an inline minimal Person pointing to the canonical @id, so the
  *  Person is at least self-contained on each page while still consolidating
  *  to the canonical entity. */
+/** Builds the author reference for HowTo / FAQPage / similar schemas. Always
+ *  returns the inline-Person form with @type, @id, and name — gives Google
+ *  something to display even when the cross-site @id reference doesn't
+ *  immediately resolve. The @id always anchors to the canonical Person on
+ *  ajdesigner so all author references across the network consolidate to
+ *  one Knowledge Graph entity. */
+export function buildHowToAuthor() {
+  return {
+    "@type": "Person" as const,
+    "@id": CANONICAL_PERSON_ID,
+    name: "Jimmy Raymond",
+  };
+}
+
 export function buildOrganizationFounder({ siteUrl }: BuildOrganizationFounderArgs) {
   if (siteUrl === "https://www.ajdesigner.com") {
     return { "@id": CANONICAL_PERSON_ID };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Calculator from "./Calculator";
 import { educationalContent } from "./educationalContent";
-import { SITE_NAME, SITE_URL, OG_IMAGE, buildOrganizationFounder } from "./seo-constants";
+import { LAST_REVIEWED_ISO, OG_IMAGE, SITE_NAME, SITE_URL, buildHowToAuthor, buildOrganizationFounder } from "./seo-constants";
 
 const pageTitle = "Loan Prepayment Calculator — Extra Payment Savings";
 const pageDescription =
@@ -49,6 +49,7 @@ const faqJsonLd = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": "https://www.loanchop.com/#organization",
   name: SITE_NAME,
   url: SITE_URL,
   logo: {
@@ -58,6 +59,7 @@ const organizationJsonLd = {
   email: "aj@ajdesigner.com",
   parentOrganization: {
     "@type": "Organization",
+    "@id": "https://www.ajdesigner.com/#organization",
     name: "AJ Design Software",
     url: "https://www.ajdesigner.com",
   },
@@ -98,8 +100,8 @@ const howToJsonLd = {
   "@type": "HowTo",
   name: "How to Calculate Loan Prepayment Savings",
   description: pageDescription,
-  author: { "@id": "https://www.ajdesigner.com/about/#jimmy" },
-  dateModified: "2026-05-10",
+  author: buildHowToAuthor(),
+  dateModified: LAST_REVIEWED_ISO,
   step: educationalContent.exampleProblem.steps.map((text, index) => ({
     "@type": "HowToStep",
     position: index + 1,

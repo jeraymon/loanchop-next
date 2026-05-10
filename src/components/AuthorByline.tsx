@@ -7,9 +7,10 @@ interface AuthorBylineProps {
 }
 
 /** Bottom-of-page author attribution rendered between the EducationalSection
- *  and the Related Calculators card. Pairs with the Person JSON-LD on the
- *  /about/ page (Person @id resolves to {SITE_URL}/about/#jimmy). The link
- *  always points to the local /about/ since every sister site now has one. */
+ *  and the Related Calculators card. Links to the local /about/ page (every
+ *  site has one). The schema-level author reference for HowTo JSON-LD lives
+ *  in seo-constants.ts buildHowToAuthor() and anchors to the canonical
+ *  Person @id on ajdesigner — this byline is the visible counterpart. */
 export default function AuthorByline({ lastReviewed }: AuthorBylineProps) {
   return (
     <aside
@@ -28,7 +29,7 @@ export default function AuthorByline({ lastReviewed }: AuthorBylineProps) {
           Reviewed by{" "}
           <Link
             href="/about/"
-            className="font-medium text-slate-800 dark:text-slate-200 hover:underline"
+            className="font-medium text-slate-800 dark:text-slate-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
           >
             Jimmy Raymond
           </Link>

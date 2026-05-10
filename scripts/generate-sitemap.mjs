@@ -23,6 +23,7 @@ const liveHrefs = liveMatches.map((m) => m[1]).filter((href) => href !== "/");
 // Static pages
 const staticPages = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
+  { path: "/about/", changefreq: "monthly", priority: "0.5" },
   { path: "/terms/", changefreq: "yearly", priority: "0.3" },
   { path: "/privacy/", changefreq: "yearly", priority: "0.3" },
   { path: "/accessibility/", changefreq: "yearly", priority: "0.3" },
