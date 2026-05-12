@@ -7,6 +7,7 @@ import EducationalSection from "@/components/EducationalSection";
 import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
 import AuthorByline from "@/components/AuthorByline";
+import QuickAnswerAside from "@/components/QuickAnswerAside";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorIcon } from "@/components/ui/ErrorIcon";
@@ -595,18 +596,7 @@ export default function Calculator() {
       </CalculatorShell>
 
       {/* Quick Answer — definitional + worked example for SEO snippet eligibility */}
-      <aside
-        className="max-w-3xl mx-auto mt-8 rounded-lg border-l-4 border-cyan-500 bg-cyan-50 dark:bg-cyan-950/30 p-4 space-y-2"
-        aria-label="Quick Answer"
-      >
-        <p className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 uppercase tracking-wide">
-          Quick Answer
-        </p>
-        <p className="text-sm text-slate-800 dark:text-slate-100">{QUICK_ANSWER_STATIC}</p>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          <span className="font-medium text-slate-800 dark:text-slate-100">Your example:</span> {QUICK_ANSWER_EXAMPLE}
-        </p>
-      </aside>
+      <QuickAnswerAside staticAnswer={QUICK_ANSWER_STATIC} exampleAnswer={QUICK_ANSWER_EXAMPLE} />
 
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} />
