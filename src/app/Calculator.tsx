@@ -8,6 +8,9 @@ import ShareButtons from "@/components/ShareButtons";
 import AdSlot from "@/components/AdSlot";
 import AuthorByline from "@/components/AuthorByline";
 import QuickAnswerAside from "@/components/QuickAnswerAside";
+import WorkedExamples from "@/components/WorkedExamples";
+import RelatedCalculatorsCard from "@/components/RelatedCalculatorsCard";
+import RelatedSitesCard, { sisterSites } from "@/components/RelatedSitesCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorIcon } from "@/components/ui/ErrorIcon";
@@ -603,38 +606,16 @@ export default function Calculator() {
       </div>
       <AdSlot />
 
-      <section className="max-w-3xl mx-auto mt-8 space-y-4 text-sm text-muted-foreground leading-relaxed">
-        <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
-          Worked Examples
-        </h2>
-        <div className="space-y-4">
-          {workedExamples.map((example) => (
-            <article
-              key={example.title}
-              className="rounded-lg border border-slate-200 dark:border-slate-800 p-5 space-y-3"
-            >
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-400">
-                {example.category}
-              </p>
-              <h3 className="font-medium text-foreground">{example.title}</h3>
-              <p>{example.description}</p>
-              <ol className="list-decimal pl-5 space-y-1">
-                {example.steps.map((step, index) => (
-                  <li key={index}>{step}</li>
-                ))}
-              </ol>
-              <p>{example.note}</p>
-              <button
-                type="button"
-                onClick={() => loadExample(example.example)}
-                className="inline-flex items-center gap-1 rounded-md border border-indigo-600 px-4 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors"
-              >
-                Load this example &uarr;
-              </button>
-            </article>
-          ))}
-        </div>
-      </section>
+      <WorkedExamples
+        examples={workedExamples.map((example) => ({
+          category: example.category,
+          title: example.title,
+          description: example.description,
+          steps: example.steps,
+          note: example.note,
+          onLoad: () => loadExample(example.example),
+        }))}
+      />
 
       <EducationalSection
         content={educationalContent}
@@ -644,91 +625,46 @@ export default function Calculator() {
       />
       <AuthorByline lastReviewed="2026-05-10" />
 
-      {/* Related Calculators */}
-      <section className="max-w-3xl mx-auto space-y-6">
-        <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground p-5 space-y-3">
-          <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
-            Related Calculators
-          </h2>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <a href="https://www.compare2loans.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Loan Comparison Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Compare two loans side by side</span>
-            </li>
-            <li>
-              <a href="https://www.ajdesigner.com/loan/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Loan Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Calculate monthly payments and total interest</span>
-            </li>
-            <li>
-              <a href="https://www.ajdesigner.com/mortgage-loan/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Mortgage Loan Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Estimate mortgage payments and amortization</span>
-            </li>
-            <li>
-              <a href="https://www.ajdesigner.com/mortgage-loan-points/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Mortgage Points Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Calculate the value of buying mortgage points</span>
-            </li>
-            <li>
-              <a href="https://www.ajdesigner.com/interest-rate/" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Interest Rate Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Solve for interest rate from loan terms</span>
-            </li>
-          </ul>
-        </div>
+      <RelatedCalculatorsCard
+        links={[
+          {
+            href: "https://www.compare2loans.com",
+            label: "Loan Comparison Calculator",
+            description: "Compare two loans side by side",
+          },
+          {
+            href: "https://www.ajdesigner.com/loan/",
+            label: "Loan Calculator",
+            description: "Calculate monthly payments and total interest",
+          },
+          {
+            href: "https://www.ajdesigner.com/mortgage-loan/",
+            label: "Mortgage Loan Calculator",
+            description: "Estimate mortgage payments and amortization",
+          },
+          {
+            href: "https://www.ajdesigner.com/mortgage-loan-points/",
+            label: "Mortgage Points Calculator",
+            description: "Calculate the value of buying mortgage points",
+          },
+          {
+            href: "https://www.ajdesigner.com/interest-rate/",
+            label: "Interest Rate Calculator",
+            description: "Solve for interest rate from loan terms",
+          },
+        ]}
+      />
 
-        {/* Related Sites */}
-        <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 shadow-md bg-card text-card-foreground p-5 space-y-3">
-          <h2 className="text-base font-semibold text-slate-600 dark:text-slate-400">
-            Related Sites
-          </h2>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <a href="https://www.dollarsperhour.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Dollars Per Hour
-              </a>{" "}
-              <span className="text-muted-foreground">— Weekly paycheck calculator with overtime</span>
-            </li>
-            <li>
-              <a href="https://www.percenterrorcalculator.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Percent Error Calculator
-              </a>{" "}
-              <span className="text-muted-foreground">— Measurement accuracy and percent error calculator</span>
-            </li>
-            <li>
-              <a href="https://www.hourlysalaries.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Hourly Salaries
-              </a>{" "}
-              <span className="text-muted-foreground">— Hourly wage to annual salary converter</span>
-            </li>
-            <li>
-              <a href="https://www.optionsmath.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                OptionsMath
-              </a>{" "}
-              <span className="text-muted-foreground">— Options trading profit and loss calculators</span>
-            </li>
-            <li>
-              <a href="https://www.medicalequations.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                Medical Equations
-              </a>{" "}
-              <span className="text-muted-foreground">— Clinical and medical calculators</span>
-            </li>
-            <li>
-              <a href="https://www.cameradof.com" className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                CameraDOF
-              </a>{" "}
-              <span className="text-muted-foreground">— Depth of field calculator for photographers</span>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <RelatedSitesCard
+        links={[
+          sisterSites.dollarsPerHour,
+          sisterSites.percentError,
+          sisterSites.hourlySalaries,
+          sisterSites.optionsMath,
+          sisterSites.medicalEquations,
+          sisterSites.cameraDof,
+        ]}
+      />
     </div>
   );
 }
