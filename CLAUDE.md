@@ -1,6 +1,6 @@
 ## Project Status
 
-- Single-calculator site (loan prepayment calculator at `/`).
+- Single live calculator (loan prepayment at `/`), but the site ships the multi-calc scaffold: `src/components/AppSidebar.tsx` and `src/app/calculator-catalog.ts` exist so additional calcs can be added without restructuring. Sidebar currently lists one entry.
 - `useLoanChopCalculator` (the only calc hook) already adopts the Hook Closure Pattern: `compute = useStableEvent(...)`, controller via `useFormCalculatorController`, and handler-side `applyAndRecompute` / `loadValues` for transitions.
 - The controller scaffold (`useFormCalculatorController`, `useObjectState`) lives in `src/lib/calculators/`. Reuse it for any new formula-based calculator added later.
 - Runtime KaTeX is fully retired — the calculator does not render a LaTeX formula in the shell, and `react-katex` / `BlockMath` / `latexFormula` are not installed.
@@ -20,7 +20,7 @@
 - **Validator finite-check standard.** All `calc.ts` guards use `Number.isFinite(...)` rather than `!isNaN(...)`. Loan inputs are also capped (commit `7bfb87b`) so a finite-but-huge `years` value can't explode the amortization schedule.
 - **Chart non-finite handling.** `BalanceChart.tsx` delegates to `CalcMultiLineChart`, which filters non-finite values before computing axis domains and falls back to `[0, 1]` on empty input.
 - **AdSlot.** Self-contained wrapper (`max-w-3xl lg:max-w-[970px] mx-auto my-[50px] min-h-[280px]`) — render as bare `<AdSlot />` outside the shell. AdSense library loads in `layout.tsx` via `next/script` `strategy="lazyOnload"`.
-- **Sidebar search clear control.** N/A — single-calc site, no sidebar.
+- **Sidebar search clear control.** Implemented in `src/components/AppSidebar.tsx` (commit `d1350ab`, 2026-04-25): Lucide `<X />` clear button, Esc-to-clear, focus restoration. Matches the shared 6-site pattern documented in root CLAUDE.md.
 
 ## Reference
 
