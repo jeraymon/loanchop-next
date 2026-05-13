@@ -55,7 +55,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="h-16 flex items-center px-6 border-b">
         <Link href="/" className="font-black tracking-tighter text-xl text-primary">
-          Loan Chop
+          LoanChop
         </Link>
       </SidebarHeader>
       <SidebarContent>
