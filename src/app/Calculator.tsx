@@ -602,7 +602,7 @@ export default function Calculator() {
       <AdSlot />
 
       {/* Quick Answer — definitional + worked example for SEO snippet eligibility */}
-      <QuickAnswerAside staticAnswer={QUICK_ANSWER_STATIC} exampleAnswer={QUICK_ANSWER_EXAMPLE} />
+      <QuickAnswerAside staticAnswer={QUICK_ANSWER_STATIC} exampleAnswer={QUICK_ANSWER_EXAMPLE} isStale={isStale} />
 
 
       <WorkedExamples

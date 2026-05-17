@@ -10,12 +10,11 @@
  * The static line is the SEO anchor and must always render — that's why it
  * lives on `staticAnswer` (required) instead of falling back to the example.
  */
-export default function QuickAnswerAside({
-  staticAnswer,
-  exampleAnswer,
-}: {
+export default function QuickAnswerAside({ staticAnswer, exampleAnswer, isStale }: {
   staticAnswer: string;
   exampleAnswer?: string | null;
+
+  isStale?: boolean;
 }) {
   return (
     <aside
@@ -26,7 +25,7 @@ export default function QuickAnswerAside({
         Quick Answer
       </p>
       <p className="text-sm text-slate-800 dark:text-slate-100">{staticAnswer}</p>
-      {exampleAnswer ? (
+      {exampleAnswer && !isStale ? (
         <p className="text-sm text-slate-600 dark:text-slate-400">
           <span className="font-medium text-slate-800 dark:text-slate-100">Your example:</span> {exampleAnswer}
         </p>
