@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { Link as LinkIcon, Mail } from "lucide-react";
 import { SITE_URL } from "@/app/seo-constants";
+import { useCopyFeedback } from "@/hooks/useCopyFeedback";
 
 // Inline SVGs for brand icons (no dependency needed)
 function XIcon({ className }: { className?: string }) {
@@ -48,7 +49,7 @@ const toShareUrl = (pathname: string | null) => {
 };
 
 export default function ShareButtons({ title, solutionLabel, solutionValue }: ShareButtonsProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyFeedback(2000);
   const pathname = usePathname();
   const canNativeShare = useSyncExternalStore(
     emptySubscribe,
@@ -59,22 +60,9 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
   const solutionText = [solutionLabel, solutionValue].filter(Boolean).join(" ");
   const shareText = `${title}: ${solutionText}`;
 
-  const copyLink = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const input = document.createElement("input");
-      input.value = url;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand("copy");
-      document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  }, [url]);
+  const copyLink = useCallback(() => {
+    void copy(url);
+  }, [copy, url]);
 
   const nativeShare = useCallback(async () => {
     try {
