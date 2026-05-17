@@ -147,6 +147,7 @@ export default function Calculator() {
   const [copyState, setCopyState] = useState<"idle" | "ok" | "fail">("idle");
 
   const copyResult = async () => {
+    if (isStale) return;
     if (!solutionLabel || !solutionValue) return;
     try {
       await navigator.clipboard.writeText(`${solutionLabel} ${solutionValue}. ${quickAnswer}`);
@@ -169,7 +170,7 @@ export default function Calculator() {
               ? "text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
               : "text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
           }`}
-        >
+         disabled={isStale}>
           {copyState === "ok"
             ? "Copied!"
             : copyState === "fail"
