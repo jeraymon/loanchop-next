@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import CalculatorShell from "@/components/CalculatorShell";
 import EducationalSection from "@/components/EducationalSection";
@@ -21,7 +20,7 @@ import {
   fmtMonths,
   type ExampleConfig,
 } from "./useLoanChopCalculator";
-import { writeTextToClipboard, useCopyResultFeedback } from "@/hooks/useCopyFeedback";
+import { useCopyResultFeedback } from "@/hooks/useCopyFeedback";
 
 const BalanceChart = dynamic(() => import("./BalanceChart"), { ssr: false });
 
