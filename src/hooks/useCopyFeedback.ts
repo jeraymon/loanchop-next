@@ -42,17 +42,26 @@ async function writeTextToClipboard(text: string): Promise<boolean> {
 
   if (typeof document === "undefined") return false;
 
-  let input: HTMLInputElement | null = null;
+  // Use <textarea>, not <input>: <input> coerces its value to a single line
+  // and strips embedded "\n" characters before the copy command runs, which
+  // would silently flatten multi-line Show-Your-Work payloads. <textarea>
+  // preserves newlines verbatim. The element is positioned off-screen to
+  // avoid any visual flash while it is focused/selected.
+  let textarea: HTMLTextAreaElement | null = null;
   try {
-    input = document.createElement("input");
-    input.value = text;
-    document.body.appendChild(input);
-    input.select();
+    textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "absolute";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
     return document.execCommand("copy");
   } catch {
     return false;
   } finally {
-    input?.remove();
+    textarea?.remove();
   }
 }
 

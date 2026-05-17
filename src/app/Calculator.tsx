@@ -599,7 +599,7 @@ export default function Calculator() {
       </CalculatorShell>
 
       <div className="max-w-3xl mx-auto">
-        <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} />
+        <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} isStale={isStale} />
       </div>
       <AdSlot />
 

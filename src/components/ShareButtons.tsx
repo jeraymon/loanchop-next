@@ -39,6 +39,7 @@ interface ShareButtonsProps {
   title: string;
   solutionLabel?: string;
   solutionValue?: string;
+  isStale?: boolean;
 }
 
 const emptySubscribe = () => () => {};
@@ -48,7 +49,7 @@ const toShareUrl = (pathname: string | null) => {
   return `${SITE_URL}${pathname.replace(/\/?$/, "/")}`;
 };
 
-export default function ShareButtons({ title, solutionLabel, solutionValue }: ShareButtonsProps) {
+export default function ShareButtons({ title, solutionLabel, solutionValue, isStale }: ShareButtonsProps) {
   const { copied, copy } = useCopyFeedback(2000);
   const pathname = usePathname();
   const canNativeShare = useSyncExternalStore(
@@ -57,8 +58,16 @@ export default function ShareButtons({ title, solutionLabel, solutionValue }: Sh
     () => false,
   );
   const url = toShareUrl(pathname);
-  const solutionText = [solutionLabel, solutionValue].filter(Boolean).join(" ");
-  const shareText = `${title}: ${solutionText}`;
+  // Drop solution text from the share message while the calculator is in its
+  // 1s debounced "computing" state (isStale=true) OR when no answer is
+  // available (invalid input → empty solutionValue). The share message
+  // degrades to just the calculator title — recipients land on the page's
+  // default state, matching the network-wide canonical-path-only contract.
+  const includeSolution = !isStale && Boolean(solutionValue);
+  const solutionText = includeSolution
+    ? [solutionLabel, solutionValue].filter(Boolean).join(" ")
+    : "";
+  const shareText = solutionText ? `${title}: ${solutionText}` : title;
 
   const copyLink = useCallback(() => {
     void copy(url);
