@@ -32,8 +32,8 @@ export default function CalculatorShell({
           <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>{children}</form>
           <section aria-label="Result" className="mt-2">
             <div className={`bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded-xl text-center border border-indigo-200 dark:border-indigo-900 ${isStale ? "opacity-50" : "opacity-100"} transition-opacity duration-200`} aria-live="polite">
-              <h2 className="text-sm font-bold text-muted-foreground mb-1">{solutionLabel ?? "Solution"}</h2>
-              <output className="text-2xl sm:text-3xl font-black text-accent-foreground">{solutionValue ?? "Enter values to calculate"}</output>
+              <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">{solutionLabel ?? "Solution"}</h2>
+              <output className="text-2xl sm:text-3xl font-black text-accent-foreground">{solutionValue ?? "—"}</output>
             </div>
             {afterSolution}
           </section>

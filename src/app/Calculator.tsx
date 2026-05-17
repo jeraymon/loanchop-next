@@ -598,13 +598,14 @@ export default function Calculator() {
         </div>
       </CalculatorShell>
 
-      {/* Quick Answer — definitional + worked example for SEO snippet eligibility */}
-      <QuickAnswerAside staticAnswer={QUICK_ANSWER_STATIC} exampleAnswer={QUICK_ANSWER_EXAMPLE} />
-
       <div className="max-w-3xl mx-auto">
         <ShareButtons title="Loan Prepayment Calculator" solutionLabel={solutionLabel ?? ""} solutionValue={solutionValue ?? ""} />
       </div>
       <AdSlot />
+
+      {/* Quick Answer — definitional + worked example for SEO snippet eligibility */}
+      <QuickAnswerAside staticAnswer={QUICK_ANSWER_STATIC} exampleAnswer={QUICK_ANSWER_EXAMPLE} />
+
 
       <WorkedExamples
         examples={workedExamples.map((example) => ({
