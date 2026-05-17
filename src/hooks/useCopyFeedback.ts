@@ -68,15 +68,26 @@ export async function writeTextToClipboard(text: string): Promise<boolean> {
 export function useCopyFeedback(resetMs = 1500) {
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tracks whether the component is still mounted. The clipboard write is
+  // async, so by the time it resolves the host may have unmounted (rapid
+  // route navigation, modal close, etc.). Without this guard, the post-await
+  // setState produces a React "update on unmounted component" warning and
+  // a leaked timer when markCopied schedules its reset.
+  const mountedRef = useRef(true);
 
-  useEffect(() => () => {
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
   }, []);
 
   const markCopied = useCallback(() => {
+    if (!mountedRef.current) return;
     setCopied(true);
     if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
@@ -87,7 +98,7 @@ export function useCopyFeedback(resetMs = 1500) {
 
   const copy = useCallback(async (text: string): Promise<boolean> => {
     const ok = await writeTextToClipboard(text);
-    if (ok) markCopied();
+    if (ok && mountedRef.current) markCopied();
     return ok;
   }, [markCopied]);
 
@@ -113,16 +124,23 @@ export type CopyResultState = "idle" | "ok" | "fail";
 export function useCopyResultFeedback(resetMs = 1500) {
   const [copyState, setCopyState] = useState<CopyResultState>("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // See useCopyFeedback above — same unmount-guard rationale.
+  const mountedRef = useRef(true);
 
-  useEffect(() => () => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, []);
 
   const triggerCopy = useCallback(async (text: string): Promise<boolean> => {
     const ok = await writeTextToClipboard(text);
+    if (!mountedRef.current) return ok;
     setCopyState(ok ? "ok" : "fail");
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
