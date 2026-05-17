@@ -38,12 +38,12 @@ export default function CalculatorShell({
             {afterSolution}
           </section>
           {chart && (
-            <section aria-label="Chart">
+            <section aria-label="Chart" className={`transition-opacity duration-200 ${isStale ? "opacity-50" : "opacity-100"}`}>
               {chart}
             </section>
           )}
           {table && (
-            <section aria-label="Data Table">
+            <section aria-label="Data Table" className={`transition-opacity duration-200 ${isStale ? "opacity-50" : "opacity-100"}`}>
               {table}
             </section>
           )}
