@@ -35,7 +35,11 @@ export default function CalculatorShell({
               <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">{solutionLabel ?? "Solution"}</h2>
               <output className="text-2xl sm:text-3xl font-black text-accent-foreground">{solutionValue ?? "—"}</output>
             </div>
-            {afterSolution}
+            {afterSolution && (
+              <div className={`transition-opacity duration-200 ${isStale ? "opacity-50" : "opacity-100"}`}>
+                {afterSolution}
+              </div>
+            )}
           </section>
           {chart && (
             <section aria-label="Chart" className={`transition-opacity duration-200 ${isStale ? "opacity-50" : "opacity-100"}`}>
