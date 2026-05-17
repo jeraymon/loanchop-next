@@ -103,9 +103,21 @@ export function useAutoCalculate<S extends SchemaMap>({
     if (result.success) {
       clearErrors();
     } else {
-      const bad = new Set(result.error.issues.map((i) => i.path[0] as string));
+      // Preserve the first zod issue message per field so authored
+      // validator text ("Required", "Must be between 0 and 100", …) reaches
+      // the user. Falls back to "Invalid" only when zod emits an empty
+      // message, which the shared validators never do but defensive code
+      // shouldn't blank out an error.
+      const messageByField = new Map<string, string>();
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as string | undefined;
+        if (field && !messageByField.has(field)) {
+          messageByField.set(field, issue.message || "Invalid");
+        }
+      }
       requiredFields.forEach((f) => {
-        if (bad.has(f)) setError(f, { message: "Invalid" });
+        const message = messageByField.get(f);
+        if (message) setError(f, { message });
         else clearErrors(f);
       });
     }
