@@ -30,7 +30,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 //   const ok = await copy(url);
 //   if (!ok) { /* surface a fail toast, etc. */ }
 
-async function writeTextToClipboard(text: string): Promise<boolean> {
+export async function writeTextToClipboard(text: string): Promise<boolean> {
   try {
     if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);

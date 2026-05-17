@@ -21,6 +21,7 @@ import {
   fmtMonths,
   type ExampleConfig,
 } from "./useLoanChopCalculator";
+import { writeTextToClipboard } from "@/hooks/useCopyFeedback";
 
 const BalanceChart = dynamic(() => import("./BalanceChart"), { ssr: false });
 
@@ -149,12 +150,8 @@ export default function Calculator() {
   const copyResult = async () => {
     if (isStale) return;
     if (!solutionLabel || !solutionValue) return;
-    try {
-      await navigator.clipboard.writeText(`${solutionLabel} ${solutionValue}. ${quickAnswer}`);
-      setCopyState("ok");
-    } catch {
-      setCopyState("fail");
-    }
+    const ok = await writeTextToClipboard(`${solutionLabel} ${solutionValue}. ${quickAnswer}`);
+      setCopyState(ok ? "ok" : "fail");
     setTimeout(() => setCopyState("idle"), 1500);
   };
 
