@@ -93,3 +93,44 @@ export function useCopyFeedback(resetMs = 1500) {
 
   return { copied, copy, markCopied };
 }
+
+// Tristate variant of useCopyFeedback for callers that need to surface
+// the success/failure outcome (e.g. shared ShowYourWork buttons that show
+// "Copy failed" on failure). Same three lifecycle fixes as useCopyFeedback:
+//   1. Repeated clicks clearTimeout the previous reset → no early-clear.
+//   2. Unmount cleanup → no leaked timers / no setState after unmount.
+//   3. Internal navigator → execCommand fallback via writeTextToClipboard.
+//
+// Usage:
+//   const { copyState, triggerCopy } = useCopyResultFeedback();
+//   const copyResult = async () => {
+//     if (isStale) return;
+//     await triggerCopy(text);
+//   };
+//   // copyState: "idle" | "ok" | "fail"
+export type CopyResultState = "idle" | "ok" | "fail";
+
+export function useCopyResultFeedback(resetMs = 1500) {
+  const [copyState, setCopyState] = useState<CopyResultState>("idle");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const triggerCopy = useCallback(async (text: string): Promise<boolean> => {
+    const ok = await writeTextToClipboard(text);
+    setCopyState(ok ? "ok" : "fail");
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setCopyState("idle");
+      timerRef.current = null;
+    }, resetMs);
+    return ok;
+  }, [resetMs]);
+
+  return { copyState, triggerCopy };
+}
