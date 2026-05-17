@@ -1,10 +1,11 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useForm } from "react-hook-form";
 import type { FieldErrors } from "react-hook-form";
 import type { z } from "zod";
 
 import { useAutoCalculate } from "@/hooks/useAutoCalculate";
+import { useIsoLayoutEffect } from "@/hooks/useIsoLayoutEffect";
 
 type FormData = Record<string, string>;
 type SchemaMap = Record<string, z.ZodTypeAny>;
@@ -53,19 +54,32 @@ export function useFormCalculatorController<
       compute: compute as (data: FormData, solveFor: string) => void,
     });
 
+  // Refs so applyAndRecompute's body, running AFTER flushSync, reads the
+  // freshest computeImmediate / solveFor. Without these, the body would still
+  // hold the closure snapshot from before `apply()` ran — and `apply()` is
+  // exactly where callers mutate state-derived schemas (e.g. ac-circuit's
+  // equation toggle). useIsoLayoutEffect updates the refs synchronously
+  // during React's commit phase, which flushSync drives before returning.
+  const computeImmediateRef = useRef(computeImmediate);
+  const solveForRef = useRef(solveFor);
+  useIsoLayoutEffect(() => {
+    computeImmediateRef.current = computeImmediate;
+    solveForRef.current = solveFor;
+  }, [computeImmediate, solveFor]);
+
   const runNow = useCallback(
     (nextSolveFor?: TSolveFor) => {
-      computeImmediate(getValues(), nextSolveFor ?? solveFor);
+      computeImmediateRef.current(getValues(), nextSolveFor ?? solveForRef.current);
     },
-    [computeImmediate, getValues, solveFor],
+    [getValues],
   );
 
   const applyAndRecompute = useCallback(
     (apply: () => void, nextSolveFor?: TSolveFor) => {
       flushSync(apply);
-      computeImmediate(getValues(), nextSolveFor ?? solveFor);
+      computeImmediateRef.current(getValues(), nextSolveFor ?? solveForRef.current);
     },
-    [computeImmediate, getValues, solveFor],
+    [getValues],
   );
 
   const changeSolveFor = useCallback(
