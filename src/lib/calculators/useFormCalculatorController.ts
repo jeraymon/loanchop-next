@@ -108,11 +108,36 @@ export function useFormCalculatorController<
     [applyAndRecompute, setValue, solveFor],
   );
 
-  const setFieldValue = useCallback(
+  // Raw setter — bypasses recompute. Use only in the narrow cases where
+  // compute should NOT fire after the change:
+  //   - inside an `applyAndRecompute(() => ...)` callback (the wrapper
+  //     drives the recompute exactly once for the batch)
+  //   - inside a layout effect / `useIsoLayoutEffect` for default-value
+  //     hydration (where `flushSync` from inside a lifecycle method
+  //     would violate React's rules; `useAutoCalculate`'s mount-compute
+  //     effect handles the first compute with the populated values)
+  // Matches the `setSolveForRaw` naming convention.
+  const setFieldValueRaw = useCallback(
     (key: string, value: string, shouldValidate = true) => {
       setValue(key, value, { shouldValidate });
     },
     [setValue],
+  );
+
+  // Safe default: writes the form value and triggers an immediate recompute.
+  // This is what JSX click handlers, preset buttons, and other user-event
+  // paths want — calling `setFieldValue` from a handler used to silently
+  // skip recompute (subwoofer-vent's end-correction presets, codex round 17),
+  // because the action did exactly what its name promised and nothing more.
+  // The "set value AND recompute" path is the common case, so it owns the
+  // unsuffixed name; the bypass path is opt-in via `setFieldValueRaw`.
+  const setFieldValue = useCallback(
+    (key: string, value: string, shouldValidate = true) => {
+      applyAndRecompute(() => {
+        setValue(key, value, { shouldValidate });
+      });
+    },
+    [applyAndRecompute, setValue],
   );
 
   return {
@@ -126,6 +151,7 @@ export function useFormCalculatorController<
       applyAndRecompute,
       loadValues,
       setFieldValue,
+      setFieldValueRaw,
     },
     derived: {
       isStale,
