@@ -43,7 +43,7 @@ export async function writeTextToClipboard(text: string): Promise<boolean> {
     typeof navigator !== "undefined" &&
     typeof navigator.clipboard?.writeText === "function" &&
     typeof window !== "undefined" &&
-    window.isSecureContext === true;
+    window.isSecureContext !== false;
 
   if (asyncClipboardLikelyToWork) {
     try {
