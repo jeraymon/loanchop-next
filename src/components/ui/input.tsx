@@ -71,7 +71,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         />
         <button
           type="button"
-          tabIndex={-1}
+          tabIndex={hasValue ? 0 : -1}
           onClick={handleClear}
           className={cn(
             "absolute right-1.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-opacity",
