@@ -215,13 +215,13 @@ export const SidebarTrigger = React.forwardRef<
   const { mobileOpen, setMobileOpen } = useContext(SidebarContext);
   return (
     <Button
+      {...props}
       ref={ref}
       variant="ghost"
       size="icon"
       className={cn("md:hidden", className)}
       onClick={() => setMobileOpen(!mobileOpen)}
       aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
-      {...props}
     >
       <Menu className="h-5 w-5" />
     </Button>
