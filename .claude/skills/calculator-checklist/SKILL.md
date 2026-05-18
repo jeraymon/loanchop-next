@@ -83,7 +83,7 @@ Verify the single-calculator site at `src/app/` follows all required patterns. C
 - [ ] Chart component lazy-loaded via `next/dynamic` with `{ ssr: false }`
 - [ ] Charts use the shared visx family (`CalcLineChart` / `CalcBarChart` / `CalcMultiLineChart`) which wrap their own `ParentSize` — no manual height wrapper needed. Bespoke visx charts use `<ParentSize>` directly. Recharts is retired network-wide.
 - [ ] visx tooltip components (`useTooltip` + `TooltipWithBounds`) handle their own typing — no Recharts-style formatter quirks.
-- [ ] LaTeX `latexFormula` props use `String.raw` backtick templates — NOT double-backslash JSX strings (double-backslash gets double-escaped in SSG static HTML)
+- [ ] Formulas follow the site shell contract — `formulaText` / `srFormulaText` (plain text) or `svgFormula` / `srFormulaText` (prerendered static SVG). Do not introduce runtime KaTeX or LaTeX source strings. If a static SVG is needed, generate it via `scripts/create-formula-svg.mjs` (or the site equivalent) and reference the served URL.
 - [ ] Chart wrapper/section does NOT have `overflow-hidden` class (clips visx tooltips near chart edges; same rule as Recharts had)
 
 ### Share & Ads
@@ -180,9 +180,9 @@ Report each item as PASS or FAIL with a brief note for failures. Do NOT flag acc
 - [ ] No `breadcrumbs` prop on the shell
 
 ### Form & Auto-Calculate
-- [ ] Uses `useAutoCalculate` hook with `useForm` (no `zodResolver`, manual validation via `setError`/`clearErrors`)
-- [ ] Uses `watch()` to read all form values reactively
-- [ ] Results derive from either `useMemo` with `schema.safeParse(values)` (simple calculators) or `useAutoCalculate` hook with a `compute` callback (form-based calculators) — recalculate instantly on any input change
+- [ ] Uses `useFormCalculatorController` + `useObjectState` + `useStableEvent` (site standard — `useLoanChopCalculator` is on the controller stack; the controller internally wires `useAutoCalculate`). No Calculate button. No `zodResolver`.
+- [ ] Manual validation via `setError` / `clearErrors` (NOT `zodResolver`)
+- [ ] Compute happens on the controller's `compute` callback (wrapped in `useStableEvent`) — recalculates instantly on input change via the controller's debounce/blur path. Simple bespoke calculators may use plain `useState` + `useMemo`; flag any new formula calc starting on the retired inline `useForm + useAutoCalculate + flushSync` shape.
 - [ ] No Calculate button — auto-calculate pattern
 - [ ] Uses `BigNumber` from `bignumber.js` for math (not native JS floats)
 - [ ] Form inputs use `register()` from react-hook-form
