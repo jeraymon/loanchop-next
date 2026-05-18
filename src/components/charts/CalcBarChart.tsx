@@ -235,13 +235,13 @@ function BarChartInner<
                       const y = yScale(stackTotal + value);
                       const h = Math.max(0, yScale(stackTotal) - y);
                       stackTotal += value;
-                      return <Bar key={s.key} x={0} y={y} width={groupW} height={h} fill={color} />;
+                      return <Bar key={s.key} x={0} y={y} width={groupW} height={h} fill={color} pointerEvents="none" />;
                     }
                     const subX = subXScale(s.key) ?? 0;
                     const subW = subXScale.bandwidth();
                     const y = yScale(Math.max(value, 0));
                     const h = Math.abs(yScale(value) - yScale(0));
-                    return <Bar key={s.key} x={subX} y={y} width={subW} height={h} fill={color} />;
+                    return <Bar key={s.key} x={subX} y={y} width={subW} height={h} fill={color} pointerEvents="none" />;
                   });
                 })()}
               </g>
