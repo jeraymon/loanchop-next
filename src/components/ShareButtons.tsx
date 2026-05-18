@@ -133,7 +133,7 @@ export default function ShareButtons({ title, solutionLabel, solutionValue, isSt
       <button
         onClick={copyLink}
         className="p-2 rounded-md text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
-        aria-label={copied ? "Link copied" : "Copy link to this result"}
+        aria-label={copied ? "Link copied" : "Copy link to this calculator"}
         title={copied ? "Copied!" : "Copy link"}
       >
         <LinkIcon className="w-6 h-6" />
