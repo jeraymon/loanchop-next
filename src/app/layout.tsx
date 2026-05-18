@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="text-xs max-w-2xl mx-auto">
               Educational tool — not financial advice. Verify all results with a qualified professional before making financial decisions.
             </p>
-            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} LoanChop. All rights reserved.</p>
           </footer>
         </ThemeProvider>
       </body>
