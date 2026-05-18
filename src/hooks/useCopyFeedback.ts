@@ -31,13 +31,27 @@ import { useCallback, useEffect, useRef, useState } from "react";
 //   if (!ok) { /* surface a fail toast, etc. */ }
 
 export async function writeTextToClipboard(text: string): Promise<boolean> {
-  try {
-    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+  // Only attempt the async Clipboard API when it can actually succeed:
+  // it requires a secure context AND a transient user activation that
+  // survives the await. In in-app webviews (Instagram, X, Facebook, etc.)
+  // and other non-secure contexts, navigator.clipboard.writeText is
+  // present but rejects — and the rejected promise consumes the user
+  // activation, leaving the synchronous execCommand fallback below with
+  // no gesture to ride on. Short-circuiting to the DOM path here keeps
+  // the gesture alive for execCommand("copy").
+  const asyncClipboardLikelyToWork =
+    typeof navigator !== "undefined" &&
+    typeof navigator.clipboard?.writeText === "function" &&
+    typeof window !== "undefined" &&
+    window.isSecureContext === true;
+
+  if (asyncClipboardLikelyToWork) {
+    try {
       await navigator.clipboard.writeText(text);
       return true;
+    } catch {
+      // Fall through to the legacy DOM copy path below.
     }
-  } catch {
-    // Fall through to the legacy DOM copy path below.
   }
 
   if (typeof document === "undefined") return false;
