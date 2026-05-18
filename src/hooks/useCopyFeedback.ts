@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 //
 // Consumer surface:
 //   - `copy(text)` — happy path. Tries `navigator.clipboard.writeText` first;
-//     falls back to a hidden `<input>` + `execCommand("copy")` on browsers
+//     falls back to an off-screen `<textarea>` + `execCommand("copy")` on browsers
 //     that lack the async clipboard API or refuse the write (e.g. some
 //     in-app browsers without HTTPS). Auto-marks the indicator on success.
 //     Returns `true` on success, `false` on failure.
