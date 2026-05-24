@@ -205,8 +205,9 @@ function parseFiniteNonNegative(value: string | null): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-/** Max months we'll scan for per-month extras. 30yr × 12 + a little slack. */
-const MAX_EXTRA_MONTHS = 480;
+/** Max months we'll scan for per-month extras. Must cover the longest schedule
+ *  permitted by `YEARS_MAX` so persistence never silently drops late rows. */
+const MAX_EXTRA_MONTHS = YEARS_MAX * 12;
 
 export interface SavedLoan {
   principal: string;
