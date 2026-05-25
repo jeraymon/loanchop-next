@@ -50,6 +50,19 @@ export function AppSidebar() {
     const q = query.toLowerCase();
     return allCalculators.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 15);
   }, [query]);
+  // Highlight the category that contains the calculator the user is currently
+  // viewing. Strips trailing slashes from both sides so the comparison works
+  // regardless of whether catalog hrefs include them.
+  const activeCategoryId = React.useMemo(() => {
+    const normalize = (s: string) => s.replace(/\/+$/, "") || "/";
+    const target = normalize(pathname);
+    for (const cat of categories) {
+      if (cat.calculators.some((c) => c.live && normalize(c.href) === target)) {
+        return cat.id;
+      }
+    }
+    return null;
+  }, [pathname]);
 
   return (
     <Sidebar>
@@ -110,7 +123,7 @@ export function AppSidebar() {
                   const Icon = categoryIcons[cat.id] || Calculator;
                   return (
                     <SidebarMenuItem key={cat.id}>
-                      <SidebarMenuButton asChild tooltip={cat.label}>
+                      <SidebarMenuButton asChild tooltip={cat.label} isActive={cat.id === activeCategoryId}>
                         <Link
                           href={`/#${cat.id}`}
                           onClick={(e) => {
