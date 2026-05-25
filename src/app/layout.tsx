@@ -30,9 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer className="border-t p-6 text-center text-sm text-muted-foreground space-y-2">
             <nav aria-label="Footer" className="flex flex-wrap justify-center gap-x-4 gap-y-2">
               <Link href="/" className="hover:text-foreground transition-colors">Calculator</Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
-              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link href="/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
+              <Link href="/terms/" className="hover:text-foreground transition-colors">Terms of Use</Link>
+              <Link href="/privacy/" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link href="/accessibility/" className="hover:text-foreground transition-colors">Accessibility</Link>
               <a href="mailto:aj@ajdesigner.com" className="hover:text-foreground transition-colors">Contact</a>
             </nav>
             <p className="text-xs max-w-2xl mx-auto">
