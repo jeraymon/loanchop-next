@@ -6,11 +6,14 @@ interface AuthorBylineProps {
   lastReviewed?: string;
 }
 
-/** Bottom-of-page author attribution rendered between the EducationalSection
- *  and the Related Calculators card. Links to the local /about/ page (every
- *  site has one). The schema-level author reference for HowTo JSON-LD lives
- *  in seo-constants.ts buildHowToAuthor() and anchors to the canonical
- *  Person @id on ajdesigner — this byline is the visible counterpart. */
+/** Bottom-of-page author attribution rendered immediately above the
+ *  Related Calculators section/card, after the main educational,
+ *  worked-example, and reference content when present — so the byline
+ *  signs off on the entire article.
+ *  Links to the local /about/ page (every site has one). The schema-level
+ *  author reference for HowTo JSON-LD lives in seo-constants.ts
+ *  buildHowToAuthor() and anchors to the canonical Person @id on
+ *  ajdesigner — this byline is the visible counterpart. */
 export default function AuthorByline({ lastReviewed }: AuthorBylineProps) {
   return (
     <aside
